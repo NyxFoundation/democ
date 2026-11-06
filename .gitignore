@@ -1,3 +1,4 @@
+# 生成物は入れない。YAML と engine から毎回同じものが出る
 out/
 result
 result-*

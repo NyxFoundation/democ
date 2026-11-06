@@ -1,0 +1,27 @@
+/* 左に書いたものが右の一部になる、を見せるための 2 面 */
+.split{z-index:29;background:#080c16;display:grid;grid-template-columns:1fr 1fr;align-content:center}
+.split .l,.split .r{padding:0 54px}
+.split .l{border-right:1px solid #1b2740}
+.split pre{margin:0;font:17px/1.95 var(--mono);color:#cfdcf2;white-space:pre}
+.split .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
+  width:46px;height:46px;border-radius:50%;background:#0b1424;border:1px solid #27385c;
+  color:var(--accent);font:20px/44px var(--mono);text-align:center;opacity:0;transition:opacity .3s}
+.split.ar .arrow{opacity:1}
+.split .band{bottom:84px}
+.split.dim .l,.split.dim .r,.split.dim .arrow{opacity:.42;transition:opacity .45s}
+
+/* 飛んでいくコード。空中で表記が入れ替わる */
+.fly{position:absolute;z-index:40;opacity:0;pointer-events:none;visibility:hidden}
+.fly.on{opacity:1;visibility:visible;filter:drop-shadow(0 18px 40px rgba(0,0,0,.65))}
+.fly .fa,.fly .fb{position:absolute;left:0;top:0;white-space:pre;font:17px/1.95 var(--mono);
+  transition:opacity .34s;will-change:opacity}
+.fly .fb{opacity:0}
+.fly.swap .fa{opacity:0} .fly.swap .fb{opacity:1}
+.fly .bx{display:inline-block;border:1px solid var(--accent);border-radius:7px;padding:7px 13px;
+  background:rgba(12,22,36,.96);box-shadow:0 0 0 1px rgba(95,215,215,.18),0 14px 44px rgba(0,0,0,.5)}
+/* 元の行は、写しが飛び立つあいだ脇へどく */
+.srcfade{opacity:.10!important;transition:opacity .28s}
+/* 着地先は、測れるが見えない状態で待つ */
+.pending{opacity:0!important}
+.landed{animation:land .5s ease-out}
+@keyframes land{0%{background:rgba(95,215,215,.18)}100%{background:transparent}}

@@ -1,0 +1,17 @@
+/* ビルドの成果物を、実際に叩いて見せる */
+.term{z-index:29;background:#070a11;display:grid;place-items:center}
+.term .tw{width:1300px}   /* relative にすると .side がここを基準にして画面外へ出る */
+.term .th{display:inline-flex;align-items:center;gap:11px;padding:9px 20px 10px;border-radius:7px 7px 0 0;
+  background:#131c2e;border:1px solid #243352;border-bottom:none;font:17px/1 var(--mono);color:#cfdcf2}
+.term .th i{width:9px;height:9px;border-radius:50%;background:#3b4a68;flex:none}
+.term .trule{height:1px;background:#243352;margin-bottom:22px}
+.term .ln{font:18px/1.95 var(--mono);color:#aebbce;white-space:pre;opacity:0;transform:translateX(-6px);
+  transition:opacity .2s,transform .2s;min-height:35px}
+.term .ln.on{opacity:1;transform:none}
+.term .side{position:absolute;right:92px;top:50%;transform:translateY(-50%);width:420px;
+  border:1px solid #22304f;border-radius:10px;background:#0c1322;padding:16px 18px;
+  opacity:0;transition:opacity .45s}
+.term .side.on{opacity:1}
+.term .side pre{margin:0;font:15px/1.85 var(--mono);color:#cfdcf2;white-space:pre}
+.term .side .ftab{font-size:14px;padding:7px 14px 8px}
+.term .side .frule{margin-bottom:14px}

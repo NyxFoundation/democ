@@ -1,0 +1,127 @@
+# 新しいデモの出発点。make new NAME=foo でここから複製される。
+#
+# 要らない場面は丸ごと消す。並べ替えも自由。文言を変えれば、画面に出る時間も
+# 文字数から付いてくる（hold を書いた場面だけは秒で固定される）。
+# 使える引数の一覧は docs/scenes.md にある。
+
+title: 製品名
+accent: "#5fd7d7"          # 強調に使う 1 色。デモごとに変える
+
+reading:
+  cps: 5.5                 # 1 秒あたりに読める文字数
+  lead: 0.9                # 目が文字に追いつくまでの頭
+  min: 2.4
+  max: 5.2
+
+scenes:
+
+# 文字ドン。言い切りを 1 行だけ。<em> が accent 色になる
+- type: card
+  text: "一番伝えたいことを、<br><em>短く一行で</em>"
+
+# 数字ドン。0 から動いて着地する
+- type: card
+  text: "効いている数字は"
+  number: 1234
+
+# 事故を起こしているウェブアプリ。{{ }} が「変わったところ」
+- type: browser
+  brand: サービス名
+  nav: [一覧, 下書き, メンバー]
+  user: { email: user@example.com, initial: U }
+  url: "app.example.com/items/{{3}}"
+  crumb: "一覧 / <b>#3 ふつうの項目</b>"
+  files:
+    - [PDF, ふつうの資料.pdf, 182 KB]
+  change:
+    url: "app.example.com/items/{{7}}"
+    crumb: "一覧 / <b>#7 見えてはいけない項目</b>"
+    files:
+      - [PDF, 社外秘.pdf, 182 KB]
+    stamp: "GET /items/7 → 200 OK"
+
+# コード。行番号・コード の形で書く。空行は間隔になる
+- type: code
+  tab: server.js
+  icon: js                 # cedar / lean / js / ts / sh / json
+  lang: js
+  lines: |
+    10 // 正しく書けているほう
+    11 if (!ok) return deny()
+
+    20 // 同じ確認が無いほう
+    21 return send(data)
+  good: [11]
+  bad: [21]
+  badges:
+    11: "✓ LGTM"
+    21: "✕ 誰でも読めた"
+  missing: { after: 20, text: "同じ 1 行がない" }
+  note: "この <b>1 行が書かれていない</b>"
+
+# 左に書いたものが右の一部になる。fly の行が飛んで land の行に着地する
+- type: split
+  left:
+    tab: input.conf
+    lang: cedar
+    code: |
+      書いたもの
+    fly: "1-1"
+  right:
+    tab: Generated.lean
+    lang: lean
+    code: |
+      def sources :=
+        ⟨書いたもの⟩
+    land: "2-2"
+  band: "書いたものが<b>そのまま検証の対象になる</b>"
+
+# 依存の木と、節を 1 つ開いた型の照合
+- type: tree
+  command: lake build
+  lang: lean
+  root: Main.theorem
+  error: |
+    error: 型が合わない
+    exit 1
+  levels:
+    l1: [lemma_a, lemma_b, lemma_c]
+    l2: [step_1, step_2, step_3, step_4]
+    dots: 24
+  axioms: [propext, Classical.choice]
+  total: 128
+  labels:
+    built:   "この証明は <b>128 件</b>に依存している"
+    compare: "要求された型と、実際の型が<b>一致するか</b>"
+    ok:      "全ての節で一致した。<b>飛躍はない</b>"
+    fail:    "一箇所でも合わなければ、<b>ビルドは失敗する</b>"
+  inspect_labels:
+    need: "親が、ここに求めている型"
+    has:  "この項が、実際に持っている型"
+    ok:   "型が一致"
+    ng:   "型が一致しない"
+  inspect:
+    - { node: lemma_a, ok: true,  need: "A → B", has: "A → B" }
+    - { node: lemma_b, ok: false, need: "A → B", has: "{{C}} → B" }
+  done: |
+    ✓ 型検査 ok
+    → build/bin/app
+
+# ターミナル。<< >> は黄色い注記、{{ }} は赤く差す
+- type: terminal
+  title: "~/project — zsh"
+  lines: |
+    $ ./build/bin/app
+      listening on :8080
+    $ curl :8080/items/7   403  <<← 冒頭のあれ>>
+  side:
+    tab: "app/page.tsx"
+    icon: ts
+    lang: ts
+    code: |
+      await fetch('/items/7')
+    after: 1
+
+# 締め
+- type: card
+  text: "github.com/example/<em>project</em>"

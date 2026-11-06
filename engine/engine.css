@@ -1,0 +1,68 @@
+/* ステージそのもの。何が描かれるかはシーン側が持つ。 */
+:root{
+  --ui:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --page:#0d0d0f;
+  --stage-bg:#05070d;
+  --panel:#0e1526; --panel2:#111a2e;
+  --br:#22304f; --br2:#2d3d63;
+  --fg:#c3cfe6; --dim:#6c7c9c; --dim2:#4d5a76;
+  --accent:#5fd7d7;                /* ブランド色。demo の accent で差し替わる */
+  --ok:#4ade80; --warn:#f0b429; --bad:#f87171; --hack:#fb7185;
+  --ink:#eaf1fb;                   /* 一番明るい字 */
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--fg);font-family:var(--ui);height:100%}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;min-height:100vh}
+
+/* ---- 編集用のコントロール。?rec=1 で消える ---- */
+.controls{width:min(1600px,100%);display:flex;justify-content:space-between;align-items:center;gap:12px;
+  flex-wrap:wrap;font-size:12px;color:var(--dim)}
+.controls .steps{display:flex;gap:6px;flex-wrap:wrap}
+.controls button{font:inherit;font-size:12px;color:var(--dim);background:#141416;border:1px solid #2a2a2e;
+  border-radius:6px;padding:5px 11px;cursor:pointer}
+.controls button[aria-current="step"]{color:#fff;border-color:#4a4a52;background:#1f1f24}
+body.rec .controls{display:none} body.rec{padding:0}
+
+/* ---- 固定 1600x1000 のステージを画面に合わせて縮める ---- */
+.stage-wrap{width:min(1600px,100%);aspect-ratio:16/10;position:relative}
+.stage{position:absolute;inset:0;transform-origin:top left;width:1600px;height:1000px;
+  background:radial-gradient(1200px 760px at 50% -8%,#0d1527 0%,transparent 62%),var(--stage-bg);
+  color:var(--fg);border-radius:8px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);font-size:13px}
+body.rec .stage{border-radius:0;box-shadow:none}
+.grid{position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(120,160,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(120,160,255,.045) 1px,transparent 1px);
+  background-size:40px 40px}
+
+/* ---- 全画面シーンの共通土台 ----
+   使っていないレイヤーは visibility:hidden で合成から外す。opacity:0 のままだと
+   毎フレーム合成され、録画中にメインスレッドが詰まって映像がスローモーションになる。 */
+.sc{position:absolute;inset:0;opacity:0;pointer-events:none;visibility:hidden;transition:opacity .3s}
+.sc.on{opacity:1;visibility:visible}
+
+/* ---- ファイルタブ。注釈の代わりに画面自身に名前を言わせる ---- */
+.ftab{display:inline-flex;align-items:center;gap:10px;padding:9px 20px 10px;border-radius:7px 7px 0 0;
+  background:#131c2e;border:1px solid #243352;border-bottom:none;font:17px/1 var(--mono);color:#cfdcf2}
+.ftab i{width:12px;height:14px;border-radius:2px;flex:none;font-style:normal;background:#39415e}
+.ftab i.cedar{background:#3a2a4a} .ftab i.lean{background:#2a2f4a} .ftab i.js{background:#4a4320}
+.ftab i.ts{background:#1e3a5f} .ftab i.sh{background:#1f3a2a} .ftab i.json{background:#4a3520}
+.ftab .x{color:#50607e;margin-left:4px}
+.frule{height:1px;background:#243352;margin-bottom:20px}
+
+/* ---- 構文色。どのシーンでも同じ語は同じ色になる ---- */
+.tk-k{color:#c586c0} .tk-s{color:#ce9178} .tk-c{color:#5e7a5e} .tk-f{color:#dcdcaa}
+.tk-v{color:#9cdcfe} .tk-t{color:#4ec9b0} .tk-n{color:#b5cea8} .tk-a{color:#f0b429}
+.tk-p{color:#7ee787} .tk-d{color:#5d6b82} .tk-h{color:var(--ink)}
+.tk-g{color:var(--ok)} .tk-e{color:var(--bad)} .tk-q{color:#58a6ff}
+mark{background:rgba(251,113,133,.24);border-radius:3px;padding:1px 4px;color:#ffd9de}
+
+/* ---- 文字の帯。図より前に出す ---- */
+.band{position:absolute;left:0;right:0;bottom:44px;text-align:center;font:30px/1.55 var(--ui);
+  font-weight:600;letter-spacing:.01em;color:#cfdcf2;opacity:0;transition:opacity .4s;z-index:12;
+  text-shadow:0 2px 24px rgba(0,0,0,.9),0 0 60px rgba(0,0,0,.8);padding:0 90px}
+.band.on{opacity:1}
+.band b{color:var(--accent);font-weight:600}
+.band s{text-decoration:none;color:var(--dim2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

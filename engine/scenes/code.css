@@ -1,0 +1,30 @@
+/* レビューが実際に見ている画面。読める大きさで出さないと「見つからない」が伝わらない */
+.code{z-index:29;background:#0b0f18;display:grid;place-items:center}
+.code .cw{width:1230px}
+.code .cw .ftab{margin-left:30px}
+.code .cl{display:grid;grid-template-columns:44px 1fr;font:18px/32px var(--mono);color:#b9c6da;
+  padding:0 14px;border-radius:5px;position:relative;white-space:pre;
+  transition:background .3s,opacity .3s}
+.code .cl i{color:#3f4d68;font-style:normal;text-align:right;padding-right:16px;font-size:15px}
+.code .cl.good{background:rgba(78,201,148,.10)}
+.code .cl.bad{background:rgba(248,113,113,.16)}
+.code .cl.dim{opacity:.34}
+.code .gap{height:18px}
+/* 書かれなかった行 */
+.code .miss{display:grid;grid-template-columns:44px 1fr;font:18px/32px var(--mono);color:var(--bad);
+  padding:0 14px;border-radius:5px;background:rgba(248,113,113,.1);border:1px dashed rgba(248,113,113,.5);
+  height:0;overflow:hidden;opacity:0;transition:height .32s,opacity .32s}
+.code .miss.on{height:34px;opacity:1}
+.code .miss i{color:var(--bad);font-style:normal;text-align:right;padding-right:16px;font-size:15px;opacity:.6}
+.code .cb{position:absolute;right:-6px;font:16px/1 var(--ui);font-weight:600;padding:8px 16px;
+  border-radius:16px;opacity:0;transform:scale(.8);
+  transition:opacity .3s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+.code .cb.on{opacity:1;transform:none}
+.code .cb.ok{background:#0e2419;color:var(--ok);border:1px solid #1e4530}
+.code .cb.no{background:#241014;color:var(--bad);border:1px solid #54222a}
+.code .note{margin-top:30px;text-align:center;font:27px/1.6 var(--ui);color:#c3cfe0;opacity:0;
+  transition:opacity .4s;text-shadow:0 2px 24px rgba(0,0,0,.9)}
+.code .note.on{opacity:1}
+.code .note b{color:var(--bad);font-weight:600}
+.code.dim .cl,.code.dim .miss{opacity:.4;transition:opacity .45s}
+.code.dim .cl.bad{opacity:1}

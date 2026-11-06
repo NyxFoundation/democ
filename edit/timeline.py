@@ -214,11 +214,21 @@ class Timeline:
 
 
 # ---------------------------------------------------------------------------
-# ここから下が構成。いまは画面録画を 1 本置くだけ。
+# ここから下が構成。素材を並べ、フェードや重ねを決める。
+# いまは録れている画面素材を demos の順に並べるだけ。3D 素材を重ねたり、
+# 章の頭に静止画を挟んだりするのはここに書き足す。
 # ---------------------------------------------------------------------------
 def build() -> Path:
     tl = Timeline(width=1600, height=1000, fps=25, tracks=2)
-    tl.video("out/screens/nyxis-hero.mp4", track=0, fade_in=0.4, fade_out=0.8)
+    specs = sorted((ROOT / "demos").glob("*.yaml"))
+    clips = [ROOT / "out" / "screens" / f"{p.stem}.mp4" for p in specs]
+    clips = [c for c in clips if c.exists()]
+    if not clips:
+        raise SystemExit("out/screens に録画がない。make screens を先に通す")
+    for i, c in enumerate(clips):
+        tl.video(c, track=0,
+                 fade_in=0.4 if i == 0 else 0.25,
+                 fade_out=0.8 if i == len(clips) - 1 else 0.25)
     return tl.write("out/edit.mlt")
 
 

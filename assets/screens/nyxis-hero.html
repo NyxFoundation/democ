@@ -1,0 +1,1683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nyxis — demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================= engine (core/engine.css) ================= */
+/* ===== demo engine — surface-agnostic ==================================
+   Everything here is about the *stage*, not about what is drawn on it.
+   A surface pack adds its own palette + chrome in surfaces/<name>/surface.css.
+   ====================================================================== */
+:root{
+  --ui:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --page:#0d0d0f;          /* letterbox around the stage */
+  --stage-bg:#1e1e1e;      /* surface overrides */
+  --fg:#d4d4d4; --dim:#858585;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--fg);font-family:var(--ui);height:100%}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;min-height:100vh}
+
+/* ---- authoring controls (hidden with ?rec=1) ---- */
+.controls{width:min(1600px,100%);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim)}
+.controls .steps{display:flex;gap:6px;flex-wrap:wrap}
+.controls button{font:inherit;font-size:12px;color:var(--dim);background:#141416;border:1px solid #2a2a2e;border-radius:6px;padding:5px 11px;cursor:pointer}
+.controls button[aria-current="step"]{color:#fff;border-color:#4a4a52;background:#1f1f24}
+body.rec .controls{display:none} body.rec{padding:0}
+
+/* ---- fixed 1600x1000 stage, scaled to fit the viewport ---- */
+.stage-wrap{width:min(1600px,100%);aspect-ratio:16/10;position:relative}
+.stage{position:absolute;inset:0;transform-origin:top left;width:1600px;height:1000px;background:var(--stage-bg);
+  border-radius:8px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);font-size:13px}
+body.rec .stage{border-radius:0;box-shadow:none}
+
+/* ---- blinking caret (typing) ---- */
+.caret{display:inline-block;width:1.5px;height:16px;background:#aeafad;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---- connector overlay: the SVG needs explicit width/height or it defaults to 300x150 ---- */
+.link{position:absolute;inset:0;pointer-events:none;z-index:20}
+.link path{fill:none;stroke:var(--accent2,#5fd7d7);stroke-width:1.6;stroke-dasharray:6 4;opacity:0}
+.link circle{fill:var(--accent2,#5fd7d7);opacity:0}
+.link.open path{opacity:.95;animation:dash 1.2s linear infinite}
+.link.open circle{opacity:1}
+@keyframes dash{to{stroke-dashoffset:-20}}
+
+/* ---- caption strip (optional narration under the chrome) ---- */
+.cap{position:absolute;left:0;right:0;bottom:52px;display:flex;justify-content:center;z-index:19;pointer-events:none}
+.cap span{background:rgba(12,12,14,.86);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:9px 18px;
+  font:15px/1.4 var(--ui);color:#eee;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;max-width:70%}
+.cap.on span{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ================= surface: world (surfaces/world/surface.css) ================= */
+/* ===== surface: world — a 2D network map of a simulated world =================
+   Left: the wallets, one chip each, dense enough that the roster is the point.
+   Middle: the one thing they all have to go through, with a slot gauge that
+   fills in real time. Right: the contracts holding state. Wires between them,
+   traffic along the wires, a log and live telemetry underneath.
+   ========================================================================== */
+:root{
+  --stage-bg:#080c18;
+  --grid:rgba(120,160,255,.045);
+  --panel:#0e1526; --panel2:#111a2e;
+  --br:#22304f; --br2:#2d3d63;
+  --fg:#c3cfe6; --dim:#6c7c9c; --dim2:#4d5a76;
+  --agent:#7dd3fc;                 /* wallets */
+  --venue:#c4b5fd;                 /* contracts the environment deployed */
+  --unknown:#fbbf24;               /* contracts an agent deployed */
+  --hack:#fb7185;                  /* the adversaries */
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --accent2:#5fd7d7;
+}
+.stage{background:radial-gradient(1200px 700px at 50% -10%,#101a33 0%,transparent 60%),var(--stage-bg);
+  color:var(--fg);font-family:var(--ui)}
+.grid{position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px}
+
+/* ---------- top chrome ---------- */
+.top{position:absolute;left:0;right:0;top:0;height:56px;z-index:6;display:flex;align-items:center;gap:16px;
+  padding:0 20px;background:#0a1122;border-bottom:1px solid var(--br)}
+.top .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px;letter-spacing:.2px}
+/* the Eris mark, inlined so the demo stays a single file. Only the butterfly: the
+   wordmark that ships with it is black and this chrome is not. */
+.top .brand .mark{height:26px;width:auto;display:block}
+.top .sep{width:1px;height:20px;background:var(--br)}
+.top .meta{font:12px/1 var(--mono);color:var(--dim)}
+.top .meta b{color:var(--fg);font-weight:500}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.blk{font:13px/1 var(--mono);color:var(--fg);display:flex;align-items:center;gap:8px}
+.blk i{width:7px;height:7px;border-radius:50%;background:var(--dim2);transition:background .15s,box-shadow .15s}
+.stage.tick .blk i{background:var(--accent2);box-shadow:0 0 10px var(--accent2)}
+#stMsg{font:12px/1 var(--mono);color:var(--dim)}
+
+/* ---------- map ---------- */
+.map{position:absolute;left:0;right:0;top:56px;height:620px;z-index:2;overflow:hidden}
+/* the camera. Everything on the map is inside it, so a push-in carries the wires
+   and the traffic with the nodes. */
+.cam{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+.colhd{position:absolute;font:11px/1 var(--mono);letter-spacing:1.4px;color:var(--dim2);text-transform:uppercase}
+
+/* ---------- wallet chips (32 of them) ---------- */
+.chip{position:absolute;width:202px;height:32px;border:1px solid var(--br);border-radius:6px;
+  background:var(--panel);display:flex;align-items:center;gap:7px;padding:0 8px;z-index:3;
+  opacity:.16;transition:opacity .3s,border-color .25s,background .25s,box-shadow .25s}
+.chip.up{opacity:1}
+/* Category glyphs, one colour each, carried by `color` so the role and the state
+   share a single token. Brand logos were considered and rejected: they are
+   multi-colour, and the only reason the drain lands is that red has not appeared
+   for thirty seconds before it. */
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ic{flex:none;fill:none}
+.chip .ic{width:13px;height:13px;color:var(--agent);transition:color .3s,filter .2s}
+.chip .gn{font:11.5px/1 var(--mono);color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .gp{margin-left:auto;font:10.5px/1 var(--mono);color:var(--dim2);flex:none;transition:color .3s}
+.chip.gain .gp{color:var(--ok)} .chip.loss .gp{color:var(--bad)}
+.chip.send .ic{filter:drop-shadow(0 0 7px currentColor)}
+.chip.lit{border-color:var(--accent2);background:#12233a;box-shadow:0 0 0 1px rgba(95,215,215,.22)}
+.chip.ship{border-color:#4a3d15}
+.chip.ship .ic{color:var(--unknown)}
+/* The adversaries are NOT marked in advance. Red is spent once, on the drain — a
+   colour the audience has not seen for thirty seconds is an event when it lands.
+   `.chip.evil` is applied by the storyboard at the reveal, not by the markup. */
+.chip.evil{border-color:#5c2233;background:#1a0d13}
+.chip.evil .ic{color:var(--hack);filter:drop-shadow(0 0 8px var(--hack))}
+.chip.evil.lit{border-color:var(--hack);background:#2a1119;box-shadow:0 0 0 1px rgba(251,113,133,.3)}
+
+/* ---------- contract nodes ---------- */
+.node{position:absolute;left:1310px;width:256px;height:74px;border:1px solid var(--br);border-radius:9px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));padding:9px 11px;z-index:3;
+  opacity:.22;transition:opacity .45s,border-color .3s,box-shadow .3s}
+.node.up{opacity:1}
+.node .nm{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--fg);line-height:1.1}
+.node .nm .ic{width:16px;height:16px;color:var(--venue)}
+.node .ad{font:10px/1.5 var(--mono);color:var(--dim2);margin-top:3px}
+.node .st{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;font:11px/1 var(--mono);color:var(--dim)}
+.node .st b{color:var(--fg);font-weight:500;transition:color .3s}
+.node.lit{border-color:var(--accent2);box-shadow:0 0 0 1px rgba(95,215,215,.25),0 0 26px rgba(95,215,215,.16)}
+.node.moved .st b{color:var(--accent2)}
+.node.gain .st b{color:var(--ok)} .node.loss .st b{color:var(--bad)}
+.node.unk{border-color:#5a4718;background:linear-gradient(180deg,#1d1708,#141105)}
+.node.unk .nm .ic{color:var(--unknown)}
+.node .tag{position:absolute;right:9px;top:8px;font:9px/1 var(--mono);letter-spacing:.6px;padding:3px 6px;border-radius:4px;
+  background:#1a2440;color:var(--dim);border:1px solid var(--br)}
+.node .tag.ok{color:var(--ok);border-color:#1e4530;background:#0e2419}
+.node .tag.bad{color:var(--bad);border-color:#54222a;background:#241014}
+.node .tag.warn{color:var(--warn);border-color:#54431a;background:#241d0b}
+
+/* ---------- the chain ---------- */
+.chain{position:absolute;left:600px;top:74px;width:400px;border:1px solid var(--br2);border-radius:11px;
+  background:linear-gradient(180deg,#111c33,#0c1424);z-index:4;padding:12px 13px 13px;
+  box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.chain h3{margin:0 0 3px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.chain h3 .ic{width:15px;height:15px;color:var(--accent2)}
+.chain h3 span{margin-left:auto;font:11px/1 var(--mono);color:var(--dim)}
+.chain .sub{font:10px/1.5 var(--mono);color:var(--dim2)}
+/* the slot gauge: one block's worth of wall clock, filling */
+.slot{height:4px;border-radius:2px;background:#16203a;margin:9px 0 10px;overflow:hidden}
+.slot i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f6f88,var(--accent2));border-radius:2px}
+.mem{border-top:1px solid var(--br);padding-top:8px}
+.mem .mh{font:10px/1 var(--mono);letter-spacing:1px;color:var(--dim2);margin-bottom:7px;display:flex}
+.mem .mh span:last-child{margin-left:auto}
+.tx{display:grid;grid-template-columns:12px 1fr auto auto;gap:8px;align-items:center;height:24px;
+  font:11px/1 var(--mono);color:var(--dim);border-radius:5px;padding:0 5px;margin-bottom:3px;
+  background:#0d1526;border:1px solid transparent;opacity:0;transition:opacity .2s,background .2s,border-color .2s}
+.tx.on{opacity:1}
+.tx i{width:7px;height:7px;border-radius:50%;background:var(--agent)}
+.tx b{color:var(--fg);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .who{color:var(--dim);font-size:10px;white-space:nowrap}
+.tx .fee{color:var(--dim);font-size:10px;white-space:nowrap}
+.tx.mined{border-color:#1e4530;background:#0e2419} .tx.mined .fee{color:var(--ok)}
+.tx.rev{border-color:#54222a;background:#200e12} .tx.rev .fee{color:var(--bad)}
+.tx.evil i{background:var(--hack)}
+.mem .more{font:10px/1.6 var(--mono);color:var(--dim2);padding-left:5px;height:16px}
+.chain .feed{margin-top:8px;border-top:1px solid var(--br);padding-top:8px;font:11px/1.5 var(--mono);color:var(--dim);min-height:34px}
+.chain .feed b{color:var(--fg);font-weight:500}
+.stage.busy .chain{border-color:var(--accent2)}
+
+/* ---------- wires + traffic ---------- */
+.wire,.flow{position:absolute;inset:0;pointer-events:none}
+.wire{z-index:1} .flow{z-index:5}
+.wire path{fill:none;stroke:#18243d;stroke-width:1.1}
+.wire path.hot{stroke:var(--accent2);stroke-opacity:.5;stroke-width:1.4}
+.wire path.evil{stroke:var(--hack);stroke-opacity:.65;stroke-width:1.5;stroke-dasharray:5 4}
+.flow circle{filter:drop-shadow(0 0 5px currentColor)}
+
+/* ---------- what an agent is thinking (bottom left) ----------
+   The log this replaced was scrolling text nobody reads from row twelve. What the
+   room wants to see is the loop: the evidence a strategy was handed, what it
+   concluded, and the parameter that moved because of it. The same panel carries the
+   adversary's bytecode search in the second act — both are reasoning, then action. */
+.mind{position:absolute;left:24px;top:690px;width:960px;height:286px;border:1px solid var(--br);border-radius:10px;
+  background:linear-gradient(180deg,#0d1424,#090f1d);z-index:4;display:flex;flex-direction:column;overflow:hidden}
+.mind.evil{border-color:#4a2030;background:linear-gradient(180deg,#170c14,#0b0710)}
+.mhd{height:32px;flex:none;display:flex;align-items:center;gap:9px;padding:0 13px;border-bottom:1px solid var(--br);
+  font:11px/1 var(--mono);letter-spacing:1px;color:var(--dim2)}
+.mhd .ic{width:14px;height:14px;color:var(--accent2)}
+.mind.evil .mhd .ic{color:var(--hack)}
+.mhd b{color:var(--fg);font-weight:600;letter-spacing:1.2px}
+.mhd #mindWho{color:var(--agent);letter-spacing:.4px}
+.mind.evil .mhd #mindWho{color:var(--hack)}
+.mhd .badge{margin-left:auto;letter-spacing:.6px;padding:3px 8px;border-radius:4px;border:1px solid var(--br);
+  background:#131c30;color:var(--dim);font-size:10px}
+.mhd .badge.on{color:var(--ok);border-color:#1e4530;background:#0e2419}
+.mhd .badge.bad{color:var(--hack);border-color:#54222a;background:#241014}
+.mbody{flex:1;display:grid;grid-template-columns:1fr 372px;gap:18px;padding:11px 13px 12px;min-height:0}
+.mcol{min-width:0}
+.mcol.right{border-left:1px solid #16203a;padding-left:16px}
+.mk{font:9.5px/1 var(--mono);letter-spacing:1.1px;color:var(--dim2);margin-bottom:8px}
+.ev{font:11.5px/1.62 var(--mono);color:var(--dim);white-space:pre;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;transform:translateX(-4px);transition:opacity .3s,transform .3s}
+.ev.on{opacity:1;transform:none}
+.ev .h{color:var(--fg)} .ev .w{color:var(--warn)} .ev .k{color:var(--ok)} .ev .e{color:var(--bad)}
+.ev .d{color:var(--dim2)} .ev .a{color:var(--accent2)} .ev .x{color:var(--hack)}
+.quote{font:12.5px/1.55 var(--ui);color:var(--fg);border-left:2px solid var(--accent2);padding:1px 0 1px 11px;
+  margin-bottom:11px;min-height:40px;opacity:0;transition:opacity .4s}
+.quote.on{opacity:1}
+.mind.evil .quote{border-left-color:var(--hack)}
+.prm{display:grid;grid-template-columns:1fr auto 18px auto;align-items:center;gap:8px;height:26px;
+  font:12px/1 var(--mono);opacity:0;transition:opacity .3s}
+.prm.on{opacity:1}
+.prm .pn{color:var(--dim)} .prm .pf{color:var(--dim2);text-decoration:line-through}
+.prm .pa{color:var(--dim2);text-align:center}
+.prm .pt{color:var(--accent2);font-weight:500}
+.prm.on .pa{color:var(--accent2)}
+.stamp{margin-top:9px;font:11px/1.5 var(--mono);color:var(--ok);opacity:0;transition:opacity .35s}
+.stamp.on{opacity:1}
+.mind.evil .stamp{color:var(--hack)}
+
+/* ---------- history (bottom right) ----------
+   Two time series rather than four counters. The crash is a shape, and the drain
+   is two lines being pulled apart — neither reads as anything in a number that
+   simply changes. */
+.tel{position:absolute;left:1000px;top:690px;width:576px;height:286px;border:1px solid var(--br);border-radius:10px;
+  background:linear-gradient(180deg,#0e1526,#0a1120);z-index:4;padding:10px 14px;overflow:hidden}
+.chd{font:10px/1 var(--mono);letter-spacing:1px;color:var(--dim2);display:flex;margin:2px 0 5px}
+.chd span:last-child{margin-left:auto;color:var(--dim)}
+.chart{display:block;width:100%;height:76px;overflow:hidden}
+.chart polyline{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.chart polyline[data-k="fair"]{stroke:#8ea0c0;stroke-dasharray:4 3;stroke-width:1.3}
+.chart polyline[data-k="uni"]{stroke:#c4b5fd}
+.chart polyline[data-k="bal"]{stroke:#7dd3fc}
+.chart polyline[data-k="crv"]{stroke:#5fd7d7}
+.chart polyline[data-k^="w"]{stroke:#3d4d6b;stroke-width:1.3}
+.chart polyline[data-k="keeper"]{stroke:var(--unknown);stroke-width:2}
+.chart polyline[data-k="hunter"]{stroke:var(--hack);stroke-width:2}
+.lg{display:flex;align-items:center;gap:5px;font:9.5px/1 var(--mono);color:var(--dim2);margin:4px 0 8px}
+.lg i{width:9px;height:2px;border-radius:1px;margin-left:9px}
+.lg i:first-child{margin-left:0}
+.lg .k-fair{background:#8ea0c0} .lg .k-uni{background:#c4b5fd} .lg .k-bal{background:#7dd3fc}
+.lg .k-crv{background:#5fd7d7} .lg .k-w{background:#3d4d6b}
+.lg .k-keeper{background:var(--unknown)} .lg .k-hunter{background:var(--hack)}
+.ep{font:10.5px/1 var(--mono);color:var(--dim);display:flex;margin-top:2px}
+.ep b{color:var(--fg);font-weight:500} .ep span:last-child{margin-left:auto}
+.epbar{height:4px;border-radius:2px;background:#16203a;overflow:hidden;margin-top:5px}
+.epbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3b5c9e,#7dd3fc);transition:width .5s}
+.tel .note{margin-top:7px;font:10.5px/1.45 var(--ui);color:var(--dim);opacity:0;transition:opacity .4s}
+.tel .note.on{opacity:1} .tel .note b{color:var(--fg)}
+
+/* focus: the world goes quiet so one thing can be looked at. Everything fades
+   except what the storyboard has lit. */
+.stage.focus .chip:not(.lit),
+.stage.focus .node:not(.lit),
+.stage.focus .tape,
+.stage.focus .tel{opacity:.22;transition:opacity .5s}
+.stage.focus .wire path:not(.evil){stroke-opacity:.25;transition:stroke-opacity .5s}
+.chip,.node{transition:opacity .4s,border-color .25s,background .25s,box-shadow .25s}
+
+/* caption: read from the back of a room, so bigger than the default and held longer */
+.cap{bottom:330px}
+.cap span{font-size:21px;line-height:1.45;padding:13px 26px;max-width:64%;
+  background:rgba(8,12,24,.93);border-color:rgba(255,255,255,.13)}
+.cap.big span{font-size:24px;padding:14px 30px;max-width:78%}
+
+
+/* ================= nyxis hero: additions ================= */
+:root{ --nyx:#5fd7d7; --cedar:#c4b5fd; --lean:#8da4ff; }
+.map{top:56px;height:644px}
+.cap{bottom:292px}
+.stage.capHigh .cap{bottom:430px}
+
+/* ---------- actors ---------- */
+.actor{position:absolute;left:24px;width:244px;height:70px;border:1px solid var(--br);border-radius:9px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));padding:10px 12px;z-index:3;opacity:.18;
+  transition:opacity .4s,border-color .25s,box-shadow .25s,background .25s}
+.actor.up{opacity:1}
+.actor .nm{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--fg)}
+.actor .nm .dot{width:9px;height:9px;border-radius:50%;background:var(--agent);flex:none}
+.actor .ro{font:11px/1.5 var(--mono);color:var(--dim2);margin-top:4px}
+.actor .rq{font:11.5px/1.4 var(--mono);color:var(--nyx);margin-top:3px;min-height:16px;opacity:0;transition:opacity .25s}
+.actor.lit{border-color:var(--nyx);box-shadow:0 0 0 1px rgba(95,215,215,.25)}
+.actor.lit .rq{opacity:1}
+.actor.evil{border-color:#5c2233;background:linear-gradient(180deg,#1b0e14,#120a0f)}
+.actor.evil .nm .dot{background:var(--hack);box-shadow:0 0 10px var(--hack)}
+.actor.evil .rq{color:var(--hack)}
+.actor.evil.lit{border-color:var(--hack);box-shadow:0 0 0 1px rgba(251,113,133,.35)}
+
+/* ---------- runtime frame ---------- */
+.rt{position:absolute;left:320px;top:70px;width:944px;height:470px;border:1px dashed var(--br2);
+  border-radius:16px;z-index:1;transition:border-color .5s,box-shadow .7s}
+.rt .rtl{position:absolute;left:20px;top:-9px;background:#080c18;padding:0 10px;
+  font:10.5px/1 var(--mono);letter-spacing:1.6px;color:var(--dim2)}
+.rt .rtp{position:absolute;right:18px;bottom:-10px;background:#080c18;padding:0 10px;
+  font:11px/1 var(--mono);color:var(--lean);opacity:0;transition:opacity .5s}
+.stage.proved .rt{border-style:solid;border-color:var(--lean);
+  box-shadow:0 0 0 1px rgba(141,164,255,.2),0 0 70px rgba(141,164,255,.14) inset}
+.stage.proved .rt .rtp{opacity:1}
+
+/* ---------- pipeline boxes ---------- */
+.box{position:absolute;border:1px solid var(--br);border-radius:10px;z-index:3;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));padding:11px 13px;opacity:.18;
+  transition:opacity .4s,border-color .2s,box-shadow .25s,background .25s}
+.box.up{opacity:1}
+.box .bn{font-size:14px;font-weight:600;color:var(--fg)}
+.box .bs{font:10.5px/1.5 var(--mono);color:var(--dim2);margin-top:4px}
+.box .bv{font:12px/1.4 var(--mono);color:var(--nyx);margin-top:7px;min-height:17px;opacity:0;transition:opacity .25s}
+.box.lit{border-color:var(--nyx);box-shadow:0 0 0 1px rgba(95,215,215,.25),0 0 30px rgba(95,215,215,.12)}
+.box.lit .bv{opacity:1}
+.box.pass{border-color:#1e4530;background:linear-gradient(180deg,#0f2a1c,#0b1d14)} .box.pass .bv{color:var(--ok)}
+.box.den{border-color:#54222a;background:linear-gradient(180deg,#2a1016,#1c0a0f)} .box.den .bv{color:var(--bad)}
+/* the hit: a hard white-to-red flash on the box that stopped the request */
+.box.hit{animation:hit .42s ease-out}
+@keyframes hit{0%{box-shadow:0 0 0 2px #fff,0 0 60px rgba(255,255,255,.55)}
+               40%{box-shadow:0 0 0 2px var(--hack),0 0 50px rgba(251,113,133,.5)}
+               100%{box-shadow:0 0 0 1px rgba(251,113,133,.25)}}
+#gate{padding:12px 15px}
+#gate .cmp{display:grid;grid-template-columns:auto 1fr;gap:4px 11px;margin-top:9px;font:11.5px/1.5 var(--mono)}
+#gate .cmp .ck{color:var(--dim2)} #gate .cmp .cv{color:var(--fg)}
+#gate .verd{margin-top:9px;font:13px/1 var(--mono);color:var(--dim2);border-top:1px solid var(--br);padding-top:9px;transition:color .2s}
+#gate .verd.ok{color:var(--ok)} #gate .verd.bad{color:var(--bad)}
+
+/* ---------- kill marks: one per stopped attack, all five visible at the freeze ---------- */
+.kx{position:absolute;z-index:7;width:38px;height:38px;border-radius:50%;background:#1c0c12;
+  border:2px solid var(--hack);color:var(--hack);font:19px/34px var(--mono);text-align:center;
+  opacity:0;transform:scale(2.4);transition:opacity .18s,transform .26s cubic-bezier(.2,1.5,.4,1)}
+.kx.on{opacity:1;transform:scale(1)}
+.kx b{position:absolute;left:50%;top:40px;transform:translateX(-50%);white-space:nowrap;
+  font:10.5px/1 var(--ui);font-weight:500;color:var(--hack);opacity:.95}
+
+/* ---------- the route that does not exist ---------- */
+.ghost{position:absolute;left:640px;top:452px;width:674px;height:0;border-top:2px dashed #2b3a5c;z-index:2;
+  opacity:0;transition:opacity .35s}
+.ghost.on{opacity:1}
+.ghost .gl{position:absolute;left:50%;top:14px;transform:translateX(-50%);white-space:nowrap;
+  font:11px/1 var(--mono);color:var(--hack)}
+
+/* ---------- the cold open: a light screen, before anything else ---------- */
+.oops{position:absolute;inset:0;z-index:30;background:#f4f5f8;color:#1d2128;font:14px/1.55 var(--ui);
+  display:grid;grid-template-rows:38px 62px 1fr;align-content:start;opacity:0;pointer-events:none;transition:opacity .35s}
+.stage.oops-on .oops{opacity:1}
+.oops .obar{display:flex;align-items:center;gap:10px;padding:0 14px;background:#e7e8ec;border-bottom:1px solid #d5d6db;
+  font:12px var(--mono);color:#6b6f78}
+.oops .ourl{flex:1;background:#fff;border:1px solid #d5d6db;border-radius:5px;padding:4px 11px;max-width:520px}
+.oops .obody{padding:54px 96px}
+.oops h3{margin:0 0 6px;font-size:26px;font-weight:600}
+.oops .osub{color:#6b6f78;font:13px var(--mono);margin-bottom:28px}
+.oops .orow{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid #e3e4e9;border-radius:9px;
+  background:#fff;margin-bottom:12px;font-size:17px;transition:background .3s,border-color .3s,box-shadow .3s}
+.oops .orow .otag{margin-left:auto;font:14px var(--ui);border-radius:11px;padding:4px 12px;background:#f0eaf8;color:#6b3fa0}
+.oops .orow .oau{font:15px var(--mono);color:#878c96}
+.oops .orow.leak{border-color:#d1434b;background:#fff5f5;box-shadow:0 0 0 3px rgba(209,67,75,.12)}
+.oops .orow.leak .otag{background:#fde8e9;color:#d1434b}
+.oops .stamp{margin-top:26px;font:15px var(--mono);color:#d1434b;opacity:0;transition:opacity .3s}
+.oops .stamp.on{opacity:1}
+
+/* ---------- full-bleed type card: the contrast beat ---------- */
+.tc{position:absolute;inset:0;z-index:34;display:grid;place-items:center;background:#05070d;
+  opacity:0;pointer-events:none;transition:opacity .28s}
+.stage.tc-on .tc{opacity:1}
+.tc .in{text-align:center;max-width:1180px;padding:0 60px}
+.tc .k{font:12px/1 var(--mono);letter-spacing:3px;color:var(--nyx);opacity:0;transition:opacity .4s}
+.tc.go .k{opacity:1}
+.tc .t{margin-top:20px;font:44px/1.42 var(--ui);font-weight:600;color:#eef3fb;letter-spacing:-.01em;
+  opacity:0;transform:translateY(16px);transition:opacity .5s,transform .55s cubic-bezier(.2,.9,.3,1)}
+.tc.go .t{opacity:1;transform:none}
+.tc .t em{font-style:normal;color:var(--nyx)}
+.tc .t s{text-decoration:none;color:var(--hack)}
+.tc .s{margin-top:26px;font:17px/1.6 var(--ui);color:#8fa0bb;opacity:0;transition:opacity .5s .18s}
+.tc.go .s{opacity:1}
+.tc pre{margin:26px 0 0;font:17px/1.85 var(--mono);color:#cfdcf2;text-align:left;display:inline-block;
+  opacity:0;transform:translateY(10px);transition:opacity .5s .1s,transform .5s .1s}
+.tc.go pre{opacity:1;transform:none}
+.tc pre .k2{color:#c586c0} .tc pre .s2{color:#ce9178} .tc pre .c2{color:#6a9955} .tc pre .v2{color:#9cdcfe}
+/* the number that lands */
+.tc .big{font:208px/1 var(--mono);font-weight:500;color:var(--ok);letter-spacing:-.04em;
+  opacity:0;transform:scale(.82);transition:opacity .45s,transform .6s cubic-bezier(.2,1.3,.35,1)}
+.tc.go .big{opacity:1;transform:none}
+
+/* ---------- bottom: the log that fills during the montage ---------- */
+.lg2{position:absolute;left:24px;top:712px;width:1056px;height:258px;border:1px solid var(--br);border-radius:10px;
+  background:linear-gradient(180deg,#0d1424,#090f1d);z-index:4;padding:12px 16px;overflow:hidden}
+.lg2 .lh{font:10px/1 var(--mono);letter-spacing:1.3px;color:var(--dim2);margin-bottom:10px}
+.lg2 .lr{display:grid;grid-template-columns:150px 1fr auto;gap:14px;align-items:baseline;height:27px;
+  font:13px/27px var(--mono);opacity:0;transform:translateX(-8px);transition:opacity .25s,transform .25s}
+.lg2 .lr.on{opacity:1;transform:none}
+.lg2 .lr .who{color:var(--dim)} .lg2 .lr .what{color:var(--fg)}
+.lg2 .lr .res{justify-self:end;font-weight:500}
+.lg2 .lr.ok .res{color:var(--ok)} .lg2 .lr.bad .res{color:var(--bad)}
+.lg2 .lr.bad .who{color:var(--hack)}
+
+.sc2{position:absolute;left:1104px;top:712px;width:472px;height:258px;border:1px solid var(--br);border-radius:10px;
+  background:linear-gradient(180deg,#0e1526,#0a1120);z-index:4;padding:14px 18px;display:grid;
+  grid-template-rows:auto 1fr;gap:10px}
+.sc2 .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sc2 .c{border:1px solid var(--br);border-radius:8px;background:#0c1322;padding:8px 10px}
+.sc2 .c .cl{font:9.5px/1 var(--mono);letter-spacing:1px;color:var(--dim2)}
+.sc2 .c .cn{font:25px/1.15 var(--mono);color:var(--fg);margin-top:5px;font-variant-numeric:tabular-nums}
+.sc2 .c.ok .cn{color:var(--ok)} .sc2 .c.bad .cn{color:var(--bad)} .sc2 .c.z .cn{color:var(--lean)}
+.sc2 .thm2{border-top:1px solid var(--br);padding-top:10px;font:12.5px/1.6 var(--ui);color:#9fb3cc;
+  opacity:0;transition:opacity .5s}
+.sc2 .thm2.on{opacity:1}
+.sc2 .thm2 b{color:var(--nyx);font-weight:600}
+
+/* ================= hero v2: the code card and the verdict ================= */
+/* ---------- cold open: the URL that was changed ---------- */
+.oops .obody{padding:40px 90px}
+.oops .ourl b{color:#d1434b}
+.oops .att{display:flex;align-items:center;gap:13px;padding:13px 17px;border:1px solid #e3e4e9;border-radius:9px;
+  background:#fff;margin-bottom:10px;font-size:16px;opacity:0;transform:translateY(6px);
+  transition:opacity .28s,transform .28s,border-color .3s,background .3s}
+.oops .att.on{opacity:1;transform:none}
+.oops .att .ic2{width:30px;height:30px;border-radius:6px;background:#eef0f4;display:grid;place-items:center;
+  font:13px var(--mono);color:#6b6f78;flex:none}
+.oops .att .sz{margin-left:auto;font:15px var(--mono);color:#878c96}
+.oops .att.leaked{border-color:#d1434b;background:#fff5f5}
+.oops .who2{font:13px var(--mono);color:#878c96;margin:-4px 0 20px}
+.oops .who2 b{color:#d1434b}
+
+/* ---------- the code card: what a review actually sees ---------- */
+.code{position:absolute;inset:0;z-index:29;background:#0b0f18;opacity:0;pointer-events:none;
+  display:grid;place-items:center;transition:opacity .3s}
+.stage.code-on .code{opacity:1}
+.code .cw{width:1230px}
+.code .cf{font:12px/1 var(--mono);letter-spacing:2px;color:var(--dim2);margin-bottom:16px}
+.code .cl{display:grid;grid-template-columns:44px 1fr;font:18px/32px var(--mono);color:#b9c6da;
+  padding:0 14px;border-radius:5px;position:relative;transition:background .3s,opacity .3s}
+.code .cl i{color:#3f4d68;font-style:normal;text-align:right;padding-right:16px;font-size:15px}
+.code .cl .k3{color:#c586c0} .code .cl .s3{color:#ce9178} .code .cl .f3{color:#dcdcaa}
+.code .cl .v3{color:#9cdcfe} .code .cl .c3{color:#5e7a5e} .code .cl .t3{color:#4ec9b0}
+.code .cl.good{background:rgba(78,201,148,.10)}
+.code .cl.bad{background:rgba(248,113,113,.16)}
+.code .cl.dim{opacity:.34}
+.code .gap{height:18px}
+/* the line that was never written */
+.code .miss{display:grid;grid-template-columns:44px 1fr;font:18px/32px var(--mono);color:var(--bad);
+  padding:0 14px;border-radius:5px;background:rgba(248,113,113,.1);border:1px dashed rgba(248,113,113,.5);
+  height:0;overflow:hidden;opacity:0;transition:height .32s,opacity .32s}
+.code .miss.on{height:34px;opacity:1}
+.code .miss i{color:var(--bad);font-style:normal;text-align:right;padding-right:16px;font-size:15px;opacity:.6}
+.code .cb{position:absolute;right:-6px;font:16px/1 var(--ui);font-weight:600;padding:8px 16px;border-radius:16px;
+  opacity:0;transform:scale(.8);transition:opacity .3s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+.code .cb.on{opacity:1;transform:none}
+.code .cb.ok{background:#0e2419;color:var(--ok);border:1px solid #1e4530}
+.code .cb.no{background:#241014;color:var(--bad);border:1px solid #54222a}
+.code .note{margin-top:30px;text-align:center;font:27px/1.6 var(--ui);color:#c3cfe0;opacity:0;transition:opacity .4s}
+.code .note.on{opacity:1}
+.code .note b{color:var(--bad);font-weight:600}
+
+/* ---------- the verdict: what the kernel says about your policy ---------- */
+.vd{position:absolute;inset:0;z-index:29;background:#080c16;opacity:0;pointer-events:none;
+  display:grid;grid-template-columns:1fr 1fr;align-content:center;gap:0;transition:opacity .3s}
+.stage.vd-on .vd{opacity:1}
+.vd .vl,.vd .vr{padding:0 54px}
+.vd .vl{border-right:1px solid #1b2740}
+.vd .vh{font:11.5px/1 var(--mono);letter-spacing:2.2px;color:var(--dim2);margin-bottom:20px}
+.vd pre{margin:0;font:17px/1.95 var(--mono);color:#cfdcf2;white-space:pre}
+.vd pre .k3{color:#c586c0} .vd pre .s3{color:#ce9178} .vd pre .c3{color:#5e7a5e}
+.vd pre .v3{color:#9cdcfe} .vd pre .t3{color:#4ec9b0}
+.vd pre em{font-style:normal;background:rgba(251,113,133,.22);border-radius:3px;padding:1px 4px;color:#ffd9de}
+.vd .cmd{font:17px/1.8 var(--mono);color:#7ee787}
+.vd .out{font:16px/1.95 var(--mono);color:#8b98ad;min-height:118px;margin-top:10px}
+.vd .out .e3{color:var(--bad)} .vd .out .k4{color:var(--ok)} .vd .out .h3{color:#dbe7f7}
+.vd .out div{opacity:0;transform:translateX(-6px);transition:opacity .22s,transform .22s}
+.vd .out div.on{opacity:1;transform:none}
+.vd .seal{margin-top:20px;border-radius:10px;padding:18px 22px;opacity:0;transform:scale(.94);
+  transition:opacity .4s,transform .45s cubic-bezier(.2,1.3,.35,1)}
+.vd .seal.on{opacity:1;transform:none}
+.vd .seal.ok{background:#0d2419;border:1px solid #1e4530}
+.vd .seal.no{background:#230f13;border:1px solid #54222a}
+.vd .seal .st2{font:13px/1 var(--ui);font-weight:600;letter-spacing:.5px;margin-bottom:11px}
+.vd .seal.ok .st2{color:var(--ok)} .vd .seal.no .st2{color:var(--bad)}
+.vd .seal .sb{font:14.5px/1.7 var(--mono);color:#c3cfe0}
+.vd .seal .sf{margin-top:10px;font:15px/1.6 var(--mono);color:var(--dim2)}
+.vd .foot{position:absolute;left:0;right:0;bottom:70px;text-align:center;font:28px/1.6 var(--ui);color:#9fb3cc;
+  opacity:0;transition:opacity .45s}
+.vd .foot.on{opacity:1}
+.vd .foot b{color:var(--nyx);font-weight:600}
+
+/* ================= hero v3: mechanism + terminal, no concept diagram ================= */
+.map,.lg2,.sc2{display:none!important}
+.stage{background:radial-gradient(1200px 760px at 50% -8%,#101a33 0%,transparent 62%),#080c18}
+
+/* the verdict/mechanism split, reused for both */
+.vd{grid-template-columns:1fr 1fr}
+.vd .vh2{font:11.5px/1 var(--mono);letter-spacing:2.2px;color:var(--nyx);margin-bottom:20px}
+.vd .arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;
+  width:46px;height:46px;border-radius:50%;background:#0b1424;border:1px solid #27385c;
+  color:var(--nyx);font:20px/44px var(--mono);text-align:center;opacity:0;transition:opacity .3s}
+.vd.ar .arrow{opacity:1}
+.vd .lbl{position:absolute;left:0;right:0;bottom:84px;text-align:center;font:30px/1.55 var(--ui);
+  color:#cfdcf2;opacity:0;transition:opacity .4s}
+.vd .lbl.on{opacity:1}
+.vd .lbl b{color:var(--nyx);font-weight:600}
+.vd .lbl s{text-decoration:none;color:var(--dim2)}
+.vd pre .q2{color:#f0b429;font-weight:500}
+.vd pre .sub2{color:var(--dim2);font-size:16px}
+.vd .ker{margin-top:16px;font:16px/2 var(--mono);color:#8b98ad;white-space:pre}
+.vd .ker .k4{color:var(--ok)} .vd .ker .h3{color:#dbe7f7}
+
+/* full-screen terminal: what the build actually produces, and how you call it */
+.tm{position:absolute;inset:0;z-index:29;background:#070a11;opacity:0;pointer-events:none;
+  display:grid;place-items:center;transition:opacity .3s}
+.stage.tm-on .tm{opacity:1}
+.tm .tw{width:1300px}
+.tm .th{display:inline-flex;align-items:center;gap:11px;padding:9px 20px 10px;border-radius:7px 7px 0 0;
+  background:#131c2e;border:1px solid #243352;border-bottom:none;font:17px/1 var(--mono);color:#cfdcf2;margin-bottom:0}
+.tm .th i{width:9px;height:9px;border-radius:50%;background:#3b4a68;flex:none}
+.tm .trule{height:1px;background:#243352;margin-bottom:22px}
+.tm .ln3{font:18px/1.95 var(--mono);color:#aebbce;white-space:pre;opacity:0;transform:translateX(-6px);
+  transition:opacity .2s,transform .2s;min-height:35px}
+.tm .ln3.on{opacity:1;transform:none}
+.tm .p2{color:#7ee787} .tm .d2{color:#5d6b82} .tm .k4{color:var(--ok)} .tm .e4{color:var(--bad)}
+.tm .h4{color:#eaf1fb} .tm .a4{color:#58a6ff} .tm .w4{color:#f0b429}
+.tm .side{position:absolute;right:92px;top:50%;transform:translateY(-50%);width:420px;
+  border:1px solid #22304f;border-radius:10px;background:#0c1322;padding:16px 18px;
+  opacity:0;transition:opacity .45s}
+.tm .side.on{opacity:1}
+.tm .side .sh{font:11px/1 var(--mono);letter-spacing:1.6px;color:var(--dim2);margin-bottom:12px}
+.tm .side pre{margin:0;font:15px/1.85 var(--mono);color:#cfdcf2;white-space:pre}
+.tm .side pre .k3{color:#c586c0} .tm .side pre .s3{color:#ce9178} .tm .side pre .f3{color:#dcdcaa}
+.tm .side .sn{margin-top:14px;font:17px/1.6 var(--ui);color:#8fa0bb}
+.tm .side .sn b{color:var(--nyx)}
+
+/* ---------- code in flight: the same content, re-notated mid-air ---------- */
+.fly{position:absolute;z-index:40;opacity:0;pointer-events:none}
+.fly.on{filter:drop-shadow(0 18px 40px rgba(0,0,0,.65))}
+.srcfade{opacity:.10!important;transition:opacity .28s}
+.fly.on{opacity:1}
+.fly .fa,.fly .fb{position:absolute;left:0;top:0;white-space:pre;font:17px/1.95 var(--mono);
+  transition:opacity .34s;will-change:opacity}
+.fly .fb{opacity:0}
+.fly.swap .fa{opacity:0} .fly.swap .fb{opacity:1}
+.fly .k3{color:#c586c0} .fly .s3{color:#ce9178} .fly .v3{color:#9cdcfe}
+.fly .t3{color:#4ec9b0} .fly .c3{color:#5e7a5e} .fly .h3{color:#dbe7f7} .fly .q2{color:#f0b429}
+.fly .fa>.box2,.fly .fb>.box2,.fly .box2{display:inline-block;border:1px solid var(--nyx);border-radius:7px;padding:7px 13px;
+  background:rgba(12,22,36,.96);box-shadow:0 0 0 1px rgba(95,215,215,.18),0 14px 44px rgba(0,0,0,.5)}
+/* the destination waits, measurable but unseen, until the flight lands */
+.pending{opacity:0!important}
+.landed{animation:land .5s ease-out}
+@keyframes land{0%{background:rgba(95,215,215,.18)}100%{background:transparent}}
+/* the artifact chip the typed declaration turns into */
+.chip2{display:inline-block;border:1px solid #2a5e49;border-radius:8px;padding:9px 15px;
+  background:#0d2419;color:var(--ok);font:16px/1 var(--mono)}
+
+/* ---------- the dependency graph the kernel actually walks ---------- */
+.dep{position:absolute;inset:0;z-index:29;background:#070a11;opacity:0;pointer-events:none;transition:opacity .3s}
+.stage.dep-on .dep{opacity:1}
+.dep .dh{position:absolute;left:92px;top:46px;font:19px/1 var(--mono);color:#7ee787}
+.dep .dh b{color:#cfdcf2;font-weight:400}
+.dep .ddone{position:absolute;left:92px;top:86px;font:18px/1.9 var(--mono);color:#8b98ad;opacity:0;transition:opacity .4s;white-space:pre}
+.dep .ddone.on{opacity:1}
+.dep .ddone .k4{color:var(--ok)} .dep .ddone .h4{color:#eaf1fb} .dep .ddone .e4{color:var(--bad)}
+.dnet{position:absolute;left:0;right:0;top:168px;height:560px}
+.dw{position:absolute;inset:0;pointer-events:none}
+.dw line{stroke:#1d2a44;stroke-width:1.1;opacity:0;transition:opacity .3s}
+.dw line.on{opacity:1}
+.dw line.ok{stroke:#1f5c41;opacity:1}
+.dn{position:absolute;transform:translate(-50%,-50%) scale(.6);opacity:0;white-space:nowrap;
+  border:1px solid #27385c;border-radius:6px;background:#0d1626;color:#b9c6da;
+  font:13px/1 var(--mono);padding:7px 11px;transition:opacity .28s,transform .3s,border-color .3s,background .3s,color .3s}
+.dn.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.dn.root{font-size:17px;padding:11px 18px;border-color:var(--nyx);color:#eaf1fb;background:#0e1d2c}
+.dn.l2{font-size:11.5px;padding:5px 9px;color:#8b98ad}
+.dn.dot{width:9px;height:9px;padding:0;border-radius:50%;background:#1d2a44;border-color:#243352}
+.dn.ok{border-color:#2a5e49;background:#0d2419;color:#9fe3c0}
+.dn.dot.ok{background:#2a7d5c;border-color:#2a7d5c}
+.dn.ax{border-color:#6b5420;background:#241d0b;color:#f0b429;font-size:13.5px;padding:8px 13px}
+.dep .dcount{position:absolute;right:92px;bottom:120px;left:auto;text-align:right;font:19px var(--mono);color:var(--dim);opacity:0;transition:opacity .4s}
+.dep .dcount b{font-size:34px;color:#eaf1fb;font-variant-numeric:tabular-nums;vertical-align:-4px;margin-right:8px}
+.dep .dcount.on{opacity:1}
+.dep .lbl{position:absolute;left:0;right:0;bottom:44px;text-align:center;font:30px/1.55 var(--ui);
+  color:#cfdcf2;opacity:0;transition:opacity .4s}
+.dep .lbl.on{opacity:1}
+.dep .lbl b{color:var(--nyx);font-weight:600}
+
+/* ---------- one node, opened up: what checking a node actually is ---------- */
+.stage.chk-on .dnet{opacity:.14;transition:opacity .4s}
+.stage.chk-on .dcount{opacity:.2;transition:opacity .4s}
+.chk{position:absolute;left:50%;top:330px;transform:translate(-50%,-50%) scale(.96);width:1180px;z-index:12;
+  border:1px solid #27385c;border-radius:14px;background:#0b1424;padding:26px 34px 28px;
+  box-shadow:0 30px 90px rgba(0,0,0,.66);opacity:0;pointer-events:none;
+  transition:opacity .35s,transform .4s cubic-bezier(.2,1.2,.3,1)}
+.chk.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.chk .ch{font:18px/1 var(--mono);color:var(--nyx);margin-bottom:22px}
+.chk .cg{font:16px/1 var(--ui);color:#8fa0bb;margin-bottom:11px}
+.chk pre{margin:0 0 20px;font:17px/1.75 var(--mono);color:#dbe7f7;white-space:pre;
+  border-left:2px solid #27385c;padding-left:16px;transition:border-color .3s,color .3s}
+.chk.good pre{border-left-color:#2a7d5c}
+.chk.bad pre.b2{border-left-color:var(--hack)}
+.chk pre em{font-style:normal;background:rgba(251,113,133,.24);border-radius:3px;padding:1px 4px;color:#ffd9de}
+.chk .eq{text-align:center;font:30px/1 var(--mono);color:var(--dim2);margin:4px 0 20px;transition:color .3s}
+.chk.good .eq{color:var(--ok)} .chk.bad .eq{color:var(--bad)}
+.chk .vd2{text-align:center;font:19px/1 var(--ui);font-weight:600;color:var(--dim2);
+  opacity:0;transition:opacity .3s}
+.chk .vd2.on{opacity:1}
+.chk.good .vd2{color:var(--ok)} .chk.bad .vd2{color:var(--bad)}
+.dn.focus{border-color:var(--nyx)!important;background:#12283c!important;color:#eaf1fb!important;
+  box-shadow:0 0 0 3px rgba(95,215,215,.22),0 0 34px rgba(95,215,215,.3);z-index:9}
+
+/* ---------- file chrome: a filename tab instead of a caption ---------- */
+.ftab{display:inline-flex;align-items:center;gap:10px;padding:9px 20px 10px;border-radius:7px 7px 0 0;
+  background:#131c2e;border:1px solid #243352;border-bottom:none;font:17px/1 var(--mono);color:#cfdcf2}
+.ftab i{width:12px;height:14px;border-radius:2px;flex:none;font-style:normal}
+.ftab i.cd{background:#3a2a4a} .ftab i.ln{background:#2a2f4a} .ftab i.js{background:#4a4320}
+.ftab .x2{color:#50607e;margin-left:4px}
+.frule{height:1px;background:#243352;margin-bottom:20px}
+.code .cw .ftab{margin-left:30px}
+.vd .vl .ftab,.vd .vr .ftab{margin-left:0}
+.tc .ftab{margin-bottom:0}
+.tc .frule{width:100%;margin-bottom:22px}
+
+/* ---------- the app in the cold open is a page, not a caption ---------- */
+.oops .onav{display:flex;align-items:center;gap:14px;padding:0 34px;height:62px;border-bottom:1px solid #e3e4e9;background:#fff}
+.oops .onav .lg{font:17px/1 var(--ui);font-weight:700;color:#1d2128;letter-spacing:-.01em}
+.oops .onav .nv{display:flex;gap:22px;margin-left:26px;font:14px/1 var(--ui);color:#6b6f78}
+.oops .onav .nv b{color:#1d2128;font-weight:600}
+.oops .onav .me{margin-left:auto;display:flex;align-items:center;gap:10px}
+.oops .onav .av{width:32px;height:32px;border-radius:50%;background:#4a5bd0;color:#fff;
+  display:grid;place-items:center;font:14px/1 var(--ui);font-weight:600}
+.oops .onav .em{font:16px/1 var(--mono);color:#6b6f78}
+.oops .obody{padding:34px 90px}
+.oops .bc{font:16px/1 var(--mono);color:#878c96;margin-bottom:22px}
+.oops .bc b{color:#1d2128}
+
+/* 使っていない全画面レイヤーを合成から外す。opacity:0 のままだと毎フレーム合成され、
+   録画中にメインスレッドが詰まって映像がスローモーションになる。 */
+.oops,.code,.vd,.dep,.tm,.tc,.fly,.chk{visibility:hidden}
+.stage.oops-on .oops,.stage.code-on .code,.stage.vd-on .vd,
+.stage.dep-on .dep,.stage.tm-on .tm,.stage.tc-on .tc{visibility:visible}
+.fly.on,.chk.on{visibility:visible}
+
+/* 文字が出ている間は、図を後ろに下げて文字を主役にする */
+.dep .lbl,.vd .lbl,.vd .foot{font-weight:600;letter-spacing:.01em;
+  text-shadow:0 2px 24px rgba(0,0,0,.9),0 0 60px rgba(0,0,0,.8)}
+.dnet,.vd .vl,.vd .vr,.vd .arrow{transition:opacity .45s}
+.dep.dim .dnet,.dep.dim .dcount{opacity:.38}
+.vd.dim .vl,.vd.dim .vr,.vd.dim .arrow{opacity:.42}
+.code .note{text-shadow:0 2px 24px rgba(0,0,0,.9)}
+.code.dim .cl,.code.dim .miss{opacity:.4;transition:opacity .45s}
+.code.dim .cl.bad{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div>Nyxis · demo storyboard · <span id="tick">00.0s</span></div>
+  <div class="steps" id="steps"></div>
+</div>
+
+<div class="stage-wrap"><div class="stage" id="stage">
+  <div class="grid"></div>
+
+  <div class="top">
+    <div class="brand">Nyxis</div>
+    <div class="sep"></div>
+    <div class="meta">Cedar policies <b>7</b> · Lean <b>4.34.1</b></div>
+    <div class="sep"></div>
+    <div class="meta" id="stMsg">idle</div>
+    <div class="right">
+      <div class="meta">requests <b id="nReq">0</b></div>
+      <div class="blk"><i></i><span id="blkNo">:8080</span></div>
+    </div>
+  </div>
+
+  <div class="map"><div class="cam" id="cam">
+    <div class="colhd" style="left:24px;top:4px">リクエストする人</div>
+    <div class="colhd" style="left:330px;top:4px">Nyxis ランタイム — すべての要求がここを通る</div>
+    <div class="colhd" style="left:1312px;top:4px">データベース</div>
+
+    <div class="rt" id="rt">
+      <span class="rtl">NYXIS RUNTIME</span>
+      <span class="rtp">authorization_safety — Lean カーネルが毎ビルド検査</span>
+    </div>
+
+    <div class="actor" id="a1" style="top:160px">
+      <div class="nm"><i class="dot"></i>aoi</div><div class="ro">投稿の作者</div><div class="rq" id="a1q">&nbsp;</div>
+    </div>
+    <div class="actor" id="a2" style="top:272px">
+      <div class="nm"><i class="dot"></i>rin</div><div class="ro">読む人 · 管理者ではない</div><div class="rq" id="a2q">&nbsp;</div>
+    </div>
+    <div class="actor" id="a3" style="top:410px">
+      <div class="nm"><i class="dot"></i>第三者</div><div class="ro">招かれていない</div><div class="rq" id="a3q">&nbsp;</div>
+    </div>
+
+    <div class="box" id="jwt" style="left:352px;top:240px;width:240px;height:100px">
+      <div class="bn">JWT 検証</div><div class="bs">署名を見て、主体を刻む</div><div class="bv" id="jwtv">&nbsp;</div>
+    </div>
+    <div class="box" id="hnd" style="left:640px;top:240px;width:240px;height:100px">
+      <div class="bn">ハンドラ</div><div class="bs">AI が書いてよい</div><div class="bv" id="hndv">&nbsp;</div>
+    </div>
+    <div class="box" id="gate" style="left:928px;top:190px;width:312px;height:200px">
+      <div class="bn">認可</div><div class="bs">ポリシー × DB の現在の行</div>
+      <div class="cmp">
+        <span class="ck">主体</span><span class="cv" id="gP">—</span>
+        <span class="ck">動作</span><span class="cv" id="gA">—</span>
+        <span class="ck">対象の行</span><span class="cv" id="gR">—</span>
+      </div>
+      <div class="verd" id="gV">待機</div>
+    </div>
+
+    <div class="node" id="db1" style="left:1312px;top:200px">
+      <div class="nm">posts</div><div class="ad">公開 3 · 下書き 2</div>
+      <div class="st"><span>rows</span><b id="db1v">5</b></div>
+    </div>
+    <div class="node" id="db2" style="left:1312px;top:330px">
+      <div class="nm">users</div><div class="ad">admin 列を持つ</div>
+      <div class="st"><span>rows</span><b id="db2v">3</b></div>
+    </div>
+
+    <div class="ghost" id="ghost"><span class="gl">ハンドラから DB への経路は存在しない</span></div>
+
+    <div class="kx" id="k1" style="left:452px;top:184px">✕<b>偽の署名</b></div>
+    <div class="kx" id="k2" style="left:1148px;top:132px">✕<b>盗んだセッション</b></div>
+    <div class="kx" id="k4" style="left:1000px;top:132px">✕<b>添付を直 URL</b></div>
+    <div class="kx" id="k5" style="left:702px;top:432px">✕<b>DB へ直行</b></div>
+
+    <svg class="wire" id="wire" width="1600" height="644" viewBox="0 0 1600 644"></svg>
+    <svg class="flow" id="flow" width="1600" height="644" viewBox="0 0 1600 644"></svg>
+  </div></div>
+
+  <div class="lg2">
+    <div class="lh">ACCESS LOG</div>
+    <div class="lr" id="r0"><span class="who">aoi</span><span class="what">PATCH /posts/7 · 自分の下書き</span><span class="res">—</span></div>
+    <div class="lr" id="r1"><span class="who">第三者</span><span class="what">GET /posts/7 · 自作のトークン</span><span class="res">—</span></div>
+    <div class="lr" id="r2"><span class="who">第三者</span><span class="what">GET /posts/7 · rin の本物のトークン</span><span class="res">—</span></div>
+    <div class="lr" id="r3"><span class="who">第三者</span><span class="what">GET /posts/7/attachments · 直 URL</span><span class="res">—</span></div>
+    <div class="lr" id="r4"><span class="who">ハンドラ</span><span class="what">DB へ直接アクセス</span><span class="res">—</span></div>
+  </div>
+
+  <div class="sc2">
+    <div class="row">
+      <div class="c ok"><div class="cl">通った</div><div class="cn" id="cPass">0</div></div>
+      <div class="c bad"><div class="cl">弾かれた</div><div class="cn" id="cDeny">0</div></div>
+      <div class="c z"><div class="cl">認可コード</div><div class="cn" id="cCode">0</div></div>
+    </div>
+    <div class="thm2" id="thm2">どんな要求の並びでも、発行される操作は<b>要求した本人のもの</b>で、<b>承認したポリシーが permit したものだけ</b>。</div>
+  </div>
+
+  <div class="oops" id="oops">
+    <div class="obar"><span>‹ ›</span><span class="ourl" id="oUrl">app.example.com/posts/<b id="oId">3</b>/attachments</span><span>⟳</span></div>
+    <div class="onav">
+      <span class="lg">Bulletin</span>
+      <span class="nv"><b>Posts</b><span>Drafts</span><span>Members</span></span>
+      <span class="me"><span class="em" id="oWho">rin@example.com</span><span class="av" id="oAv">R</span></span>
+    </div>
+    <div class="obody">
+      <div class="bc">Posts <span>/</span> <b id="oTitle">#3 Weekly notes</b> <span>/</span> Attachments</div>
+      <div class="att" id="f1"><span class="ic2" id="f1i">PDF</span><span id="f1n">rin-draft-notes.pdf</span><span class="sz">182 KB</span></div>
+      <div class="att" id="f2"><span class="ic2" id="f2i">PNG</span><span id="f2n">screenshot.png</span><span class="sz">64 KB</span></div>
+      <div class="att" id="f3"><span class="ic2" id="f3i">XLSX</span><span id="f3n">todo.xlsx</span><span class="sz">21 KB</span></div>
+      <div class="stamp" id="oopsStamp">GET /posts/7/attachments → 200 OK</div>
+    </div>
+  </div>
+
+  <div class="code" id="code"><div class="cw">
+    <div class="ftab"><i class="js"></i>server.js<span class="x2">×</span></div><div class="frule"></div>
+    <div class="cl" id="c1"><i>41</i><span><span class="c3">// 投稿の詳細。下書きは作者だけが読める</span></span></div>
+    <div class="cl" id="c2"><i>42</i><span>app.<span class="f3">get</span>(<span class="s3">'/posts/:id'</span>, requireAuth, <span class="k3">async</span> (req, res) =&gt; {</span></div>
+    <div class="cl" id="c3"><i>43</i><span>  <span class="k3">const</span> <span class="v3">post</span> = <span class="k3">await</span> db.post.<span class="f3">findUnique</span>({ <span class="v3">where</span>: { id: +req.params.id } })</span></div>
+    <div class="cl" id="c4"><i>44</i><span>  <span class="k3">if</span> (!<span class="v3">post</span>.published &amp;&amp; <span class="v3">post</span>.authorId !== req.user.id)</span></div>
+    <div class="cl" id="c5"><i>45</i><span>    <span class="k3">return</span> res.<span class="f3">sendStatus</span>(<span class="t3">403</span>)</span>
+      <span class="cb ok" id="cbOk">✓ LGTM</span></div>
+    <div class="cl" id="c6"><i>46</i><span>  res.<span class="f3">json</span>(<span class="v3">post</span>)</span></div>
+    <div class="cl" id="c7"><i>47</i><span>})</span></div>
+    <div class="gap"></div>
+    <div class="cl" id="c8"><i>49</i><span><span class="c3">// 添付の一覧</span></span></div>
+    <div class="cl" id="c9"><i>50</i><span>app.<span class="f3">get</span>(<span class="s3">'/posts/:id/attachments'</span>, requireAuth, <span class="k3">async</span> (req, res) =&gt; {</span></div>
+    <div class="miss" id="cMiss"><i>—</i><span>  同じ 2 行がない</span></div>
+    <div class="cl" id="c10"><i>51</i><span>  res.<span class="f3">json</span>(<span class="k3">await</span> db.attachment.<span class="f3">findMany</span>({ <span class="v3">where</span>: { postId: +req.params.id } }))</span>
+      <span class="cb no" id="cbNo">✕ 誰でも読めた</span></div>
+    <div class="cl" id="c11"><i>52</i><span>})</span></div>
+    <div class="note" id="cNote">この <b>2 行が書かれていない</b></div>
+  </div></div>
+
+  <div class="vd" id="vd">
+    <div class="vl">
+      <div id="vdH"></div>
+      <pre id="vdSrc"></pre>
+    </div>
+    <div class="vr">
+      <div id="vdH2"></div>
+      <div class="cmd" id="vdCmd">$ lake build</div>
+      <div class="out" id="vdOut"></div>
+      <div class="ker" id="vdKer">&nbsp;</div>
+      <div class="seal" id="vdSeal"><div class="st2" id="vdSt">&nbsp;</div><div class="sb" id="vdSb">&nbsp;</div><div class="sf" id="vdSf">&nbsp;</div></div>
+    </div>
+    <div class="arrow" id="vdAr">→</div>
+    <div class="lbl" id="vdLbl">&nbsp;</div>
+    <div class="foot" id="vdFoot">&nbsp;</div>
+  </div>
+
+  <div class="dep" id="dep">
+    <div class="dh" id="depH">$ <b>lake build</b></div>
+    <div class="ddone" id="depDone">&nbsp;</div>
+    <div class="dnet" id="dnet"><svg class="dw" id="dwire" width="1600" height="560" viewBox="0 0 1600 560"></svg></div>
+    <div class="chk" id="chk">
+      <div class="ch" id="chkH">NODE — trace_authorized</div>
+      <div class="cg">親が、ここに求めている型</div>
+      <pre id="chkA">&nbsp;</pre>
+      <div class="eq" id="chkEq">≟</div>
+      <div class="cg">この項が、実際に持っている型</div>
+      <pre class="b2" id="chkB">&nbsp;</pre>
+      <div class="vd2" id="chkV">&nbsp;</div>
+    </div>
+    <div class="dcount" id="dcount"><b id="dcN">0</b> 件</div>
+    <div class="lbl" id="depLbl">&nbsp;</div>
+  </div>
+
+  <div class="fly" id="fly"><span class="fa" id="flyA"></span><span class="fb" id="flyB"></span></div>
+
+  <div class="tm" id="tm"><div class="tw">
+    <div class="th" id="tmH"><i></i>~/bulletin-board — zsh</div><div class="trule"></div>
+    <div class="ln3" id="t0">&nbsp;</div><div class="ln3" id="t1">&nbsp;</div>
+    <div class="ln3" id="t2">&nbsp;</div><div class="ln3" id="t3">&nbsp;</div>
+    <div class="ln3" id="t4">&nbsp;</div><div class="ln3" id="t5">&nbsp;</div>
+    <div class="ln3" id="t6">&nbsp;</div><div class="ln3" id="t7">&nbsp;</div>
+    <div class="ln3" id="t8">&nbsp;</div><div class="ln3" id="t9">&nbsp;</div>
+    <div class="side" id="tmSide">
+      <div class="ftab" style="margin-bottom:0"><i class="js"></i>app/posts/[id]/page.tsx</div><div class="frule" style="margin-bottom:16px"></div>
+<pre><span class="k3">await</span> <span class="f3">fetch</span>(<span class="s3">`/posts/${id}`</span>, {
+  method: <span class="s3">'PATCH'</span>,
+  headers: { Authorization: bearer },
+  body: <span class="f3">JSON</span>.stringify({ title, body })
+})</pre>
+    </div>
+  </div></div>
+  <div class="tc" id="tc"><div class="in">
+    <div class="k" id="tcK">&nbsp;</div>
+    <div class="t" id="tcT">&nbsp;</div>
+    <div class="big" id="tcN" style="display:none">0</div>
+    <div class="s" id="tcS">&nbsp;</div>
+    <pre id="tcP" style="display:none"></pre>
+  </div></div>
+  <div class="cap"><span></span></div>
+  <svg class="link" id="link" width="1600" height="1000" viewBox="0 0 1600 1000"><path id="lp" d=""/><circle id="c1" r="3.5"/><circle id="c2" r="3.5"/></svg>
+</div></div>
+
+<script>
+/* ================= engine (core/engine.js) ================= */
+/* ===== demo engine — surface-agnostic ==================================
+   D.* helpers used by every storyboard. Surface packs extend D in
+   surfaces/<name>/surface.js; storyboards only call D.
+   Targets: any helper takes a bare id ("W1"), a selector (".ln.err"),
+   or an Element. Bare words are read as ids.
+   ====================================================================== */
+const D = (() => {
+  const q = t => t instanceof Element ? t
+        : typeof t === 'string' ? document.querySelector(/^[\w-]+$/.test(t) ? '#' + t : t) : null;
+  const qa = s => [...document.querySelectorAll(s)];
+  const stage = document.getElementById('stage');
+
+  if (new URLSearchParams(location.search).has('rec')) document.body.classList.add('rec');
+  const wrap = document.querySelector('.stage-wrap');
+  const scale = () => wrap.getBoundingClientRect().width / 1600;
+  const fit = () => { stage.style.transform = `scale(${scale()})`; };
+  addEventListener('resize', fit); fit();
+
+  /* ---- timing: every timer is cancellable so stages can be re-run ---- */
+  let timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  const sleep = ms => new Promise(r => later(r, ms));
+
+  /* ---- content ---- */
+  /* type text into an element with human jitter; cps = chars per second */
+  async function type(t, text, cps = 38) {
+    const el = q(t); el.textContent = '';
+    for (const ch of text) { el.textContent += ch; await sleep(1000 / cps + Math.random() * 30); }
+    return el;
+  }
+  const text = (t, s) => { const el = q(t); if (el) el.textContent = s; return el; };
+  const html = (t, s) => { const el = q(t); if (el) el.innerHTML = s; return el; };
+  /* toggle any class; `lit` is the convention for "this element is now called out" */
+  const cls = (t, name, on = true) => { const el = q(t); if (el) el.classList.toggle(name, on); return el; };
+  const lit = (t, on = true) => cls(t, 'lit', on);
+  const busy = (on = true) => stage.classList.toggle('busy', on);
+  const msg = s => text('#stMsg', s);
+  /* ticking number — never reveal a count instantly, animate it */
+  function count(t, to, fmt = v => ' ' + v.toLocaleString()) {
+    const el = q(t); let v = 0;
+    const step = () => { v = Math.min(to, v + Math.max(1, Math.round(to / 90))); el.textContent = fmt(v); if (v < to) later(step, 16); };
+    step();
+  }
+  /* narration caption under the chrome; caption(null) hides it */
+  function caption(s) {
+    const c = document.querySelector('.cap'); if (!c) return;
+    if (s == null) { c.classList.remove('on'); return; }
+    c.firstElementChild.textContent = s; c.classList.add('on');
+  }
+
+  /* ---- scrolling: put `target` `offset` px below the top of its scroller.
+     Note scrollTop clamps at the bottom — give the scroller padding-bottom
+     if the last lines must be reachable. onScroll lets a surface sync a minimap. ---- */
+  let onScroll = null;
+  function scrollTo(container, target, offset = 200) {
+    const box = q(container), el = q(target); if (!box || !el) return;
+    box.scrollTop = el.offsetTop - offset;
+    if (onScroll) onScroll(box, el);
+  }
+
+  /* ---- terminal helpers (no-op unless the surface has a #term) ----
+     spans: .p prompt  .d dim  .h highlight  .w warn  .e error  .k ok  .a accent */
+  function tline(markup, termSel = '#term') {
+    const t = q(termSel); if (!t) return null;
+    const d = document.createElement('div'); d.className = 'ln2'; d.innerHTML = markup;
+    t.appendChild(d); t.scrollTop = 1e9; return d;
+  }
+  function prompt({ id = 'cmd', user = 'project', branch = 'main', term = '#term' } = {}) {
+    tline(`<span class="p">➜</span> <span class="a">${user}</span> <span class="d">git:(</span><span style="color:#f78166">${branch}</span><span class="d">)</span> <span id="${id}"></span><span class="caret"></span>`, term);
+    return document.getElementById(id);
+  }
+  const endPrompt = (term = '#term') => { const c = q(term)?.querySelector('.caret'); if (c) c.remove(); };
+
+  /* ---- connector between two elements, in stage coordinates ----
+     The stage is transform:scale()d, so every getBoundingClientRect() value
+     must be divided by the scale before it is used as an SVG coordinate.
+     opts: from/to edge ('left'|'right'|'center'), midX (elbow column, stage px),
+           dx/dy nudges. */
+  function box(el) {
+    const sr = stage.getBoundingClientRect(), s = scale(), r = q(el).getBoundingClientRect();
+    return { left: (r.left - sr.left) / s, right: (r.right - sr.left) / s, top: (r.top - sr.top) / s, h: r.height / s, w: r.width / s };
+  }
+  function link(a, b, o = {}) {
+    const svg = document.getElementById('link'); if (!svg) return;
+    const A = box(a), B = box(b);
+    const edge = (r, e) => e === 'right' ? r.right : e === 'center' ? r.left + r.w / 2 : r.left;
+    const ax = edge(A, o.from ?? 'left') + (o.dx ?? 0), ay = A.top + A.h / 2;
+    const bx = edge(B, o.to ?? 'right') + (o.dx2 ?? 0), by = B.top + B.h / 2;
+    const kx = o.midX ?? (ax + bx) / 2;
+    const dv = by - ay, r = Math.min(40, Math.abs(dv) / 2);
+    const d = Math.abs(dv) < 8
+      ? `M${ax},${ay} L${bx},${by}`
+      : `M${ax},${ay} C${kx - 10},${ay} ${kx},${ay} ${kx},${ay + Math.sign(dv) * r} L${kx},${by - Math.sign(dv) * r} C${kx},${by} ${kx},${by} ${bx},${by}`;
+    svg.querySelector('#lp').setAttribute('d', d);
+    const c1 = svg.querySelector('#c1'), c2 = svg.querySelector('#c2');
+    c1.setAttribute('cx', ax); c1.setAttribute('cy', ay); c2.setAttribute('cx', bx); c2.setAttribute('cy', by);
+    svg.classList.add('open');
+  }
+  const unlink = () => document.getElementById('link')?.classList.remove('open');
+
+  /* ---- stage runner ----
+     stages = [{name, run: async () => {}, gap?: ms}] and one reset().
+     Every run() must be replayable from reset() — that is what makes the
+     numbered buttons, keyboard digits and snap.py work. ---- */
+  let stages = [], resetFn = () => {};
+  function define(list, reset) {
+    stages = list; resetFn = reset || (() => {});
+    const boxEl = document.getElementById('steps');
+    if (boxEl) {
+      boxEl.innerHTML = '';
+      list.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.textContent = `${i} ${s.name}`; b.dataset.step = i; b.onclick = () => go(i); boxEl.appendChild(b);
+      });
+      const r = document.createElement('button'); r.textContent = '↻ replay'; r.onclick = replay; boxEl.appendChild(r);
+    }
+    addEventListener('keydown', e => {
+      if (e.key === 'r') replay();
+      if (/^[0-9]$/.test(e.key) && +e.key < list.length) go(+e.key);
+    });
+    const tickEl = document.getElementById('tick'), t0 = performance.now();
+    if (tickEl) setInterval(() => { tickEl.textContent = ((performance.now() - t0) / 1000).toFixed(1) + 's'; }, 100);
+  }
+  const mark = n => qa('#steps button').forEach(b => b.setAttribute('aria-current', b.dataset.step == n ? 'step' : ''));
+  async function go(n) {
+    clear(); mark(n); resetFn();
+    for (let i = 0; i <= n; i++) { if (i > 0) await sleep(stages[i].gap ?? 600); await stages[i].run(); }
+  }
+  const replay = () => go(stages.length - 1);
+
+  return { q, $: q, qa, stage, scale, box, sleep, later, clear, type, text, html, cls, lit, busy, msg, count, caption,
+           scrollTo, set onScroll(f) { onScroll = f; }, tline, prompt, endPrompt, link, unlink, define, go, replay };
+})();
+
+/* ================= surface helpers (surfaces/world/surface.js) ================= */
+/* ===== surface helpers: world =====
+   Bringing nodes online, wiring them, and — the part that makes it read as a
+   simulation rather than an animation — running the traffic. */
+(() => {
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const wire = () => document.getElementById('wire');
+  const flow = () => document.getElementById('flow');
+  /* bumped by reset(); every loop and every in-flight dot checks it and gives up */
+  let gen = 0;
+  D.newGen = () => { gen++; flow().innerHTML = ''; };
+  D.gen = () => gen;
+
+  const el = (n, a) => { const e = document.createElementNS(SVGNS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  /* Geometry in MAP coordinates, read from the layout rather than from the screen.
+     getBoundingClientRect() would be measured through the stage scale AND through
+     the camera transform, so a push-in would slide every wire off its node. Offsets
+     are untouched by transforms, which is exactly what a camera needs. */
+  const cam = () => document.getElementById('cam');
+  function mbox(t) {
+    const e = D.q(t); if (!e) return { left: 0, top: 0, w: 0, h: 0 };
+    let x = 0, y = 0, n = e;
+    while (n && n !== cam()) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { left: x, top: y, w: e.offsetWidth, h: e.offsetHeight };
+  }
+  D.mbox = mbox;
+
+  /* The camera frames a RECTANGLE of the map, not a point and a zoom factor.
+     Framing a point is how you end up with the two things the shot is about at
+     opposite edges of the screen: on this map the adversary and its target are
+     1,540px apart, so "scale 1.55 centred on the adversary" pushes the target
+     clean out of frame. Give it what must be visible and let it solve for the
+     scale. MAP is the whole board, which is what pulling back means. */
+  const FRAME_W = 1600, FRAME_H = 644, MAX_SCALE = 1.7;
+  D.MAP = [0, 0, FRAME_W, FRAME_H];
+  D.camTo = (rect, ms = 900) => {
+    const c = cam(); if (!c) return;
+    const [x1, y1, x2, y2] = rect;
+    const s = Math.min(MAX_SCALE, FRAME_W / Math.max(1, x2 - x1), FRAME_H / Math.max(1, y2 - y1));
+    const tx = (FRAME_W - (x2 - x1) * s) / 2 - x1 * s;
+    const ty = (FRAME_H - (y2 - y1) * s) / 2 - y1 * s;
+    c.style.transition = ms ? `transform ${ms}ms cubic-bezier(.4,0,.2,1)` : 'none';
+    c.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+  };
+  D.cam = (o = {}) => D.camTo(D.MAP, o.ms ?? 900);
+  /* the world's clock. 1 is real time; the drain runs at a quarter of it. */
+  let speed = 1;
+  D.speed = v => { if (v !== undefined) speed = v; return speed; };
+  D.focus = (on = true) => D.cls(D.stage, 'focus', on);
+
+  /* Elbow path between two boxes, in STAGE coordinates. Both SVG layers are
+     children of .stage for exactly this reason — nested in .map every path came
+     out 56px low. */
+  function d(a, b, o = {}) {
+    const A = mbox(a), B = mbox(b);
+    /* mbox reports left/top/w/h; the right edge is derived here rather than stored,
+       so there is one place that knows what an edge means. */
+    const ax = (o.from === 'left' ? A.left : A.left + A.w), ay = A.top + A.h / 2;
+    const bx = (o.to === 'right' ? B.left + B.w : B.left), by = B.top + B.h / 2;
+    const kx = o.midX ?? (ax + bx) / 2;
+    const dv = by - ay, r = Math.min(30, Math.abs(dv) / 2);
+    return Math.abs(dv) < 5 ? `M${ax},${ay} L${bx},${by}`
+      : `M${ax},${ay} C${kx - 10},${ay} ${kx},${ay} ${kx},${ay + Math.sign(dv) * r}` +
+        ` L${kx},${by - Math.sign(dv) * r} C${kx},${by} ${kx},${by} ${bx},${by}`;
+  }
+
+  D.wire = (a, b, o = {}) => {
+    const p = el('path', { d: d(a, b, o), class: o.cls || '' });
+    p.dataset.pair = `${a}>${b}`; wire().appendChild(p); return p;
+  };
+  D.hot = (a, b, cls = 'hot') => {
+    const p = wire().querySelector(`[data-pair="${a}>${b}"]`);
+    if (p) p.setAttribute('class', cls); else D.wire(a, b, { cls });
+  };
+  D.wipeWires = () => { wire().innerHTML = ''; };
+
+  /* One transaction travelling one wire. Await it to sequence on ARRIVAL — state
+     must change when a transaction lands, not when it is sent. */
+  D.tx = (a, b, o = {}) => new Promise(resolve => {
+    const mine = gen;
+    const path = el('path', { d: d(a, b, o), fill: 'none', stroke: 'none' });
+    flow().appendChild(path);
+    const len = path.getTotalLength(), colour = o.colour || 'var(--accent2)';
+    const dot = el('circle', { r: o.r || 3.4, fill: colour, color: colour });
+    flow().appendChild(dot);
+    const ms = (o.ms || 900) / (o.raw ? 1 : speed), t0 = performance.now();
+    const step = now => {
+      if (mine !== gen) { dot.remove(); path.remove(); return; }
+      const k = Math.min(1, (now - t0) / ms), pt = path.getPointAtLength(len * k);
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+      if (k < 1) requestAnimationFrame(step);
+      else { dot.style.transition = 'opacity .25s'; dot.style.opacity = '0';
+             D.later(() => { dot.remove(); path.remove(); }, 280); resolve(); }
+    };
+    requestAnimationFrame(step);
+  });
+
+  /* A transaction that goes out and does not take. It travels most of the way,
+     turns, and comes back red. Two of these before the one that works is what
+     makes the third one worth watching — a first-try success is not a story. */
+  D.txFail = (a, b, o = {}) => new Promise(resolve => {
+    const mine = gen;
+    const path = el('path', { d: d(a, b, o), fill: 'none', stroke: 'none' });
+    flow().appendChild(path);
+    const len = path.getTotalLength();
+    const dot = el('circle', { r: o.r || 4, fill: 'var(--agent)', color: 'var(--agent)' });
+    flow().appendChild(dot);
+    const turn = o.turn ?? 0.66, ms = (o.ms || 900) / (o.raw ? 1 : speed), t0 = performance.now();
+    const step = now => {
+      if (mine !== gen) { dot.remove(); path.remove(); return; }
+      const e = (now - t0) / ms;
+      const k = e <= 1 ? turn * e : Math.max(0, turn * (2 - e));
+      const pt = path.getPointAtLength(len * k);
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+      if (e > 1) { dot.setAttribute('fill', 'var(--bad)'); dot.setAttribute('color', 'var(--bad)'); }
+      if (e < 2) requestAnimationFrame(step);
+      else { dot.remove(); path.remove(); resolve(); }
+    };
+    requestAnimationFrame(step);
+  });
+
+  /* ---- nodes ---- */
+  D.up = (t, on = true) => D.cls(t, 'up', on);
+  D.stat = (id, v, mood = '') => {
+    D.text('#' + id + 'v', v);
+    const n = D.q(id); if (n) { n.classList.remove('moved', 'gain', 'loss'); if (mood) n.classList.add(mood); }
+  };
+  D.tag = (id, kind, label) => {
+    const t = D.q(id)?.querySelector('.tag'); if (!t) return;
+    t.className = 'tag' + (kind ? ' ' + kind : ''); if (label !== undefined) t.textContent = label;
+  };
+  /* a wallet chip's running PnL */
+  D.pnl = (chipId, text, mood = '') => {
+    const c = D.q(chipId); if (!c) return;
+    c.querySelector('.gp').textContent = text;
+    c.classList.remove('gain', 'loss'); if (mood) c.classList.add(mood);
+  };
+  D.chipOf = name => document.querySelector(`.chip[data-name="${name}"]`)?.id;
+  /* swap a node's category glyph — used once, when the wallet that has been reading
+     stops looking like a baseline */
+  D.glyph = (id, name) => {
+    const u = D.q(id)?.querySelector('.ic use');
+    if (u) u.setAttribute('href', '#ic-' + name);
+  };
+
+  /* ---- the chain ---- */
+  D.block = n => {
+    D.text('#blkNo', 'block ' + n.toLocaleString());
+    D.text('#telBlk', 'block ' + n.toLocaleString());
+    D.cls(D.stage, 'tick', true); D.later(() => D.cls(D.stage, 'tick', false), 200);
+  };
+  /* the slot gauge: one block of wall clock, filling. Restarted every block. */
+  D.slot = ms => {
+    const i = D.q('#slotBar'); if (!i) return;
+    i.style.transition = 'none';
+    i.style.width = '0%';
+    /* Force the reflow. Without it the browser coalesces the 0% and the 100% into
+       one style recalculation, never sees the start value, and the bar sits pinned
+       at full for the whole run — a loading gauge that has visibly stopped. Setting
+       the transition back on a requestAnimationFrame is not enough: rAF fires
+       before the style flush, so both writes still land in the same recalc. */
+    void i.offsetWidth;
+    i.style.transition = `width ${ms}ms linear`;
+    i.style.width = '100%';
+  };
+  D.mem = (id, o = {}) => {
+    const r = D.q(id); if (!r) return;
+    r.className = 'tx on' + (o.state ? ' ' + o.state : '') + (o.evil ? ' evil' : '');
+    const put = (s, v) => { const n = r.querySelector(s); if (n && v !== undefined) n.textContent = v; };
+    put('b', o.what); put('.who', o.who); put('.fee', o.fee);
+  };
+  D.memRows = () => ['t1', 't2', 't3', 't4', 't5', 't6'];
+  D.memClear = () => { D.memRows().forEach(id => { const r = D.q(id); if (r) r.className = 'tx'; }); D.text('#memMore', ' '); };
+  D.feed = h => D.html('#chainFeed', h);
+
+  /* ---- the reasoning panel ---- */
+  D.mind = (o = {}) => {
+    if (o.title !== undefined) D.text('#mindTitle', o.title);
+    if (o.who !== undefined) D.text('#mindWho', o.who);
+    if (o.left !== undefined) D.text('#mkL', o.left);
+    if (o.right !== undefined) D.text('#mkR', o.right);
+    if (o.badge !== undefined) {
+      D.text('#mindBadge', o.badge);
+      const b = D.q('#mindBadge'); b.className = 'badge' + (o.state ? ' ' + o.state : '');
+    }
+    if (o.evil !== undefined) D.cls('#mind', 'evil', o.evil);
+  };
+  /* evidence lines, revealed one at a time — the order is the argument */
+  D.ev = (n, markup) => { const e = D.q('e' + n); if (!e) return; e.innerHTML = markup; e.classList.add('on'); };
+  D.evClear = () => { for (let i = 1; i <= 8; i++) { const e = D.q('e' + i); if (e) { e.className = 'ev'; e.innerHTML = '&nbsp;'; } } };
+  D.quote = s => { D.text('#mQuote', s); D.cls('#mQuote', 'on', true); };
+  /* the parameter that moved, and what it moved from */
+  D.param = (n, name, from, to) => {
+    const r = D.q('p' + n); if (!r) return;
+    r.querySelector('.pn').textContent = name;
+    r.querySelector('.pf').textContent = from;
+    r.querySelector('.pt').textContent = to;
+    r.classList.add('on');
+  };
+  D.stamp = s => { D.text('#mStamp', s); D.cls('#mStamp', 'on', true); };
+  D.mindReset = () => {
+    D.evClear();
+    D.cls('#mQuote', 'on', false); D.text('#mQuote', ' ');
+    ['p1','p2'].forEach(i => { const r = D.q('#' + i); if (r) r.className = 'prm'; });
+    D.cls('#mStamp', 'on', false); D.text('#mStamp', ' ');
+    D.mind({ title: 'STRATEGY REVISION', who: '—', badge: 'idle', state: '', evil: false,
+             left: 'EVIDENCE HANDED TO THE MODEL', right: 'WHAT IT DECIDED' });
+  };
+
+  /* ---- history charts ----
+     Autoscaled polylines over the last N blocks. The scale is shared across the
+     series of one chart so the lines can be compared, and it is padded so a flat
+     stretch does not fill the box. */
+  const CH = {};
+  D.chart = (id, keys, cap = 46) => {
+    CH[id] = { keys, cap, data: Object.fromEntries(keys.map(k => [k, []])) };
+    draw(id);
+  };
+  D.plot = (id, vals) => {
+    const c = CH[id]; if (!c) return;
+    for (const k of c.keys) {
+      const v = vals[k];
+      const a = c.data[k];
+      a.push(v === undefined ? (a.length ? a[a.length - 1] : null) : v);
+      if (a.length > c.cap) a.shift();
+    }
+    draw(id);
+  };
+  function draw(id) {
+    const c = CH[id], svg = D.q('#' + id); if (!c || !svg) return;
+    const W = 548, H = 84;
+    let lo = Infinity, hi = -Infinity;
+    for (const k of c.keys) for (const v of c.data[k]) if (v != null) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    if (!isFinite(lo)) { lo = 0; hi = 1; }
+    const pad = (hi - lo) * 0.14 || Math.abs(hi) * 0.02 || 1;
+    lo -= pad; hi += pad;
+    /* While the window is filling, spread the points across the whole width; once it
+       is full this is the same thing as scrolling. Right-aligning from the first
+       block instead put three points in the last 5% of the box. */
+    const len = Math.max(...c.keys.map(k => c.data[k].length), 0);
+    const n = Math.max(2, len);
+    for (const k of c.keys) {
+      const a = c.data[k], p = svg.querySelector(`polyline[data-k="${k}"]`);
+      if (!p) continue;
+      const off = n - a.length;
+      const pts = a.map((v, i) => v == null ? null
+        : `${((i + off) / (n - 1) * W).toFixed(1)},${(H - (v - lo) / (hi - lo) * H).toFixed(1)}`)
+        .filter(Boolean).join(' ');
+      p.setAttribute('points', pts);
+    }
+  }
+  D.chartReset = () => { for (const id in CH) D.chart(id, CH[id].keys, CH[id].cap); };
+
+  /* ---- the strip under the charts ---- */
+  D.tel = (cell, value) => D.text('#' + cell + 'v', value);
+  D.epoch = (block, total = 720) => {
+    D.text('#epBlk', block.toLocaleString());
+    const b = D.q('#epBar'); if (b) b.style.width = Math.min(100, block / total * 100) + '%';
+  };
+  D.telNote = (on = true) => D.cls('#telNote', 'on', on);
+  /* a caption at keynote size, for the two lines the room has to read */
+  D.big = (s, on = true) => { D.caption(s); D.cls('.cap', 'big', on && s != null); };
+})();
+
+/* ================= storyboard — EDIT THIS ================= */
+/* Nyxis — 7 beats, ~47s.
+   an IDOR nobody caught → the code that caused it → you write policy instead →
+   the kernel rules on that policy → five attacks die → none of it was code → 0. */
+
+const POLICIES =
+`<span class="c3">// 公開済みは誰でも読める</span>
+<span class="k3">permit</span> (principal, action in [Action::<span class="s3">"readPost"</span>, Action::<span class="s3">"listPosts"</span>],
+        resource is Post) <span class="k3">when</span> { resource.published };
+
+<span class="c3">// 下書きは作者と管理者だけ</span>
+<span class="k3">permit</span> (principal is User, action in [Action::<span class="s3">"readPost"</span>, Action::<span class="s3">"listPosts"</span>],
+        resource is Post) <span class="k3">when</span> { resource.author == principal || principal.admin };
+
+<span class="c3">// 編集・公開・削除も作者と管理者だけ</span>
+<span class="k3">permit</span> (principal is User, action in [Action::<span class="s3">"editPost"</span>, Action::<span class="s3">"deletePost"</span>],
+        resource is Post) <span class="k3">when</span> { resource.author == principal || principal.admin };`;
+
+const SCHEMA = bad =>
+`<span class="c3">// エンティティ型 = テーブル、属性 = 列</span>
+<span class="k3">entity</span> <span class="t3">Post</span> = {
+  <span class="s3">"author"</span>: <span class="t3">User</span>, <span class="s3">"title"</span>: <span class="t3">String</span>,
+  <span class="s3">"body"</span>: <span class="t3">String</span>, <span class="s3">"published"</span>: <span class="t3">Bool</span>
+};
+
+<span class="c3">// アクションには効果を 1 つ添える</span>
+${bad === 'col'
+  ? `<span class="v3">@effect</span>(<span class="s3">"update Post(title, <em>bodyy</em>)"</span>)`
+  : `<span class="v3">@effect</span>(<span class="s3">"update Post(title, body)"</span>)`}
+<span class="k3">action</span> <span class="s3">"editPost"</span> appliesTo {
+  principal: [<span class="t3">User</span>], resource: [<span class="t3">Post</span>]
+};`;
+
+/* ---- the verdict panel ---- */
+const vdOut = async (lines, gap = 320) => {
+  D.html('#vdOut', lines.map((l, i) => `<div id="vo${i}">${l}</div>`).join(''));
+  for (let i = 0; i < lines.length; i++) { await D.sleep(gap); D.cls('#vo' + i, 'on'); }
+};
+const vdSeal = (kind, title, body, foot) => {
+  D.q('#vdSeal').className = 'seal ' + kind;
+  D.text('#vdSt', title); D.html('#vdSb', body); D.html('#vdSf', foot || '&nbsp;');
+  D.later(() => D.cls('#vdSeal', 'on'), 40);
+};
+const vdClear = () => { D.cls('#vdSeal', 'on', false); D.html('#vdOut', ''); };
+
+const CEDAR = POLICIES;
+/* ---- the type card: the contrast beat ---- */
+const card = async (o = {}) => {
+  D.cls(D.stage, 'tc-on'); D.cls('#tc', 'go', false);
+  const put = (sel, v) => { const e = D.q(sel); e.style.display = v ? 'block' : 'none'; if (v) D.html(sel, v); };
+  put('#tcK', o.k); put('#tcT', o.t); put('#tcS', o.s);
+  D.q('#tcP').style.display = o.pre ? 'inline-block' : 'none'; if (o.pre) D.html('#tcP', o.pre);
+  D.q('#tcN').style.display = o.n ? 'block' : 'none'; if (o.n) D.text('#tcN', o.n);
+  await D.sleep(60); D.cls('#tc', 'go');
+};
+const cardOff = async (ms = 260) => { D.cls('#tc', 'go', false); await D.sleep(ms); D.cls(D.stage, 'tc-on', false); };
+
+/* ---- surface shorthands ---- */
+const gate = (o = {}) => {
+  if (o.p !== undefined) D.html('#gP', o.p);
+  if (o.a !== undefined) D.html('#gA', o.a);
+  if (o.r !== undefined) D.html('#gR', o.r);
+  if (o.v !== undefined) { D.text('#gV', o.v); D.q('#gV').className = 'verd' + (o.m ? ' ' + o.m : ''); }
+};
+const hit = id => { const e = D.q(id); e.classList.remove('hit'); void e.offsetWidth; e.classList.add('hit'); };
+const kill = id => D.cls(id, 'on');
+const row = (id, res, kind) => { D.cls(id, 'on'); D.cls(id, kind); D.text('#' + id + ' .res', res); };
+const HACK = 'var(--hack)';
+const N = { pass: 0, deny: 0 };
+const bump = k => { N[k]++; D.text(k === 'pass' ? '#cPass' : '#cDeny', String(N[k]));
+                    D.text('#nReq', String(N.pass + N.deny)); };
+const clearRun = () => {
+  ['jwt','hnd','gate'].forEach(id => ['lit','pass','den','hit'].forEach(c => D.cls(id, c, false)));
+  D.html('#jwtv','&nbsp;'); D.html('#hndv','&nbsp;');
+  gate({ p:'—', a:'—', r:'—', v:'待機', m:'' });
+};
+
+
+
+
+/* ---- open one node and show the single thing the kernel does there ---- */
+const TY_OK =
+`∀ r i, (r, i) ∈ (trace app store requests).issued →
+  i.principal = r.principal ∧ i.generated = r.generated ∧
+  Authorized app.schema app.policies i`;
+const TY_BAD =
+`∀ r i, (r, i) ∈ (trace app store requests).issued →
+  i.principal = <em>q</em>.principal ∧ i.generated = r.generated ∧
+  Authorized app.schema app.policies i`;
+const chk = async (o = {}) => {
+  const e = D.q('#chk'); e.className = 'chk';
+  D.text('#chkH', 'NODE — ' + o.name); D.html('#chkA', o.need); D.html('#chkB', o.has);
+  D.text('#chkEq', '≟'); D.html('#chkV', '&nbsp;'); D.cls('#chkV','on',false);
+  D.cls(D.stage,'chk-on'); D.later(() => D.cls('#chk','on'), 40);
+  await D.sleep(o.read ?? 2100);
+  D.text('#chkEq', o.ok ? '=' : '≠');
+  D.cls('#chk', o.ok ? 'good' : 'bad');
+  await D.sleep(300);
+  D.html('#chkV', o.ok ? '型が一致' : '型が一致しない');
+  D.cls('#chkV','on');
+};
+const chkOff = async () => { D.cls('#chk','on',false); await D.sleep(300); D.cls(D.stage,'chk-on',false); };
+
+/* ---- the dependency graph: built once, walked by the kernel ---- */
+const L1 = ['trace_authorized','trace_coherent','trace_entries','trace_list','trace_origin',
+            'trace_external','trace_signed','trace_call','trace_called'];
+const L2 = ['handleRequest_authorized','runHandler_authorized','runHandler_coherent','Authz.step',
+            'Runtime.trace','Authz.Authorized','List.mem_append','List.mem_map','Prod.mk.inj',
+            'Db.Store.apply','Cedar.Spec.evaluate'];
+const AX = ['propext','Classical.choice','Quot.sound'];
+let DEP = { nodes: [], lines: [], axLines: [] };
+
+const depBuild = () => {
+  const net = D.q('#dnet'), svg = D.q('#dwire');
+  net.querySelectorAll('.dn').forEach(e => e.remove()); svg.innerHTML = '';
+  DEP = { nodes: [], lines: [], axLines: [] };
+  const NS = 'http://www.w3.org/2000/svg';
+  const node = (txt, x, y, cls) => {
+    const d = document.createElement('div');
+    d.className = 'dn' + (cls ? ' ' + cls : '');
+    d.style.left = x + 'px'; d.style.top = y + 'px';
+    if (txt) d.textContent = txt;
+    net.appendChild(d); DEP.nodes.push({ el: d, x, y }); return DEP.nodes.length - 1;
+  };
+  const link = (a, b, cls) => {
+    const A = DEP.nodes[a], B = DEP.nodes[b];
+    const l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1', A.x); l.setAttribute('y1', A.y);
+    l.setAttribute('x2', B.x); l.setAttribute('y2', B.y);
+    if (cls) l.classList.add(cls);
+    svg.appendChild(l); (cls === 'axl' ? DEP.axLines : DEP.lines).push(l);
+  };
+  const root = node('Nyxis.Runtime.authorization_safety', 800, 36, 'root');
+  const l1 = L1.map((n, i) => node(n, 148 + i * 163, 150, ''));
+  l1.forEach(i => link(root, i));
+  const l2 = L2.map((n, i) => node(n, 124 + i * 123, 274, 'l2'));
+  l2.forEach((t, i) => link(l1[i % l1.length], t));
+  const l3 = [];
+  for (let i = 0; i < 56; i++) l3.push(node('', 92 + i * 25.4, 382 + (i % 3) * 16, 'dot'));
+  l3.forEach((t, i) => link(l2[i % l2.length], t));
+  const ax = AX.map((n, i) => node(n, 520 + i * 280, 496, 'ax'));
+  ax.forEach((t, i) => { for (let k = 0; k < 6; k++) link(l3[(i * 7 + k * 3) % l3.length], t, 'axl'); });
+  return { root, l1, l2, l3, ax };
+};
+const depOn = (idx, cls = 'on') => idx.forEach(i => D.cls(DEP.nodes[i].el, cls));
+/* まとめて出す。await の回数を減らさないと、録画中にタイマーが詰まる。 */
+const depWave = async (idx, cls, chunk, gap) => {
+  for (let i = 0; i < idx.length; i += chunk) {
+    depOn(idx.slice(i, i + chunk), cls);
+    await D.sleep(gap);
+  }
+};
+const depLines = (cls) => DEP.lines.forEach(l => l.classList.add(cls));
+const depAxLines = (cls) => DEP.axLines.forEach(l => l.classList.add(cls));
+
+/* ---- fly a piece of code from one panel to the other, changing notation in flight ---- */
+const fly = async (from, to, a, b, ms = 1150) => {
+  const F = D.box(from), T = D.box(to), el = D.q('#fly');
+  D.cls(from, 'srcfade');                      /* the original steps aside for its copy */
+  el.style.transition = 'none';
+  el.style.left = F.left + 'px'; el.style.top = F.top + 'px';
+  el.style.transform = 'translate(0,0)';
+  D.html('#flyA', a); D.html('#flyB', b);
+  D.cls('#fly', 'swap', false); D.cls('#fly', 'on');
+  void el.offsetWidth;
+  el.style.transition = `transform ${ms}ms cubic-bezier(.45,.02,.2,1)`;
+  el.style.transform = `translate(${(T.left - F.left).toFixed(1)}px, ${(T.top - F.top).toFixed(1)}px)`;
+  await D.sleep(ms * 0.40);
+  D.cls('#fly', 'swap');                       /* the notation changes mid-air */
+  await D.sleep(ms * 0.60 + 90);
+  D.cls(from, 'srcfade', false);
+};
+const flyOff = () => D.cls('#fly', 'on', false);
+
+/* ---- the split panel, used for both the mechanism and the verdict ---- */
+const ftab = spec => { const [ic, nm] = spec.split(':');
+  return `<div class="ftab"><i class="${ic}"></i>${nm}<span class="x2">×</span></div><div class="frule"></div>`; };
+const mech = (o = {}) => {
+  if (o.hl !== undefined) D.html('#vdH', o.hl ? ftab(o.hl) : '');
+  if (o.hr !== undefined) D.html('#vdH2', o.hr ? ftab(o.hr) : '');
+  if (o.left !== undefined) D.html('#vdSrc', o.left);
+  if (o.cmd !== undefined) { const e = D.q('#vdCmd'); e.style.display = o.cmd ? 'block' : 'none'; if (o.cmd) D.html('#vdCmd', o.cmd); }
+  if (o.ker !== undefined) D.html('#vdKer', o.ker);
+};
+const lbl = h => { D.html('#vdLbl', h); D.cls('#vd','dim'); D.later(() => D.cls('#vdLbl', 'on'), 40); };
+const lblOff = () => { D.cls('#vdLbl', 'on', false); D.cls('#vd','dim',false); };
+const tm = async (lines, gap = 340) => {
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] === null) { await D.sleep(gap); continue; }
+    D.html('#t' + i, lines[i]); D.cls('#t' + i, 'on'); await D.sleep(gap);
+  }
+};
+const tmClear = () => { for (let i = 0; i < 10; i++) { D.cls('#t' + i, 'on', false); D.html('#t' + i, '&nbsp;'); } };
+
+D.define([
+
+  /* 0 — an IDOR. One digit in the URL. */
+  { name: '事故', run: async () => {
+      D.speed(1);
+      await card({ t: 'OWASP Top 10 の 1 位は、<br><em>認可の不備</em>' });
+      await D.sleep(3800);
+      D.cls('#tc','go',false); await D.sleep(280);
+      await card({ t: '紐づく CVE は', n: '0' });
+      await D.sleep(120); D.count('tcN', 19013, v => v.toLocaleString());
+      await D.sleep(3600); await cardOff();
+      D.cls(D.stage, 'oops-on');
+      D.text('#oId','3'); D.text('#oTitle','#3 Weekly notes');
+      D.text('#oWho','rin@example.com'); D.text('#oAv','R');
+      ['f1','f2','f3'].forEach(id => { D.cls(id,'leaked',false); D.cls(id,'on',false); });
+      D.text('#f1n','rin-draft-notes.pdf'); D.text('#f2n','screenshot.png'); D.text('#f2i','PNG'); D.text('#f3n','todo.xlsx');
+      D.cls('#oopsStamp','on',false);
+      await D.sleep(500);
+      for (const id of ['f1','f2','f3']) { D.cls(id,'on'); await D.sleep(170); }
+      await D.sleep(1200);
+      D.text('#oId','7');                                   /* the only thing that changed */
+      await D.sleep(420);
+      D.text('#oTitle','#7 Pricing change');
+      D.text('#f1n','価格改定_社外秘.pdf'); D.text('#f2n','取締役会_議事録.pdf'); D.text('#f2i','PDF'); D.text('#f3n','給与テーブル.xlsx');
+      ['f1','f2','f3'].forEach(id => D.cls(id,'leaked'));
+      await D.sleep(560); D.cls('#oopsStamp','on');
+      await D.sleep(1200);
+      D.cls(D.stage,'oops-on',false);
+  }},
+
+  /* 1 — the code a review passed */
+  { name: 'レビュー', run: async () => {
+      D.cls(D.stage, 'code-on');
+      await D.sleep(1700);
+      D.cls('#cbOk','on');                                   /* the first handler is correct */
+      await D.sleep(1400);
+      ['c1','c2','c3','c4','c5','c6','c7'].forEach(id => D.cls(id,'dim'));
+      D.cls('#c4','good'); D.cls('#c5','good');
+      await D.sleep(700);
+      D.cls('#cMiss','on');                                  /* the two lines nobody wrote */
+      await D.sleep(520);
+      D.cls('#c10','bad'); D.cls('#cbNo','on');
+      await D.sleep(820);
+      D.cls('#cNote','on'); D.cls('#code','dim');
+      await D.sleep(3600);
+      D.cls(D.stage,'code-on',false); D.cls('#code','dim',false);
+      await card({ t: 'このコードはレビューを通っている' });
+      await D.sleep(3800); await cardOff();
+  }, gap: 420 },
+
+  /* 2 — what you write instead */
+  { name: 'ポリシー', run: async () => {
+      await card({ t: '開発者が書くのは、<br><em>Cedar のスキーマとポリシー</em>' });
+      await D.sleep(4800);
+      D.cls('#tc','go',false); await D.sleep(280);
+      await card({ k: '<div class="ftab"><i class="cd"></i>policies.cedar<span class="x2">×</span></div><div class="frule"></div>', pre: POLICIES });
+      await D.sleep(4600); await cardOff();
+  }, gap: 420 },
+
+
+  /* 3 — how a policy actually becomes a guarantee. The code travels, and is re-notated in flight. */
+  { name: '機構', run: async () => {
+      D.cls(D.stage,'vd-on'); vdClear(); D.cls('#vdFoot','on',false); lblOff();
+      D.cls('#vd','ar',false); D.html('#vdKer','&nbsp;'); flyOff();
+
+      /* ---- M1: the Cedar text is parsed and reified as a Lean term ---- */
+      mech({ hl:'cd:policies.cedar', hr:'ln:BulletinBoard/Approved.lean', cmd:'',
+        left:`<span id="m1from"><span class="k3">permit</span> ( <span class="v3">principal</span> is User,
+  <span class="v3">action</span> in [Action::<span class="s3">"readPost"</span>, …],
+  <span class="v3">resource</span> is Post )</span>
+<span class="k3">when</span> { resource.author == principal };
+<span class="c3">…</span>` });
+      D.html('#vdOut','');
+      await D.sleep(900); D.cls('#vd','ar');
+      /* render the destination first, unseen, so the flight has somewhere to land */
+      D.html('#vdKer',
+`<span class="h3">nyxis_approved</span> sources <span class="k3">from</span> <span class="s3">"policies.cedar"</span>
+
+<span class="h3">def</span> sources : <span class="h3">Nyxis.Approved</span> :=
+  ⟨<span id="m1to">{ id := <span class="s3">"read-draft-post"</span>,
+    effect := .permit,
+    principalScope := .is <span class="s3">"User"</span>, … }</span>, … ⟩
+
+<span class="h3">theorem</span> authorization_safety :=
+  Nyxis.Approved.authorization_safety <span class="q2">sources</span> …`);
+      D.cls('#vdKer','pending');
+      await D.sleep(260);
+      await fly('#m1from', '#m1to',
+`<span class="box2"><span class="k3">permit</span> ( <span class="v3">principal</span> is User,
+  <span class="v3">action</span> in [Action::<span class="s3">"readPost"</span>, …],
+  <span class="v3">resource</span> is Post )</span>`,
+`<span class="box2">{ id := <span class="s3">"read-draft-post"</span>,
+  effect := .permit,
+  principalScope := .is <span class="s3">"User"</span>, … }</span>`, 1250);
+      D.cls('#vdKer','pending',false); D.cls('#m1to','landed'); flyOff();
+      await D.sleep(600);
+      lbl('Cedar の記述が Lean の値になり、<b>証明済みの定理に渡される</b>');
+      await D.sleep(4700); lblOff(); await D.sleep(230);
+
+      D.cls(D.stage,'vd-on',false);
+  }, gap: 420 },
+
+  /* 4 — what type checking actually does: walk the whole graph down to the axioms */
+  { name: '型検査', run: async () => {
+      D.cls(D.stage,'dep-on'); lblOff(); D.cls('#depLbl','on',false); D.cls('#dep','dim',false); D.cls('#dcount','on',false);
+      const G = depBuild();
+      await D.sleep(650);
+      D.html('#depDone','<span class="e4">error:</span> nyxis: 効果が参照する列 <span class="h4">bodyy</span> はテーブル Post に無い\n<span class="e4">exit 1</span>');
+      D.cls('#depDone','on');
+      await D.sleep(2600);
+      D.cls('#depDone','on',false); D.html('#depDone','&nbsp;');
+      await D.sleep(700);
+      depOn([G.root]);
+      await D.sleep(820);
+      await depWave(G.l1, 'on', 2, 150);
+      depLines('on');
+      await D.sleep(520);
+      await depWave(G.l2, 'on', 3, 150);
+      await D.sleep(360);
+      await depWave(G.l3, 'on', 8, 90);
+      depAxLines('on'); await depWave(G.ax, 'on', 1, 220);
+      D.cls('#dcount','on'); D.count('dcN', 877, v => String(v));
+      await D.sleep(850);
+      D.html('#depLbl','この証明は <b>877 件の定義と補題</b>に依存している');
+      D.cls('#depLbl','on'); D.cls('#dep','dim');
+      await D.sleep(5000); D.cls('#depLbl','on',false); D.cls('#dep','dim',false); await D.sleep(230);
+
+      /* one node, opened up — the whole job is a type comparison */
+      D.cls(DEP.nodes[G.l1[0]].el, 'focus');
+      await D.sleep(500);
+      await chk({ name:'trace_authorized', need:TY_OK, has:TY_OK, ok:true, read:1950 });
+      await D.sleep(1150);
+      D.html('#depLbl','要求された型と、実際の型が<b>一致するか</b>');
+      D.cls('#depLbl','on'); D.cls('#dep','dim');
+      await D.sleep(4200); D.cls('#depLbl','on',false); D.cls('#dep','dim',false);
+      await chkOff();
+      D.cls(DEP.nodes[G.l1[0]].el, 'focus', false);
+      depOn([G.l1[0]],'ok');
+      await D.sleep(400);
+
+      /* and then the same thing, 877 times */
+      depOn([G.root],'ok'); await D.sleep(240);
+      await depWave(G.l1, 'ok', 2, 110);
+      await depWave(G.l2, 'ok', 3, 110);
+      depLines('ok');
+      await depWave(G.l3, 'ok', 8, 80);
+      await D.sleep(520);
+      D.html('#depLbl','全ての節で一致した。<b>証明に飛躍はない</b>');
+      D.cls('#depLbl','on'); D.cls('#dep','dim');
+      await D.sleep(4300); D.cls('#depLbl','on',false); D.cls('#dep','dim',false);
+      await D.sleep(300);
+
+      /* what a failure looks like, in the same frame the viewer now understands */
+      D.cls(DEP.nodes[G.l1[1]].el, 'focus');
+      await D.sleep(420);
+      await chk({ name:'trace_coherent', need:TY_OK, has:TY_BAD, ok:false, read:1600 });
+      await D.sleep(1050);
+      D.html('#depLbl','一箇所でも型が合わなければ、<b>ビルドは失敗する</b>');
+      D.cls('#depLbl','on'); D.cls('#dep','dim');
+      await D.sleep(4900); D.cls('#depLbl','on',false); D.cls('#dep','dim',false);
+      await chkOff();
+      D.cls(DEP.nodes[G.l1[1]].el, 'focus', false);
+      await D.sleep(400);
+      D.html('#depDone','<span class="k4">✓</span> 型検査 ok\n<span class="d2">→</span> <span class="h4">.lake/build/bin/sample</span>');
+      D.cls('#depDone','on');
+      await D.sleep(1900);
+      D.cls(D.stage,'dep-on',false);
+  }, gap: 420 },
+
+  /* 5 — what you get, and how you call it */
+  { name: '成果物', run: async () => {
+      D.cls(D.stage,'tm-on'); tmClear(); D.cls('#tmSide','on',false);
+      
+      await D.sleep(420);
+      await tm([
+        '<span class="p2">$</span> lake exe <span class="h4">.lake/build/bin/sample</span>',
+        '  listening on <span class="h4">:8080</span>  <span class="d2">· jwks=supabase · db=postgres</span>',
+      ], 380);
+      D.cls('#tmSide','on');
+      await D.sleep(700);
+      await tm([null,null,
+        '<span class="p2">$</span> curl -H <span class="a4">\'Bearer aoi\'</span> -X PATCH :8080/posts/7           <span class="k4">204</span>',
+      ], 400);
+      await tm([null,null,null,
+        '<span class="p2">$</span> curl -H <span class="a4">\'Bearer rin\'</span>          :8080/posts/7           <span class="e4">403</span>',
+      ], 380);
+      await tm([null,null,null,null,
+        '<span class="p2">$</span> curl -H <span class="a4">\'Bearer rin\'</span>          :8080/posts/7/attachments <span class="e4">403</span>  <span class="w4">← 冒頭のあれ</span>',
+      ], 520);
+      await D.sleep(1400);
+      D.cls(D.stage,'tm-on',false);
+  }, gap: 420 },
+
+  /* 6 — the reversal, the number, the door */
+  { name: '締め', run: async () => {
+      await card({ k:'<div class="ftab"><i class="ln"></i>BulletinBoard/Handlers.lean<span class="x2">×</span></div><div class="frule"></div>',
+        t:'readPost は callAction を呼ぶだけで、<em>認可を判断していない</em>',
+        pre:`<span class="k2">def</span> <span class="v2">readPost</span> (id : Key) : … := <span class="k2">fun</span> _ _ _ => <span class="k2">do</span>
+  <span class="k2">let</span> outcome ← Handler.<span class="v2">callAction</span> (act <span class="s2">"readPost"</span>) id
+  <span class="k2">pure</span> (respond .ok … outcome)` });
+      await D.sleep(5800);
+      D.cls('#tc','go',false); await D.sleep(220);
+      await card({ t:'承認したポリシーが許す範囲を超える操作は、<em>発行されない</em>' });
+      await D.sleep(5000);
+      D.cls('#tc','go',false); await D.sleep(240);
+      await card({ t:'ハンドラに書かれた認可コード', n:'0' });
+      await D.sleep(3400);
+      D.cls('#tc','go',false); await D.sleep(280);
+      await card({ t:'github.com/NyxFoundation/<em>nyxis</em>' });
+      await D.sleep(2900);
+  }, gap: 420 },
+
+], () => {   /* reset */
+  D.stage.className = 'stage'; D.speed(1);
+  /* cold open */
+  ['f1','f2','f3'].forEach(id => { D.cls(id,'on',false); D.cls(id,'leaked',false); });
+  D.cls('#oopsStamp','on',false);
+  /* code card */
+  ['c1','c2','c3','c4','c5','c6','c7','c10'].forEach(id => ['dim','good','bad'].forEach(c => D.cls(id,c,false)));
+  D.cls('#cMiss','on',false); D.cls('#cbOk','on',false); D.cls('#cbNo','on',false); D.cls('#cNote','on',false); D.cls('#code','dim',false);
+  /* split panel */
+  D.cls('#dcount','on',false);
+  vdClear(); D.cls('#vdFoot','on',false); D.html('#vdSrc',''); D.html('#vdKer','&nbsp;');
+  lblOff(); D.cls('#vd','ar',false); D.q('#vdCmd').style.display='none';
+  /* terminal */
+  tmClear(); D.cls('#tmSide','on',false);
+  /* type card */
+  D.cls('#tc','go',false); D.q('#tcP').style.display='none'; D.q('#tcN').style.display='none';
+  D.msg('idle'); D.caption(null);
+});
+D.replay();
+</script>
+</body>
+</html>

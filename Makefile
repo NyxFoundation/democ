@@ -1,80 +1,122 @@
 # demo-creator
 #
 #   make edit N=nyxis   組んでブラウザで開く。文言を詰めるときはここから
-#   make layers         画面を部品ごとの透過 PNG に切り出す
-#   make 3d             その部品を Blender で 3D に置いて撮る（.blend も出る）
 #   make watch N=nyxis  保存するたびに組み直す（ブラウザは F5）
-#   make                demos/*.yaml → 録画 → タイムライン → out/demo.mp4
-#   make screens        YAML から HTML を組んで録り直す
+#   make                demos/*.yaml → 録画 → タイムライン → out/<デモ>/demo.mp4
+#   make screens        組んで録り直す（中身が変わったシーンだけ）
 #   make snaps          止め絵で確かめる（動きで隠れる崩れはこれでしか見えない）
-#   make html           HTML だけ組む（ブラウザで開いて文言を詰める）
-#   make preview        melt で再生する
-#   make open           Kdenlive で out/edit.mlt を開く
+#   make layers         画面を部品ごとの透過 PNG に切り出す
+#   make blend          .blend だけ作り直す（レンダーしない）
+#   make 3d             その部品を Blender で 3D に置いて撮る
+#   make open N=nyxis   Kdenlive で開く
 #   make new NAME=foo   templates/starter.yaml から新しいデモを作る
 #
-# melt が PATH に無ければ nix develop を噛ませるので、素の端末から叩いてよい。
-# 生成物は全部 out/ に入り、git には入らない。
+# 生成物は out/<デモ>/ の下にまとまる。git には入らない。
+# melt / blender / kdenlive は PATH にあればそれを使い、無ければ nix develop を噛ませる。
 
 SHELL := /bin/bash
 .DEFAULT_GOAL := render
 
-# melt と ffmpeg だけの軽い shell。Blender と GUI は full にある
 FLAKE := --no-write-lock-file "path:$(CURDIR)"
+# # は Makefile ではコメントの始まりなので、flake の属性指定は変数に逃がす
+HASH := \#
+FULL := nix develop $(FLAKE)$(HASH)full -c
 ifeq ($(shell command -v melt 2>/dev/null),)
   IN := nix develop $(FLAKE) -c
 else
   IN :=
 endif
-# # は Makefile ではコメントの始まりなので、flake の属性指定は変数に逃がす
-HASH := \#
-FULL := nix develop $(FLAKE)$(HASH)full -c
+# .blend は開く版と同じ版で書かないと「expect loss of data」の警告が出る
+ifeq ($(shell command -v blender 2>/dev/null),)
+  BL := $(FULL) blender
+else
+  BL :=
+endif
+ifeq ($(shell command -v kdenlive 2>/dev/null),)
+  KD := $(FULL) kdenlive
+else
+  KD :=
+endif
 PY := uv run --quiet --with pyyaml --with playwright python3
 
-OUT      := out
-TIMELINE := $(OUT)/edit.mlt
-MOVIE    := $(OUT)/demo.mp4
-
-SPECS    := $(wildcard demos/*.yaml)
-PAGES    := $(patsubst demos/%.yaml,$(OUT)/screens/%.html,$(SPECS))
-SCREENS  := $(patsubst demos/%.yaml,$(OUT)/screens/%/index.json,$(SPECS))
-ENGINE   := $(wildcard engine/*.css engine/*.js engine/scenes/*)
-LAYSPEC  := $(wildcard layers/*.yaml)
-LAYERS   := $(patsubst layers/%.yaml,$(OUT)/layers/%/layers.json,$(LAYSPEC))
-SHOTS    := $(wildcard assets/3d/*.py)
-RENDERS  := $(patsubst assets/3d/%.py,$(OUT)/3d/%.mp4,$(SHOTS))
+OUT    := out
+DEMOS  := $(notdir $(basename $(wildcard demos/*.yaml)))
+ENGINE := $(wildcard engine/*.css engine/*.js engine/scenes/*)
+N      ?= $(firstword $(DEMOS))
 
 # 配布用。an=1 は音声なし。色の指定は足さない——素材のまま通すのが一番狂わない
 ENCODE := vcodec=libx264 crf=18 preset=slow pix_fmt=yuv420p an=1
 
-.PHONY: render timeline html screens snaps layers 3d edit watch preview open shell shell-full new clean help FORCE
+PAGES   :=
+SCREENS :=
+MOVIES  :=
+LAYERS  :=
+RENDERS :=
 
-render: $(MOVIE)
+# --- デモ 1 本ぶんの道筋 ----------------------------------------------------
+define DEMO_RULES
+$(OUT)/$(1)/page.html: demos/$(1).yaml tools/build.py tools/highlight.py $$(ENGINE)
+	$$(PY) tools/build.py $$< -o $$@
 
-$(MOVIE): $(TIMELINE)
-	$(IN) melt $(TIMELINE) -consumer avformat:$@ $(ENCODE)
-	@ls -lh $@
+# HTML は毎回同じ絵を出すので、中身が変わったシーンだけ録り直せばよい
+$(OUT)/$(1)/screens/index.json: $(OUT)/$(1)/page.html tools/record.py tools/browser.py
+	$$(PY) tools/record.py $$< --out $(OUT)/$(1)/screens
 
-timeline: $(TIMELINE)
-# 3D カットは重いので make の既定経路では焼き直さない。make 3d を通したあとは
-# ここが拾い直す（中身が同じなら .mlt は書き換えないので melt は走らない）
-$(TIMELINE): edit/timeline.py $(SCREENS) FORCE
-	$(PY) edit/timeline.py
+$(OUT)/$(1)/edit.mlt: edit/timeline.py edit/kdenlive.py $(OUT)/$(1)/screens/index.json FORCE
+	$$(PY) edit/timeline.py $(1)
 
-# YAML → 1 枚の HTML。使ったシーンの CSS と JS だけが埋め込まれる
-html: $(PAGES)
-$(OUT)/screens/%.html: demos/%.yaml tools/build.py tools/highlight.py $(ENGINE)
-	$(PY) tools/build.py $< -o $@
+$(OUT)/$(1)/demo.mp4: $(OUT)/$(1)/edit.mlt
+	$$(IN) melt $$< -consumer avformat:$$@ $$(ENCODE)
+	@ls -lh $$@
 
-# HTML は毎回同じ絵を出すので、文言を直したら録り直すだけでよい。
-# シーンごとに 1 本にしておくと、3D 版への差し替えと部分的な録り直しが効く
+PAGES   += $(OUT)/$(1)/page.html
+SCREENS += $(OUT)/$(1)/screens/index.json
+MOVIES  += $(OUT)/$(1)/demo.mp4
+endef
+$(foreach d,$(DEMOS),$(eval $(call DEMO_RULES,$(d))))
+
+# --- 3D ショット 1 本ぶん（layers/<デモ>/<ショット>.yaml と assets/3d/<ショット>.py）---
+define SHOT_RULES
+$(OUT)/$(1)/layers/$(2)/layers.json: layers/$(1)/$(2).yaml $(OUT)/$(1)/page.html tools/layers.py
+	$$(PY) tools/layers.py $$<
+
+$(OUT)/$(1)/3d/$(2).mp4: assets/3d/$(2).py $(OUT)/$(1)/layers/$(2)/layers.json
+	@mkdir -p $(OUT)/$(1)/3d
+	$$(BL) blender -b -P $$< -- --layers $(OUT)/$(1)/layers/$(2) \
+	  --out $(OUT)/$(1)/3d/$(2) --blend $(OUT)/$(1)/3d/$(2).blend
+	$$(IN) ffmpeg -y -loglevel error -framerate 25 \
+	  -i $(OUT)/$(1)/3d/$(2)/f%04d.png -c:v libx264 -crf 18 -pix_fmt yuv420p $$@
+	@ls -lh $$@
+
+$(OUT)/$(1)/3d/$(2).blend: assets/3d/$(2).py $(OUT)/$(1)/layers/$(2)/layers.json
+	@mkdir -p $(OUT)/$(1)/3d
+	$$(BL) blender -b -P $$< -- --layers $(OUT)/$(1)/layers/$(2) \
+	  --blend $$@ --no-render
+
+LAYERS  += $(OUT)/$(1)/layers/$(2)/layers.json
+RENDERS += $(OUT)/$(1)/3d/$(2).mp4
+BLENDS  += $(OUT)/$(1)/3d/$(2).blend
+endef
+$(foreach d,$(DEMOS),$(foreach s,$(notdir $(basename $(wildcard layers/$(d)/*.yaml))),\
+  $(eval $(call SHOT_RULES,$(d),$(s)))))
+
+.PHONY: render timeline html screens snaps layers blend 3d edit watch preview open \
+        shell shell-full new clean help FORCE
+
+render:  $(MOVIES)
+timeline: $(foreach d,$(DEMOS),$(OUT)/$(d)/edit.mlt)
+html:    $(PAGES)
 screens: $(SCREENS)
-$(OUT)/screens/%/index.json: $(OUT)/screens/%.html tools/record.py tools/browser.py
-	$(PY) tools/record.py $< --out $(OUT)/screens/$*
+layers:  $(LAYERS)
+3d:      $(RENDERS)
+blend:   $(BLENDS)
+
+snaps: $(PAGES)
+	$(foreach p,$(PAGES),$(PY) tools/snap.py $(p) --out $(dir $(p))snaps;)
 
 # 文言を詰める往復。組み直しは 0.3 秒なので、保存 → F5 で足りる
-N ?= $(basename $(notdir $(firstword $(SPECS))))
-edit: $(OUT)/screens/$(N).html
-	@(xdg-open $(OUT)/screens/$(N).html >/dev/null 2>&1 &) ; \
+edit: $(OUT)/$(N)/page.html
+	@(xdg-open $(OUT)/$(N)/page.html >/dev/null 2>&1 &) ; \
 	 echo "demos/$(N).yaml を直して make html。ブラウザは F5 で入れ替わる"
 	@echo "数字キーで場面を飛べる。r で頭から"
 
@@ -86,31 +128,12 @@ watch:
 	  sleep 1; \
 	done
 
-snaps: $(PAGES)
-	$(foreach h,$(PAGES),$(PY) tools/snap.py $(h);)
+preview: $(OUT)/$(N)/edit.mlt
+	$(IN) melt $(OUT)/$(N)/edit.mlt
 
-# 画面を部品ごとの透過 PNG に切り出す。1 枚の絵にすると全体をスライドさせる
-# ことしかできない。分けておくと Z 方向にずらせて視差とピントが効く
-layers: $(LAYERS)
-$(OUT)/layers/%/layers.json: layers/%.yaml $(PAGES) tools/layers.py
-	$(PY) tools/layers.py $<
-
-# 3D。assets/3d/<名前>.py と layers/<名前>.yaml が対になる。
-# クリエイタに渡すのは mp4 ではなく out/3d/<名前>.blend のほう
-3d: $(RENDERS)
-$(OUT)/3d/%.mp4: assets/3d/%.py $(OUT)/layers/%/layers.json
-	@mkdir -p $(OUT)/3d
-	$(FULL) blender -b -P $< -- --layers $(OUT)/layers/$* \
-	  --out $(OUT)/3d/$* --blend $(OUT)/3d/$*.blend
-	$(IN) ffmpeg -y -loglevel error -framerate 25 -i $(OUT)/3d/$*/f%04d.png \
-	  -c:v libx264 -crf 18 -pix_fmt yuv420p $@
-	@ls -lh $@
-
-preview: $(TIMELINE)
-	$(IN) melt $(TIMELINE)
-
-open: $(TIMELINE)
-	$(FULL) kdenlive $(TIMELINE) &
+# Kdenlive は素の MLT を開けないので、方言で書いた方を渡す
+open: $(OUT)/$(N)/edit.mlt
+	$(KD) kdenlive $(OUT)/$(N)/edit.kdenlive &
 
 new:
 	@test -n "$(NAME)" || { echo "make new NAME=<名前>"; exit 1; }

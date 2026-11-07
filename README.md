@@ -26,6 +26,9 @@ make new NAME=foo    templates/starter.yaml から新しいデモを作る
 
 ## 文言を直す
 
+文字の正本は `demos/<デモ>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
+そこでは直せない。
+
 ```sh
 make watch N=nyxis       # 別の端末で開いておく
 make edit  N=nyxis       # ブラウザが開く
@@ -76,23 +79,42 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 | `templates/` | 新しいデモの雛形 |
 | `engine/engine.{css,js}` | ステージと再生の土台 |
 | `engine/scenes/*.{css,js}` | 場面の型。増やすときはここに足す |
-| `layers/*.yaml` | 画面をどう部品に切るか |
 | `assets/3d/*.py` | 切った部品を 3D に置く Blender スクリプト |
 | `assets/snippets/` | 使い回すコード片 |
 | `tools/build.py` | YAML → 1 枚の HTML |
 | `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
 | `edit/timeline.py` | 素材を並べて `.mlt` を書く |
-| `out/screens/<デモ>/` | シーンごとの録画と index.json |
-| `out/` | 生成物。git には入れない |
+| `layers/<デモ>/*.yaml` | 画面をどう部品に切るか |
+| `out/<デモ>/` | 生成物。git には入れない |
+
+## 出力の置き場
+
+デモ 1 本ぶんの生成物は `out/<デモ>/` にまとまる。
+
+```
+out/nyxis/
+  page.html            組み上がった画面
+  screens/             シーンごとの録画と index.json
+  layers/<ショット>/     部品ごとの透過 PNG
+  3d/<ショット>.blend    クリエイタに渡すのはこれ
+  3d/<ショット>.mp4
+  edit.mlt             melt が描画する
+  edit.kdenlive        人が Kdenlive で開く
+  demo.mp4             確認用
+```
 
 ## シーンは 1 つ 1 クリップ
 
-録画はシーンごとに分かれて `out/screens/<デモ>/00-数字.mp4` … と並ぶ。1 本に繋げて
+録画はシーンごとに分かれて `out/<デモ>/screens/00-数字.mp4` … と並ぶ。1 本に繋げて
 録ると「7 番目だけ 3D 版に差し替える」が切り貼りになるし、文言を一つ直したときに
 全部録り直すことになる。分けておけばタイムラインがクリップの並びになって、人が
 Kdenlive で開いたときに触れるものになる。
 
-どの 3D カットがどのシーンを置き換えるかは `layers/<名前>.yaml` の `scene:` が
+文言を一つ直したとき、`make screens` は**中身が変わったシーンだけ録り直す**。
+シーンごとにハッシュを持たせてあるので、1 語直せば 1 本（約 10 秒）で済む。
+エンジンを触ったときは全部録り直しになる。
+
+どの 3D カットがどのシーンを置き換えるかは `layers/<デモ>/<ショット>.yaml` の `scene:` が
 宣言していて、`edit/timeline.py` がそれを見て差し替える。3D は重いので `make` の
 既定経路では焼き直さない。`make 3d` を通したあとに `make` すれば取り込まれる。
 

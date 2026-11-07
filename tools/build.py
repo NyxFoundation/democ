@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -177,6 +178,15 @@ def assemble(spec_path: Path, out_path: Path) -> Path:
         css.append((ENGINE / "scenes" / f"{t}.css").read_text(encoding="utf-8"))
         js.append((ENGINE / "scenes" / f"{t}.js").read_text(encoding="utf-8"))
 
+    # 文言を一つ直したときに、そのシーンだけ録り直せるようにする。
+    # エンジンが変わったら全部が変わったものとして扱う。
+    eng = hashlib.sha1("".join(css + js).encode("utf-8")).hexdigest()[:12]
+    spec["engine"] = eng
+    for sc in scenes:
+        sc["hash"] = hashlib.sha1(
+            json.dumps(sc, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()[:12]
+
     title = spec.get("title", spec_path.stem)
     doc = f"""<!doctype html>
 <html lang="ja"><meta charset="utf-8">
@@ -215,4 +225,4 @@ if __name__ == "__main__":
     ap.add_argument("-o", "--out", default=None)
     a = ap.parse_args()
     sp = Path(a.spec).resolve()
-    assemble(sp, Path(a.out).resolve() if a.out else ROOT / "out" / "screens" / f"{sp.stem}.html")
+    assemble(sp, Path(a.out).resolve() if a.out else ROOT / "out" / sp.stem / "page.html")

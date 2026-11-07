@@ -90,34 +90,60 @@ def _run(html, out, scene, hold, maxs, settle, width, height):
 
 
 def scene_list(html, width, height):
+    """名前とハッシュ。ハッシュは build.py が埋めたもの。"""
     with sync_playwright() as p:
         b = launch_chromium(p)
         pg = b.new_context(viewport={"width": width, "height": height}).new_page()
         pg.goto(f"file://{html}?rec=1")
         pg.wait_for_timeout(400)
-        names = pg.evaluate(
-            "() => D.spec.scenes.map((s, i) => s.name || (i + ' ' + s.type))")
+        out = pg.evaluate("""() => ({
+          engine: D.spec.engine || '',
+          scenes: D.spec.scenes.map((s, i) => ({
+            name: s.name || (i + ' ' + s.type), hash: s.hash || '' })) })""")
         b.close()
-    return names
+    return out
 
 
 def record_scenes(html, outdir, hold=0.35, maxs=180, settle=0.8, width=1600, height=1000):
     html = os.path.abspath(html)
     outdir = os.path.abspath(outdir)
     os.makedirs(outdir, exist_ok=True)
-    names = scene_list(html, width, height)
+    info = scene_list(html, width, height)
+    engine, names = info["engine"], info["scenes"]
+
+    # 前回の録画を読んで、中身が変わっていないシーンはそのまま使う
+    prev = {}
+    old = os.path.join(outdir, "index.json")
+    if os.path.exists(old):
+        try:
+            o = json.load(open(old, encoding="utf-8"))
+            if o.get("engine") == engine:
+                prev = {s["i"]: s for s in o.get("scenes", [])}
+        except Exception:
+            pass
+
     index = []
-    for i, name in enumerate(names):
+    kept = 0
+    for i, sc in enumerate(names):
+        name, h = sc["name"], sc["hash"]
         fn = "%02d-%s.mp4" % (i, SAFE.sub("_", name).strip("_") or str(i))
         path = os.path.join(outdir, fn)
+        old_s = prev.get(i)
+        if old_s and old_s.get("hash") == h and old_s.get("file") == fn \
+                and os.path.exists(path):
+            index.append(old_s)
+            kept += 1
+            print("  %2d %-10s %6.2fs  （変更なし）" % (i, name, old_s["seconds"]))
+            continue
         _run(html, path, i, hold, maxs, settle, width, height)
         secs = _seconds(path)
-        index.append({"i": i, "name": name, "file": fn, "seconds": secs})
+        index.append({"i": i, "name": name, "file": fn, "seconds": secs, "hash": h})
         print("  %2d %-10s %6.2fs  %s" % (i, name, secs, fn))
-    meta = {"page": os.path.basename(html), "fps": 25, "scenes": index}
+    meta = {"page": os.path.basename(html), "fps": 25, "engine": engine, "scenes": index}
     with open(os.path.join(outdir, "index.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
-    print("%d シーン / 合計 %.1fs → %s" % (len(index), sum(s["seconds"] for s in index), outdir))
+    print("%d シーン（%d 本は据え置き）/ 合計 %.1fs → %s"
+          % (len(index), kept, sum(s["seconds"] for s in index), outdir))
     return outdir
 
 

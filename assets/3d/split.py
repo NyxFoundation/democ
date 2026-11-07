@@ -5,8 +5,11 @@ UI はモデリングしない。平面の絵として書き出して、奥行�
 反射・正確なフレーム——が付く。文言を直したらレイヤーを撮り直すだけで、
 .blend 側のアニメーションはそのまま生きる。
 
-  blender -b -P assets/3d/split_cards.py -- --layers out/layers/split \
-      --out out/3d/split --blend out/3d/split.blend [--frame 60]
+  blender -b -P assets/3d/split.py -- --layers out/layers/split \
+      --out out/3d/split --blend out/3d/split.blend [--frame 60] [--no-render]
+
+.blend は開く Blender と同じ版で書く。新しい版で書いたものを古い版で開くと
+「expect loss of data」の警告が出る。
 
 画面座標はそのまま持ち込む。1600x1000 px の画面を 1.6 x 1.0 の板として扱い、
 カメラをちょうどその幅が収まる距離に置く。あとはその基準からずらしていく。
@@ -36,6 +39,15 @@ def clear():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
+def node(tree, idname):
+    """ノードは名前で引かない。Blender の UI 言語が日本語だと
+    「プリンシプルBSDF」になっていて KeyError になる。ソケット名は翻訳されない。"""
+    for n in tree.nodes:
+        if n.bl_idname == idname:
+            return n
+    raise SystemExit(f"{idname} が見つからない")
+
+
 def card(name, png, x, y, z, w, h):
     """絵を 1 枚、板にして置く。z は上方向、y が奥行き。"""
     bpy.ops.mesh.primitive_plane_add(size=1, location=(x, y, z))
@@ -49,7 +61,7 @@ def card(name, png, x, y, z, w, h):
     mat = bpy.data.materials.new(name + "_mat")
     mat.use_nodes = True
     nt = mat.node_tree
-    bsdf = nt.nodes["Principled BSDF"]
+    bsdf = node(nt, "ShaderNodeBsdfPrincipled")
     tex = nt.nodes.new("ShaderNodeTexImage")
     tex.image = img
     tex.interpolation = "Cubic"
@@ -129,6 +141,7 @@ def main():
     blend = arg("--blend")
     one = arg("--frame")
     many = arg("--frames")
+    no_render = "--no-render" in (sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else [])
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
 
     clear()
@@ -212,7 +225,8 @@ def main():
 
     world = bpy.data.worlds.new("world")
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs[0].default_value = (0.012, 0.018, 0.035, 1)
+    node(world.node_tree, "ShaderNodeBackground").inputs[0].default_value = \
+        (0.012, 0.018, 0.035, 1)
     sc.world = world
 
     # --- カメラ。回転は手で打たない。注視点を置いて追わせる ----------------
@@ -264,6 +278,10 @@ def main():
         os.makedirs(os.path.dirname(blend) or ".", exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=blend)      # クリエイタが開くのはこれ
         print("wrote", blend)
+
+    if no_render:
+        print("blend だけ書いた")
+        return
 
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGBA"

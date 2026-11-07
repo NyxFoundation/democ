@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 import subprocess
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -25,6 +26,8 @@ from fractions import Fraction
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import kdenlive                                  # noqa: E402
 
 
 def probe_duration(path: Path) -> float:
@@ -224,43 +227,57 @@ class Timeline:
 # シーンは 1 つ 1 クリップ。1 本に繋げて録ると「7 番目だけ 3D 版に差し替える」が
 # 切り貼りになるし、文言を直したときに全部録り直すことになる。
 # ---------------------------------------------------------------------------
-def shots() -> dict:
-    """3D カットがどのシーンを置き換えるかは layers/<名前>.yaml が宣言している。"""
+def shots(demo: str) -> dict:
+    """3D カットがどのシーンを置き換えるかは layers/<デモ>/<ショット>.yaml が宣言する。"""
     import yaml
     out = {}
-    for p in sorted((ROOT / "layers").glob("*.yaml")):
+    for p in sorted((ROOT / "layers" / demo).glob("*.yaml")):
         spec = yaml.safe_load(p.read_text(encoding="utf-8"))
-        mp4 = ROOT / "out" / "3d" / f"{p.stem}.mp4"
+        mp4 = ROOT / "out" / demo / "3d" / f"{p.stem}.mp4"
         if mp4.exists() and "scene" in spec:
-            out[(Path(spec["page"]).stem, spec["scene"])] = mp4
+            out[spec["scene"]] = mp4
     return out
 
 
-def build() -> Path:
-    tl = Timeline(width=1600, height=1000, fps=25, tracks=2)
-    sub = shots()
+def build(demo: str) -> Path:
+    fps = 25
+    base = ROOT / "out" / demo
+    index = base / "screens" / "index.json"
+    if not index.exists():
+        raise SystemExit(f"{index} がない。make screens を先に通す")
+
+    tl = Timeline(width=1600, height=1000, fps=fps, tracks=2)
+    sub = shots(demo)
     clips = []
-    for spec in sorted((ROOT / "demos").glob("*.yaml")):
-        index = ROOT / "out" / "screens" / spec.stem / "index.json"
-        if not index.exists():
-            continue
-        for s in json.loads(index.read_text(encoding="utf-8"))["scenes"]:
-            three = sub.get((spec.stem, s["i"]))
-            clips.append((three or index.parent / s["file"], s["name"], three is not None))
-    if not clips:
-        raise SystemExit("out/screens に録画がない。make screens を先に通す")
+    for s in json.loads(index.read_text(encoding="utf-8"))["scenes"]:
+        three = sub.get(s["i"])
+        clips.append((three or index.parent / s["file"], s["name"], three is not None))
 
     last = len(clips) - 1
+    kd = []
     for i, (path, name, is3d) in enumerate(clips):
-        # 見た目の違うカットの前後だけ 短く溶かす。同じ絵の続きは切りっぱなし
+        # 見た目の違うカットの前後だけ短く溶かす。同じ絵の続きは切りっぱなし
         prev3d = i > 0 and clips[i - 1][2]
         next3d = i < last and clips[i + 1][2]
-        tl.video(path, track=0,
-                 fade_in=0.4 if i == 0 else (0.25 if is3d or prev3d else 0.0),
-                 fade_out=0.8 if i == last else (0.25 if is3d or next3d else 0.0))
+        fi = 0.4 if i == 0 else (0.25 if is3d or prev3d else 0.0)
+        fo = 0.8 if i == last else (0.25 if is3d or next3d else 0.0)
+        tl.video(path, track=0, fade_in=fi, fade_out=fo)
+        kd.append({"path": path, "name": name, "in": 0,
+                   "frames": max(int(round(probe_duration(path) * fps)), 1),
+                   "fade_in": int(round(fi * fps)), "fade_out": int(round(fo * fps))})
         print("  %2d %-10s %s%s" % (i, name, path.name, "   ← 3D" if is3d else ""))
-    return tl.write("out/edit.mlt")
+
+    out = tl.write(base / "edit.mlt")
+    # melt に渡すのは .mlt。人が開くのは .kdenlive のほう（素の MLT は開けない）
+    kdenlive.write(base / "edit.kdenlive", kd, width=1600, height=1000, fps=fps, name=demo)
+    return out
 
 
 if __name__ == "__main__":
-    build()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("demo", nargs="?", default=None)
+    a = ap.parse_args()
+    names = [a.demo] if a.demo else [p.stem for p in sorted((ROOT / "demos").glob("*.yaml"))]
+    for n in names:
+        build(n)

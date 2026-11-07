@@ -54,9 +54,12 @@ UNPREP = """() => {
 
 
 def export(spec_path: Path):
+    """layers/<デモ>/<ショット>.yaml → out/<デモ>/layers/<ショット>/。
+    置き場所から行き先が決まるので、仕様に書くのは中身だけでよい。"""
     spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
-    page = ROOT / spec["page"]
-    out = ROOT / spec["out"]
+    demo, shot = spec_path.parent.name, spec_path.stem
+    page = ROOT / (spec["page"] if "page" in spec else f"out/{demo}/page.html")
+    out = ROOT / (spec["out"] if "out" in spec else f"out/{demo}/layers/{shot}")
     out.mkdir(parents=True, exist_ok=True)
     clear = spec.get("clear", [".sc", ".stage", ".stage-wrap"])
     idx = spec["scene"]

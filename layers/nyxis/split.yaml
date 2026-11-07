@@ -1,12 +1,11 @@
-# 「コードが飛ぶ」場面を部品に分ける。
+# 「コードが飛ぶ」場面を部品に分ける。置き場所が layers/<デモ>/<ショット>.yaml で、
+# 出力は out/<デモ>/layers/<ショット>/ に決まる。
 # Blender 側はこれを 3D 空間の板として並べ、カメラ・被写界深度・モーションブラーを付ける。
 #
 # どのレイヤーも、再生させて秒で狙うのではなく js で状態を作る。シーンの hold を
 # 変えた途端に別の絵が撮れてしまうのを避けるため。
 
-page: out/screens/nyxis.html
-scene: 7            # demos/nyxis.yaml の split
-out: out/layers/split
+scene: 7            # demos/nyxis.yaml の何番目か（親フォルダ名がデモ名）
 scale: 2            # 板のテクスチャの細かさ。寄ったときに文字がにじまない
 
 clear: [".sc", ".stage", ".stage-wrap"]

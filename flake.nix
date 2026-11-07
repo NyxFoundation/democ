@@ -12,7 +12,10 @@
       };
       # 毎回使うものだけ。重いものを既定に混ぜると最初の make が止まって見える
       core = with pkgs; [ mlt ffmpeg uv python3 gnumake ];
-      authoring = with pkgs; [ blender kdenlive shotcut freecad openscad inkscape ];
+      # kdenlive はトップレベルに無い。KDE のパッケージセットの下にいる
+      authoring = with pkgs; [
+        blender kdePackages.kdenlive shotcut freecad openscad inkscape
+      ];
     in {
       devShells.${system} = {
         default = pkgs.mkShell {

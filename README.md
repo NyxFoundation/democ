@@ -8,8 +8,10 @@
 YAML が決めるのは中身だけ。文言を変えれば、画面に出ている時間も文字数から付いてくる。
 
 ```
+make edit N=nyxis    組んでブラウザで開く。文言を詰めるときはここから
+make watch N=nyxis   保存するたびに組み直す。ブラウザは F5
 make                 demos/*.yaml → 録画 → タイムライン → out/demo.mp4
-make html            HTML だけ組む。ブラウザで開いて文言を詰める
+make html            HTML だけ組む
 make screens         組んで録り直す
 make snaps           止め絵で確かめる
 make 3d              assets/3d/*.py を Blender で焼く
@@ -23,12 +25,25 @@ make new NAME=foo    templates/starter.yaml から新しいデモを作る
 
 ## 文言を直す
 
-`demos/nyxis.yaml` を開いて文字を書き換え、`make html` してブラウザで
-`out/screens/nyxis.html` を開く。数字キーで場面を飛べて、`r` で頭から再生される。
-よければ `make` で録り直す。引数の一覧は [docs/scenes.md](docs/scenes.md) にある。
+```sh
+make watch N=nyxis       # 別の端末で開いておく
+make edit  N=nyxis       # ブラウザが開く
+```
+
+あとは `demos/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
+で F5 を押すと入れ替わる。組み直しは 0.3 秒。`watch` を使わないなら保存のたびに
+`make html` を叩く。
+
+開いた画面では数字キーで場面を飛べて、`r` で頭から再生される。14 場面目だけ見たい
+ときは `13` を押す。よければ `make` で録り直して書き出す。
+
+引数の一覧は [docs/scenes.md](docs/scenes.md)。文章には `<em>`（accent 色）`<b>`
+`<s>`（灰色）`<br>` が書ける。コードは素のまま書けば `lang` から色が付き、
+`{{ここ}}` が赤い差し、`<<ここ>>` が黄色い注記になる。
 
 保持時間は `lead + 文字数 / cps` を上下で挟んで決まる。長い文を書けば自動的に長く
 出るので、短くしたいときは秒ではなく文を削る。秒で固定したい場面だけ `hold:` を書く。
+全体の速さを変えるなら先頭の `reading.cps` を動かす。
 
 ## なぜ画面収録ではないのか
 

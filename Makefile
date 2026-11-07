@@ -1,5 +1,7 @@
 # demo-creator
 #
+#   make edit N=nyxis   組んでブラウザで開く。文言を詰めるときはここから
+#   make watch N=nyxis  保存するたびに組み直す（ブラウザは F5）
 #   make                demos/*.yaml → 録画 → タイムライン → out/demo.mp4
 #   make screens        YAML から HTML を組んで録り直す
 #   make snaps          止め絵で確かめる（動きで隠れる崩れはこれでしか見えない）
@@ -39,7 +41,7 @@ RENDERS  := $(patsubst assets/3d/%.py,$(OUT)/3d/%.mp4,$(BLEND))
 # 配布用。an=1 は音声なし。色の指定は足さない——素材のまま通すのが一番狂わない
 ENCODE := vcodec=libx264 crf=18 preset=slow pix_fmt=yuv420p an=1
 
-.PHONY: render timeline html screens snaps 3d preview open shell shell-full new clean help
+.PHONY: render timeline html screens snaps 3d edit watch preview open shell shell-full new clean help
 
 render: $(MOVIE)
 
@@ -60,6 +62,21 @@ $(OUT)/screens/%.html: demos/%.yaml tools/build.py tools/highlight.py $(ENGINE)
 screens: $(SCREENS)
 $(OUT)/screens/%.mp4: $(OUT)/screens/%.html tools/record.py tools/browser.py
 	$(PY) tools/record.py $< --out $@
+
+# 文言を詰める往復。組み直しは 0.3 秒なので、保存 → F5 で足りる
+N ?= $(basename $(notdir $(firstword $(SPECS))))
+edit: $(OUT)/screens/$(N).html
+	@(xdg-open $(OUT)/screens/$(N).html >/dev/null 2>&1 &) ; \
+	 echo "demos/$(N).yaml を直して make html。ブラウザは F5 で入れ替わる"
+	@echo "数字キーで場面を飛べる。r で頭から"
+
+watch:
+	@echo "demos/$(N).yaml を見ている。止めるのは Ctrl-C"
+	@last=""; while :; do \
+	  now=$$(cat demos/$(N).yaml engine/engine.* engine/scenes/* 2>/dev/null | cksum); \
+	  if [ "$$now" != "$$last" ]; then last="$$now"; $(MAKE) --no-print-directory html; fi; \
+	  sleep 1; \
+	done
 
 snaps: $(PAGES)
 	$(foreach h,$(PAGES),$(PY) tools/snap.py $(h);)

@@ -4,7 +4,7 @@
 人が触るのは YAML だけ。文言も、コードも、保持時間の方針もそこにある。
 エンジンとシーンの型は engine/ にあり、使ったシーンの CSS と JS だけが埋め込まれる。
 
-  python3 tools/build.py demos/nyxis.yaml -o out/screens/nyxis.html
+  python3 tools/build.py demos/nyxis/nyxis.yaml -o out/nyxis/page.html
 """
 
 from __future__ import annotations

@@ -5,12 +5,10 @@
 分けておくと Z 方向にずらせるので、視差が出て、片方だけにピントを置けて、
 別々に動かせる。3D で合成するときに効いてくるのはここ。
 
-  uv run --with playwright --with pyyaml python tools/layers.py layers/split.yaml
+  uv run --with playwright --with pyyaml python tools/layers.py demos/nyxis/layers/split.yaml
 
-仕様（layers/<名前>.yaml）:
-  page:   組み上がった HTML
-  scene:  demos の何番目のシーンか
-  out:    書き出し先
+仕様（demos/<デモ>/layers/<ショット>.yaml）:
+  scene:  そのデモの何番目のシーンか
   clear:  透明にするために背景を消すセレクタ
   layers: - name / select / at（シーン開始からの秒）/ js（撮る前に流す JS）
 """
@@ -54,10 +52,10 @@ UNPREP = """() => {
 
 
 def export(spec_path: Path):
-    """layers/<デモ>/<ショット>.yaml → out/<デモ>/layers/<ショット>/。
+    """demos/<デモ>/layers/<ショット>.yaml → out/<デモ>/layers/<ショット>/。
     置き場所から行き先が決まるので、仕様に書くのは中身だけでよい。"""
     spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
-    demo, shot = spec_path.parent.name, spec_path.stem
+    demo, shot = spec_path.parents[1].name, spec_path.stem
     page = ROOT / (spec["page"] if "page" in spec else f"out/{demo}/page.html")
     out = ROOT / (spec["out"] if "out" in spec else f"out/{demo}/layers/{shot}")
     out.mkdir(parents=True, exist_ok=True)

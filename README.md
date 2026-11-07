@@ -4,13 +4,21 @@
 スクリプト、編集は MLT XML。どれもテキストなので AI が直接書けて、直したら `make`
 で同じものが出てくる。GUI は人が確かめて手直しするために開く。
 
-デモ 1 本は `demos/<名前>.yaml` 1 ファイル。場面の型は `engine/scenes/` にあり、
-YAML が決めるのは中身だけ。文言を変えれば、画面に出ている時間も文字数から付いてくる。
+デモ 1 本は `demos/<名前>/` 一式。**文字を直すのは `demos/<名前>/<名前>.yaml` だけ**で、
+場面の型は `engine/scenes/` にある。文言を変えれば、画面に出ている時間も文字数から付いてくる。
+
+```
+demos/nyxis/
+  nyxis.yaml         ← 台本。文字を直すのはここ
+  notes.md           数字の出典、言い切りの線引き
+  layers/split.yaml  3D にする場面の切り方
+  shots/split.py     その 3D の組み方
+```
 
 ```
 make edit N=nyxis    組んでブラウザで開く。文言を詰めるときはここから
 make watch N=nyxis   保存するたびに組み直す。ブラウザは F5
-make                 demos/*.yaml → 録画 → タイムライン → out/demo.mp4
+make                 demos/*/ → 録画 → タイムライン → out/<デモ>/demo.mp4
 make html            HTML だけ組む
 make screens         組んで録り直す（シーンごとに 1 本）
 make snaps           止め絵で確かめる
@@ -26,7 +34,7 @@ make new NAME=foo    templates/starter.yaml から新しいデモを作る
 
 ## 文言を直す
 
-文字の正本は `demos/<デモ>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
+文字の正本は `demos/<名前>/<名前>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
 そこでは直せない。
 
 ```sh
@@ -34,7 +42,7 @@ make watch N=nyxis       # 別の端末で開いておく
 make edit  N=nyxis       # ブラウザが開く
 ```
 
-あとは `demos/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
+あとは `demos/nyxis/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
 で F5 を押すと入れ替わる。組み直しは 0.3 秒。`watch` を使わないなら保存のたびに
 `make html` を叩く。
 
@@ -74,13 +82,13 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 
 | 場所 | 中身 |
 |---|---|
-| `demos/*.yaml` | デモ 1 本。人が触るのはここだけ |
-| `demos/*.md` | そのデモの注記。数字の出典、言い切りの線引き |
+| `demos/<名前>/<名前>.yaml` | 台本。人が触るのはここだけ |
+| `demos/<名前>/notes.md` | そのデモの注記。数字の出典、言い切りの線引き |
+| `demos/<名前>/layers/` `shots/` | 3D にする場面の切り方と組み方 |
 | `templates/` | 新しいデモの雛形 |
 | `engine/engine.{css,js}` | ステージと再生の土台 |
 | `engine/scenes/*.{css,js}` | 場面の型。増やすときはここに足す |
-| `assets/3d/*.py` | 切った部品を 3D に置く Blender スクリプト |
-| `assets/snippets/` | 使い回すコード片 |
+| `assets/` | デモをまたいで使い回す素材 |
 | `tools/build.py` | YAML → 1 枚の HTML |
 | `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
 | `edit/timeline.py` | 素材を並べて `.mlt` を書く |
@@ -114,7 +122,7 @@ Kdenlive で開いたときに触れるものになる。
 シーンごとにハッシュを持たせてあるので、1 語直せば 1 本（約 10 秒）で済む。
 エンジンを触ったときは全部録り直しになる。
 
-どの 3D カットがどのシーンを置き換えるかは `layers/<デモ>/<ショット>.yaml` の `scene:` が
+どの 3D カットがどのシーンを置き換えるかは `demos/<デモ>/layers/<ショット>.yaml` の `scene:` が
 宣言していて、`edit/timeline.py` がそれを見て差し替える。3D は重いので `make` の
 既定経路では焼き直さない。`make 3d` を通したあとに `make` すれば取り込まれる。
 

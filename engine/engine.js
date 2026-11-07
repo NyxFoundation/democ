@@ -62,7 +62,7 @@ const D = (() => {
   const register = (name, def) => { Scenes[name] = def; };
 
   /* ---- 走らせる ---- */
-  let stages = [], resetFn = () => {};
+  let stages = [], resetFn = () => {}, SPEC = null;
   function define(list, reset) {
     stages = list; resetFn = reset || (() => {});
     const boxEl = document.getElementById('steps');
@@ -91,8 +91,19 @@ const D = (() => {
   }
   const replay = () => go(stages.length - 1);
 
+  /* 1 場面だけ頭から流す。録画をシーンごとに分けるのに使う。
+     終わったら data-done が立つので、外から終わりが分かる。 */
+  async function playScene(i) {
+    clear(); mark(i); resetFn();
+    delete document.body.dataset.done;
+    const s = SPEC.scenes[i];
+    await Scenes[s.type].play(s);
+    document.body.dataset.done = '1';
+  }
+
   /* ---- 仕様書から組み立てる ---- */
   function boot(spec) {
+    SPEC = spec;
     Object.assign(R, spec.reading || {});
     if (spec.accent) document.documentElement.style.setProperty('--accent', spec.accent);
     const host = document.getElementById('scenes');
@@ -112,6 +123,6 @@ const D = (() => {
   }
 
   return { q, qa, stage, scale, box, sleep, later, clear, text, html, cls, show, count,
-           read, plain, autofit, define, go, replay, register, Scenes, boot,
-           get reading() { return R; } };
+           read, plain, autofit, define, go, replay, playScene, register, Scenes, boot,
+           get reading() { return R; }, get spec() { return SPEC; } };
 })();

@@ -12,7 +12,7 @@ make edit N=nyxis    組んでブラウザで開く。文言を詰めるとき�
 make watch N=nyxis   保存するたびに組み直す。ブラウザは F5
 make                 demos/*.yaml → 録画 → タイムライン → out/demo.mp4
 make html            HTML だけ組む
-make screens         組んで録り直す
+make screens         組んで録り直す（シーンごとに 1 本）
 make snaps           止め絵で確かめる
 make layers          画面を部品ごとの透過 PNG に切り出す
 make 3d              その部品を Blender で 3D に置いて撮る（.blend も出る）
@@ -82,7 +82,19 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 | `tools/build.py` | YAML → 1 枚の HTML |
 | `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
 | `edit/timeline.py` | 素材を並べて `.mlt` を書く |
+| `out/screens/<デモ>/` | シーンごとの録画と index.json |
 | `out/` | 生成物。git には入れない |
+
+## シーンは 1 つ 1 クリップ
+
+録画はシーンごとに分かれて `out/screens/<デモ>/00-数字.mp4` … と並ぶ。1 本に繋げて
+録ると「7 番目だけ 3D 版に差し替える」が切り貼りになるし、文言を一つ直したときに
+全部録り直すことになる。分けておけばタイムラインがクリップの並びになって、人が
+Kdenlive で開いたときに触れるものになる。
+
+どの 3D カットがどのシーンを置き換えるかは `layers/<名前>.yaml` の `scene:` が
+宣言していて、`edit/timeline.py` がそれを見て差し替える。3D は重いので `make` の
+既定経路では焼き直さない。`make 3d` を通したあとに `make` すれば取り込まれる。
 
 ## HTML のままにしないもの
 

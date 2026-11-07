@@ -36,7 +36,7 @@ MOVIE    := $(OUT)/demo.mp4
 
 SPECS    := $(wildcard demos/*.yaml)
 PAGES    := $(patsubst demos/%.yaml,$(OUT)/screens/%.html,$(SPECS))
-SCREENS  := $(patsubst demos/%.yaml,$(OUT)/screens/%.mp4,$(SPECS))
+SCREENS  := $(patsubst demos/%.yaml,$(OUT)/screens/%/index.json,$(SPECS))
 ENGINE   := $(wildcard engine/*.css engine/*.js engine/scenes/*)
 LAYSPEC  := $(wildcard layers/*.yaml)
 LAYERS   := $(patsubst layers/%.yaml,$(OUT)/layers/%/layers.json,$(LAYSPEC))
@@ -46,7 +46,7 @@ RENDERS  := $(patsubst assets/3d/%.py,$(OUT)/3d/%.mp4,$(SHOTS))
 # 配布用。an=1 は音声なし。色の指定は足さない——素材のまま通すのが一番狂わない
 ENCODE := vcodec=libx264 crf=18 preset=slow pix_fmt=yuv420p an=1
 
-.PHONY: render timeline html screens snaps layers 3d edit watch preview open shell shell-full new clean help
+.PHONY: render timeline html screens snaps layers 3d edit watch preview open shell shell-full new clean help FORCE
 
 render: $(MOVIE)
 
@@ -55,7 +55,9 @@ $(MOVIE): $(TIMELINE)
 	@ls -lh $@
 
 timeline: $(TIMELINE)
-$(TIMELINE): edit/timeline.py $(SCREENS)
+# 3D カットは重いので make の既定経路では焼き直さない。make 3d を通したあとは
+# ここが拾い直す（中身が同じなら .mlt は書き換えないので melt は走らない）
+$(TIMELINE): edit/timeline.py $(SCREENS) FORCE
 	$(PY) edit/timeline.py
 
 # YAML → 1 枚の HTML。使ったシーンの CSS と JS だけが埋め込まれる
@@ -63,10 +65,11 @@ html: $(PAGES)
 $(OUT)/screens/%.html: demos/%.yaml tools/build.py tools/highlight.py $(ENGINE)
 	$(PY) tools/build.py $< -o $@
 
-# HTML は毎回同じ絵を出すので、文言を直したら録り直すだけでよい
+# HTML は毎回同じ絵を出すので、文言を直したら録り直すだけでよい。
+# シーンごとに 1 本にしておくと、3D 版への差し替えと部分的な録り直しが効く
 screens: $(SCREENS)
-$(OUT)/screens/%.mp4: $(OUT)/screens/%.html tools/record.py tools/browser.py
-	$(PY) tools/record.py $< --out $@
+$(OUT)/screens/%/index.json: $(OUT)/screens/%.html tools/record.py tools/browser.py
+	$(PY) tools/record.py $< --out $(OUT)/screens/$*
 
 # 文言を詰める往復。組み直しは 0.3 秒なので、保存 → F5 で足りる
 N ?= $(basename $(notdir $(firstword $(SPECS))))
@@ -119,6 +122,8 @@ shell:
 	nix develop $(FLAKE)
 shell-full:
 	nix develop $(FLAKE)$(HASH)full
+
+FORCE:
 
 clean:
 	rm -rf $(OUT)

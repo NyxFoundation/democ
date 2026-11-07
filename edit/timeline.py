@@ -16,6 +16,7 @@ MLT を選ぶ理由は、Kdenlive と Shotcut が同じ XML を開くから。AI
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -207,28 +208,57 @@ class Timeline:
                 ET.SubElement(tr, "property", {"name": k}).text = v
 
         ET.indent(mlt, space="  ")
-        path.write_bytes(b'<?xml version="1.0" encoding="utf-8"?>\n'
-                         + ET.tostring(mlt, encoding="utf-8"))
+        doc = b'<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(mlt, encoding="utf-8")
+        # 中身が同じなら書かない。毎回書くと melt が毎回描き直すことになる
+        if path.exists() and path.read_bytes() == doc:
+            print(f"{path.relative_to(ROOT)}  変更なし / {total / self.fps:.1f}s")
+            return path
+        path.write_bytes(doc)
         print(f"{path.relative_to(ROOT)}  {total} frames / {total / self.fps:.1f}s")
         return path
 
 
 # ---------------------------------------------------------------------------
 # ここから下が構成。素材を並べ、フェードや重ねを決める。
-# いまは録れている画面素材を demos の順に並べるだけ。3D 素材を重ねたり、
-# 章の頭に静止画を挟んだりするのはここに書き足す。
+#
+# シーンは 1 つ 1 クリップ。1 本に繋げて録ると「7 番目だけ 3D 版に差し替える」が
+# 切り貼りになるし、文言を直したときに全部録り直すことになる。
 # ---------------------------------------------------------------------------
+def shots() -> dict:
+    """3D カットがどのシーンを置き換えるかは layers/<名前>.yaml が宣言している。"""
+    import yaml
+    out = {}
+    for p in sorted((ROOT / "layers").glob("*.yaml")):
+        spec = yaml.safe_load(p.read_text(encoding="utf-8"))
+        mp4 = ROOT / "out" / "3d" / f"{p.stem}.mp4"
+        if mp4.exists() and "scene" in spec:
+            out[(Path(spec["page"]).stem, spec["scene"])] = mp4
+    return out
+
+
 def build() -> Path:
     tl = Timeline(width=1600, height=1000, fps=25, tracks=2)
-    specs = sorted((ROOT / "demos").glob("*.yaml"))
-    clips = [ROOT / "out" / "screens" / f"{p.stem}.mp4" for p in specs]
-    clips = [c for c in clips if c.exists()]
+    sub = shots()
+    clips = []
+    for spec in sorted((ROOT / "demos").glob("*.yaml")):
+        index = ROOT / "out" / "screens" / spec.stem / "index.json"
+        if not index.exists():
+            continue
+        for s in json.loads(index.read_text(encoding="utf-8"))["scenes"]:
+            three = sub.get((spec.stem, s["i"]))
+            clips.append((three or index.parent / s["file"], s["name"], three is not None))
     if not clips:
         raise SystemExit("out/screens に録画がない。make screens を先に通す")
-    for i, c in enumerate(clips):
-        tl.video(c, track=0,
-                 fade_in=0.4 if i == 0 else 0.25,
-                 fade_out=0.8 if i == len(clips) - 1 else 0.25)
+
+    last = len(clips) - 1
+    for i, (path, name, is3d) in enumerate(clips):
+        # 見た目の違うカットの前後だけ 短く溶かす。同じ絵の続きは切りっぱなし
+        prev3d = i > 0 and clips[i - 1][2]
+        next3d = i < last and clips[i + 1][2]
+        tl.video(path, track=0,
+                 fade_in=0.4 if i == 0 else (0.25 if is3d or prev3d else 0.0),
+                 fade_out=0.8 if i == last else (0.25 if is3d or next3d else 0.0))
+        print("  %2d %-10s %s%s" % (i, name, path.name, "   ← 3D" if is3d else ""))
     return tl.write("out/edit.mlt")
 
 

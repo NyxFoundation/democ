@@ -78,37 +78,23 @@ def write(path, clips, *, width=1600, height=1000, fps=25, name="demo") -> Path:
     _prop(black, "mlt_image_format", "rgba")
     _prop(black, "set.test_audio", 0)
 
-    # ビンの素材。同じファイルは 1 つにまとめる。
-    # タイトルは <chain> ではなく <producer>。Kdenlive はこれをタイトルクリップとして
-    # 開くので、ダブルクリックで文字を打ち替えられる。
+    # ビンの素材。同じファイルは 1 つにまとめる
     chains, order = {}, []
-    for n, c in enumerate(clips):
-        if c.get("title"):
-            pid = f"title{n}"
-            c["_ref"] = pid
-            order.append(pid)
-            pr = ET.SubElement(mlt, "producer", {
-                "id": pid, "in": tc(0, fps), "out": tc(c["frames"] - 1, fps)})
-            _prop(pr, "mlt_service", "kdenlivetitle")
-            _prop(pr, "length", c["frames"])
-            _prop(pr, "kdenlive:clipname", c["name"])
-            _prop(pr, "xmldata", c["title"])
-            continue
+    for c in clips:
         src = str(Path(c["path"]).resolve())
         if src not in chains:
             cid = f"chain{len(chains)}"
             chains[src] = cid
-            order.append(cid)
+            order.append((cid, src, c["name"]))
             ch = ET.SubElement(mlt, "chain", {"id": cid})
             _prop(ch, "resource", src)
-        c["_ref"] = chains[src]
 
     # 映像トラック。tractor が playlist を 2 本持つのが Kdenlive の形
     pl = ET.SubElement(mlt, "playlist", {"id": "playlist_v0"})
     for i, c in enumerate(clips):
         inf = c.get("in", 0)
         entry = ET.SubElement(pl, "entry", {
-            "producer": c["_ref"],
+            "producer": chains[str(Path(c["path"]).resolve())],
             "in": tc(inf, fps), "out": tc(inf + c["frames"] - 1, fps)})
         if c.get("fade_in"):
             _fade(entry, "from", c["fade_in"], fps, i * 2)
@@ -169,7 +155,7 @@ def write(path, clips, *, width=1600, height=1000, fps=25, name="demo") -> Path:
                  ("xml_retain", 1)):
         _prop(binp, k, v)
     ET.SubElement(binp, "entry", {"producer": uid, "in": tc(0, fps), "out": tc(0, fps)})
-    for cid in order:
+    for cid, _src, _nm in order:
         ET.SubElement(binp, "entry", {"producer": cid, "in": tc(0, fps), "out": tc(0, fps)})
 
     final = ET.SubElement(mlt, "tractor", {

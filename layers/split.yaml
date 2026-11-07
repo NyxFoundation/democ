@@ -1,0 +1,55 @@
+# 「コードが飛ぶ」場面を部品に分ける。
+# Blender 側はこれを 3D 空間の板として並べ、カメラ・被写界深度・モーションブラーを付ける。
+#
+# どのレイヤーも、再生させて秒で狙うのではなく js で状態を作る。シーンの hold を
+# 変えた途端に別の絵が撮れてしまうのを避けるため。
+
+page: out/screens/nyxis.html
+scene: 7            # demos/nyxis.yaml の split
+out: out/layers/split
+scale: 2            # 板のテクスチャの細かさ。寄ったときに文字がにじまない
+
+clear: [".sc", ".stage", ".stage-wrap"]
+
+layers:
+  # 左の板。Cedar のポリシー
+  - name: left
+    select: "#sp .l"
+    js: >
+      D.cls('#sp','on'); D.html('#spLT', s.left.tabHtml);
+      D.html('#spL', s.left.codeHtml.join('\n'));
+      D.q('#sp .l').style.borderRight = 'none';
+
+  # 右の板。飛んだあとの Lean
+  - name: right
+    select: "#sp .r"
+    js: >
+      D.cls('#sp','on'); D.html('#spRT', s.right.tabHtml);
+      D.html('#spR', s.right.codeHtml.join('\n')); D.cls('#spR','pending',false);
+
+  # 飛ぶ箱（Cedar の表記）。板の文字が写り込まないよう、両側を空にしてから撮る
+  - name: chip-from
+    select: "#flyA .bx"
+    js: >
+      D.cls('#sp','on'); D.html('#spL', s.left.codeHtml.join('\n'));
+      const from = D.q('#spFly').innerHTML;
+      D.html('#spL',''); D.html('#spR','');
+      D.html('#flyA', '<span class="bx">' + from + '</span>');
+      D.q('#fly').style.left = '200px'; D.q('#fly').style.top = '300px';
+      D.cls('#fly','swap',false); D.cls('#fly','on');
+
+  # 着地したあとの表記（Lean）
+  - name: chip-to
+    select: "#flyB .bx"
+    js: >
+      D.cls('#sp','on'); D.html('#spR', s.right.codeHtml.join('\n'));
+      const to = D.q('#spLand').innerHTML;
+      D.html('#spL',''); D.html('#spR','');
+      D.html('#flyB', '<span class="bx">' + to + '</span>');
+      D.q('#fly').style.left = '200px'; D.q('#fly').style.top = '300px';
+      D.cls('#fly','swap'); D.cls('#fly','on');
+
+  # 下に出る一文
+  - name: band
+    select: "#spBand"
+    js: "D.cls('#sp','on'); D.html('#spBand', s.band); D.cls('#spBand','on');"

@@ -14,7 +14,8 @@ make                 demos/*.yaml → 録画 → タイムライン → out/demo
 make html            HTML だけ組む
 make screens         組んで録り直す
 make snaps           止め絵で確かめる
-make 3d              assets/3d/*.py を Blender で焼く
+make layers          画面を部品ごとの透過 PNG に切り出す
+make 3d              その部品を Blender で 3D に置いて撮る（.blend も出る）
 make preview         melt で再生する
 make open            Kdenlive で out/edit.mlt を開く
 make new NAME=foo    templates/starter.yaml から新しいデモを作る
@@ -75,12 +76,27 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 | `templates/` | 新しいデモの雛形 |
 | `engine/engine.{css,js}` | ステージと再生の土台 |
 | `engine/scenes/*.{css,js}` | 場面の型。増やすときはここに足す |
-| `assets/3d/*.py` | Blender を headless で回すスクリプト |
+| `layers/*.yaml` | 画面をどう部品に切るか |
+| `assets/3d/*.py` | 切った部品を 3D に置く Blender スクリプト |
 | `assets/snippets/` | 使い回すコード片 |
 | `tools/build.py` | YAML → 1 枚の HTML |
 | `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
 | `edit/timeline.py` | 素材を並べて `.mlt` を書く |
 | `out/` | 生成物。git には入れない |
+
+## HTML のままにしないもの
+
+画面そのものを映す場面——ブラウザ UI、コードエディタ、ターミナル——は HTML が正しい
+素材で、3D で作り直すと遅いうえに嘘くさくなる。一方で HTML が原理的に出せないものが
+四つある。モーションブラー、被写界深度、実光源が縁を拾う反射、フレームの正確さ。
+「安っぽく見える」の正体はだいたいこれで、幾何の精度ではない。
+
+そこで、UI はモデリングせず、部品ごとの透過 PNG に切り出して Blender の空間に板と
+して並べる。文言を直したらレイヤーを撮り直すだけで、`.blend` の中のアニメーションは
+そのまま生きる。手順は [docs/layers-and-3d.md](docs/layers-and-3d.md)。
+
+クリエイタに渡すのは mp4 ではなく `.blend`。開けば板・カメラ・ライト・キーが全部
+そこにあって、続きが作れる。
 
 ## 場面の型
 

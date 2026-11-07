@@ -29,7 +29,7 @@ def snap(html, out=None, every=2.0, width=1600, height=1000, maxs=300):
         b = launch_chromium(p)
         pg = b.new_context(viewport={"width": width, "height": height}).new_page()
         pg.goto(f"file://{html}?rec=1")
-        t0 = shot = 0.0
+        t0 = 0.0
         n = 0
         while t0 < maxs:
             pg.evaluate("1")

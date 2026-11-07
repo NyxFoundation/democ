@@ -1,12 +1,13 @@
 # demo-creator
 #
 #   make edit N=nyxis   組んでブラウザで開く。文言を詰めるときはここから
+#   make layers         画面を部品ごとの透過 PNG に切り出す
+#   make 3d             その部品を Blender で 3D に置いて撮る（.blend も出る）
 #   make watch N=nyxis  保存するたびに組み直す（ブラウザは F5）
 #   make                demos/*.yaml → 録画 → タイムライン → out/demo.mp4
 #   make screens        YAML から HTML を組んで録り直す
 #   make snaps          止め絵で確かめる（動きで隠れる崩れはこれでしか見えない）
 #   make html           HTML だけ組む（ブラウザで開いて文言を詰める）
-#   make 3d             assets/3d/*.py を Blender で焼く
 #   make preview        melt で再生する
 #   make open           Kdenlive で out/edit.mlt を開く
 #   make new NAME=foo   templates/starter.yaml から新しいデモを作る
@@ -24,7 +25,9 @@ ifeq ($(shell command -v melt 2>/dev/null),)
 else
   IN :=
 endif
-FULL := nix develop $(FLAKE)#full -c
+# # は Makefile ではコメントの始まりなので、flake の属性指定は変数に逃がす
+HASH := \#
+FULL := nix develop $(FLAKE)$(HASH)full -c
 PY := uv run --quiet --with pyyaml --with playwright python3
 
 OUT      := out
@@ -35,13 +38,15 @@ SPECS    := $(wildcard demos/*.yaml)
 PAGES    := $(patsubst demos/%.yaml,$(OUT)/screens/%.html,$(SPECS))
 SCREENS  := $(patsubst demos/%.yaml,$(OUT)/screens/%.mp4,$(SPECS))
 ENGINE   := $(wildcard engine/*.css engine/*.js engine/scenes/*)
-BLEND    := $(wildcard assets/3d/*.py)
-RENDERS  := $(patsubst assets/3d/%.py,$(OUT)/3d/%.mp4,$(BLEND))
+LAYSPEC  := $(wildcard layers/*.yaml)
+LAYERS   := $(patsubst layers/%.yaml,$(OUT)/layers/%/layers.json,$(LAYSPEC))
+SHOTS    := $(wildcard assets/3d/*.py)
+RENDERS  := $(patsubst assets/3d/%.py,$(OUT)/3d/%.mp4,$(SHOTS))
 
 # 配布用。an=1 は音声なし。色の指定は足さない——素材のまま通すのが一番狂わない
 ENCODE := vcodec=libx264 crf=18 preset=slow pix_fmt=yuv420p an=1
 
-.PHONY: render timeline html screens snaps 3d edit watch preview open shell shell-full new clean help
+.PHONY: render timeline html screens snaps layers 3d edit watch preview open shell shell-full new clean help
 
 render: $(MOVIE)
 
@@ -81,11 +86,22 @@ watch:
 snaps: $(PAGES)
 	$(foreach h,$(PAGES),$(PY) tools/snap.py $(h);)
 
-# 3D 素材。assets/3d/*.py は bpy を書いた Blender スクリプト
+# 画面を部品ごとの透過 PNG に切り出す。1 枚の絵にすると全体をスライドさせる
+# ことしかできない。分けておくと Z 方向にずらせて視差とピントが効く
+layers: $(LAYERS)
+$(OUT)/layers/%/layers.json: layers/%.yaml $(PAGES) tools/layers.py
+	$(PY) tools/layers.py $<
+
+# 3D。assets/3d/<名前>.py と layers/<名前>.yaml が対になる。
+# クリエイタに渡すのは mp4 ではなく out/3d/<名前>.blend のほう
 3d: $(RENDERS)
-$(OUT)/3d/%.mp4: assets/3d/%.py
+$(OUT)/3d/%.mp4: assets/3d/%.py $(OUT)/layers/%/layers.json
 	@mkdir -p $(OUT)/3d
-	$(FULL) blender --background --python $< -- --out $@
+	$(FULL) blender -b -P $< -- --layers $(OUT)/layers/$* \
+	  --out $(OUT)/3d/$* --blend $(OUT)/3d/$*.blend
+	$(IN) ffmpeg -y -loglevel error -framerate 25 -i $(OUT)/3d/$*/f%04d.png \
+	  -c:v libx264 -crf 18 -pix_fmt yuv420p $@
+	@ls -lh $@
 
 preview: $(TIMELINE)
 	$(IN) melt $(TIMELINE)
@@ -102,7 +118,7 @@ new:
 shell:
 	nix develop $(FLAKE)
 shell-full:
-	nix develop $(FLAKE)#full
+	nix develop $(FLAKE)$(HASH)full
 
 clean:
 	rm -rf $(OUT)

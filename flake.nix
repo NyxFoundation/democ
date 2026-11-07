@@ -11,7 +11,9 @@
         fontDirectories = [ pkgs.noto-fonts-cjk-sans pkgs.noto-fonts-cjk-serif ];
       };
       # 毎回使うものだけ。重いものを既定に混ぜると最初の make が止まって見える
-      core = with pkgs; [ mlt ffmpeg uv python3 gnumake ];
+      # 素の mlt には Qt モジュールが無く kdenlivetitle が使えない。
+      # タイトルクリップを melt で描くには Qt 付きの方が要る
+      core = with pkgs; [ kdePackages.mlt ffmpeg uv python3 gnumake ];
       # kdenlive はトップレベルに無い。KDE のパッケージセットの下にいる
       authoring = with pkgs; [
         blender kdePackages.kdenlive shotcut freecad openscad inkscape

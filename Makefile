@@ -37,7 +37,7 @@ ifeq ($(shell command -v kdenlive 2>/dev/null),)
 else
   KD :=
 endif
-PY := uv run --quiet --with pyyaml --with playwright python3
+PY := uv run --quiet --with pyyaml --with playwright --with pillow python3
 
 OUT    := out
 DEMOS  := $(notdir $(basename $(wildcard demos/*.yaml)))

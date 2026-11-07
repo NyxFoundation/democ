@@ -40,6 +40,11 @@ accent 色、`<s>` が灰色、`<br>` が改行。
 
 連続する card は暗転を挟まずに入れ替わる。
 
+`text` だけの card（`number` も `code` も `tab` も無いもの）は、タイムラインでは
+焼き込みではなく **Kdenlive のタイトルクリップ**として置かれる。Kdenlive の中で
+文字を打ち替えられる代わりに、保持時間の自動計算と自動縮小は効かなくなる。
+`as_title: false` を書けば焼き込みに戻る。
+
 ## browser — 事故を起こしているウェブアプリ
 
 `brand` `nav` `user{email,initial}` が枠、`url` `crumb` `files` が最初の画面。

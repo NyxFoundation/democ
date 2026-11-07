@@ -28,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kdenlive                                  # noqa: E402
+import titles                                    # noqa: E402
 
 
 def probe_duration(path: Path) -> float:
@@ -90,6 +91,12 @@ class Timeline:
         """value は MLT の色表記。黒は '#ff000000'（先頭 2 桁がアルファ）。"""
         self.tracks[track].append(
             Clip(None, 0.0, seconds, fade_in, fade_out, "color", {"resource": value}))
+        return self
+
+    def title(self, xmldata, *, seconds, track=0, fade_in=0.0, fade_out=0.0) -> "Timeline":
+        """Kdenlive のタイトルクリップ。焼き込まずに置くので、あとで文字を直せる。"""
+        self.tracks[track].append(
+            Clip(None, 0.0, seconds, fade_in, fade_out, "title", {"xmldata": xmldata}))
         return self
 
     def gap(self, seconds, *, track=0) -> "Timeline":
@@ -179,6 +186,9 @@ class Timeline:
                 elif clip.service == "color":
                     prop("mlt_service", "color")
                     prop("length", frames)
+                elif clip.service == "title":
+                    prop("mlt_service", "kdenlivetitle")
+                    prop("length", frames)
                 for k, v in clip.properties.items():
                     prop(k, v)
 
@@ -227,6 +237,25 @@ class Timeline:
 # シーンは 1 つ 1 クリップ。1 本に繋げて録ると「7 番目だけ 3D 版に差し替える」が
 # 切り貼りになるし、文言を直したときに全部録り直すことになる。
 # ---------------------------------------------------------------------------
+def cards(demo: str) -> dict:
+    """文字だけのカードは、焼き込まずに Kdenlive のタイトルクリップとして置く。
+    そうすれば Kdenlive の中で打ち替えられる。数字のカウントアップやコードが
+    載っているものは動きと組版が要るので、録画のまま。"""
+    import yaml
+    spec = yaml.safe_load((ROOT / "demos" / f"{demo}.yaml").read_text(encoding="utf-8"))
+    accent = spec.get("accent", "#5fd7d7")
+    out = {}
+    for i, sc in enumerate(spec.get("scenes", [])):
+        if sc.get("type") != "card" or not sc.get("text"):
+            continue
+        if sc.get("code") or sc.get("number") is not None or sc.get("tab"):
+            continue
+        if sc.get("as_title") is False:
+            continue
+        out[i] = {"text": sc["text"], "accent": accent}
+    return out
+
+
 def shots(demo: str) -> dict:
     """3D カットがどのシーンを置き換えるかは layers/<デモ>/<ショット>.yaml が宣言する。"""
     import yaml
@@ -248,22 +277,32 @@ def build(demo: str) -> Path:
 
     tl = Timeline(width=1600, height=1000, fps=fps, tracks=2)
     sub = shots(demo)
+    txt = cards(demo)
     clips = []
     for s in json.loads(index.read_text(encoding="utf-8"))["scenes"]:
         three = sub.get(s["i"])
-        clips.append((three or index.parent / s["file"], s["name"], three is not None))
+        card = None if three else txt.get(s["i"])
+        clips.append((three or index.parent / s["file"], s["name"],
+                      three is not None, card, s["seconds"]))
 
     last = len(clips) - 1
     kd = []
-    for i, (path, name, is3d) in enumerate(clips):
+    for i, (path, name, is3d, card, secs) in enumerate(clips):
         # 見た目の違うカットの前後だけ短く溶かす。同じ絵の続きは切りっぱなし
         prev3d = i > 0 and clips[i - 1][2]
         next3d = i < last and clips[i + 1][2]
         fi = 0.4 if i == 0 else (0.25 if is3d or prev3d else 0.0)
         fo = 0.8 if i == last else (0.25 if is3d or next3d else 0.0)
+        frames = max(int(round((secs if card else probe_duration(path)) * fps)), 1)
+        if card:
+            xml = titles.build(card["text"], frames=frames, accent=card["accent"])
+            tl.title(xml, seconds=frames / fps, fade_in=fi, fade_out=fo)
+            kd.append({"title": xml, "name": name, "in": 0, "frames": frames,
+                       "fade_in": int(round(fi * fps)), "fade_out": int(round(fo * fps))})
+            print("  %2d %-10s （タイトルクリップ）" % (i, name))
+            continue
         tl.video(path, track=0, fade_in=fi, fade_out=fo)
-        kd.append({"path": path, "name": name, "in": 0,
-                   "frames": max(int(round(probe_duration(path) * fps)), 1),
+        kd.append({"path": path, "name": name, "in": 0, "frames": frames,
                    "fade_in": int(round(fi * fps)), "fade_out": int(round(fo * fps))})
         print("  %2d %-10s %s%s" % (i, name, path.name, "   ← 3D" if is3d else ""))
 

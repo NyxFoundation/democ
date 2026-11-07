@@ -228,12 +228,12 @@ class Timeline:
 # 切り貼りになるし、文言を直したときに全部録り直すことになる。
 # ---------------------------------------------------------------------------
 def shots(demo: str) -> dict:
-    """3D カットがどのシーンを置き換えるかは demos/<デモ>/layers/<ショット>.yaml が宣言する。"""
+    """3D カットがどのシーンを置き換えるかは out/<デモ>/layers/<ショット>.yaml が宣言する。"""
     import yaml
     out = {}
-    for p in sorted((ROOT / "demos" / demo / "layers").glob("*.yaml")):
+    for p in sorted((ROOT / "out" / demo / "layers").glob("*.yaml")):
         spec = yaml.safe_load(p.read_text(encoding="utf-8"))
-        mp4 = ROOT / "out" / demo / "3d" / f"{p.stem}.mp4"
+        mp4 = ROOT / "out" / demo / "build" / "3d" / f"{p.stem}.mp4"
         if mp4.exists() and "scene" in spec:
             out[spec["scene"]] = mp4
     return out
@@ -241,7 +241,7 @@ def shots(demo: str) -> dict:
 
 def build(demo: str) -> Path:
     fps = 25
-    base = ROOT / "out" / demo
+    base = ROOT / "out" / demo / "build"
     index = base / "screens" / "index.json"
     if not index.exists():
         raise SystemExit(f"{index} がない。make screens を先に通す")
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     ap.add_argument("demo", nargs="?", default=None)
     a = ap.parse_args()
     names = [a.demo] if a.demo else [p.parent.name
-                                     for p in sorted((ROOT / "demos").glob("*/*.yaml"))
+                                     for p in sorted((ROOT / "out").glob("*/*.yaml"))
                                      if p.stem == p.parent.name]
     for n in names:
         build(n)

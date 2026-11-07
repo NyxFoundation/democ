@@ -1,4 +1,5 @@
-# 生成物は入れない。YAML と engine から毎回同じものが出る
+# デモ 1 本ぶんは out/<名前>/ にあり、git には入らない。
+# 残したいものは make example N=<名前> で examples/ へ写す。
 out/
 result
 result-*

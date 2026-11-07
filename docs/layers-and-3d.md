@@ -9,8 +9,8 @@ HTML で作った画面を、部品ごとの透過 PNG に切り出して、Blen
 アニメーションはそのまま生きる。
 
 ```sh
-make layers     # demos の画面 → out/layers/<名前>/*.png
-make 3d         # → out/3d/<名前>.blend と out/3d/<名前>.mp4
+make layers     # 画面 → out/layers/<名前>/*.png
+make 3d         # → build/3d/<名前>.blend と .mp4
 ```
 
 ## 層に分ける
@@ -19,8 +19,8 @@ make 3d         # → out/3d/<名前>.blend と out/3d/<名前>.mp4
 分けておくと Z 方向にずらせるので、視差が出て、片方だけにピントを置けて、別々に
 動かせる。インタラクティブに見えるのはここ。
 
-切り出し方は `demos/<デモ>/layers/<ショット>.yaml` に書く。置き場所から行き先
-（`out/<デモ>/layers/<ショット>/`）が決まるので、仕様に書くのは中身だけでよい。
+切り出し方は `out/<デモ>/layers/<ショット>.yaml` に書く。置き場所から行き先
+（`out/<デモ>/build/parts/<ショット>/`）が決まるので、仕様に書くのは中身だけでよい。
 
 ```yaml
 scene: 7                      # demos の何番目のシーンか
@@ -47,7 +47,7 @@ Blender 側はこれを見て板を並べる。
 
 ## 3D 側
 
-`demos/<デモ>/shots/<ショット>.py` と `demos/<デモ>/layers/<ショット>.yaml` が対になる。`demos/nyxis/shots/split.py` が実例。
+`out/<デモ>/shots/<ショット>.py` と `out/<デモ>/layers/<ショット>.yaml` が対になる。`templates/shots/cards-in-3d.py` が雛形で、`examples/nyxis/shots/split.py` が実例。
 
 画面座標はそのまま持ち込む。1600x1000 px を 16x10 単位として扱い、カメラをちょうど
 その幅が収まる距離に置く。あとはその基準からずらしていく。**1 単位 = 100 px**に
@@ -70,9 +70,9 @@ EEVEE は `--background` でも動く（Blender 5.2.3 / Intel UHD で確認）�
 
 ## タイムラインへの入り方
 
-`demos/<デモ>/layers/<ショット>.yaml` の `scene:` は、切り出し元であると同時に「この 3D カットが
+`out/<デモ>/layers/<ショット>.yaml` の `scene:` は、切り出し元であると同時に「この 3D カットが
 どのシーンを置き換えるか」の宣言でもある。`edit/timeline.py` がこれを見て、
-`out/<デモ>/screens/07-移植.mp4` の代わりに `out/<デモ>/3d/<ショット>.mp4` を並べる。
+`out/<デモ>/build/screens/07-移植.mp4` の代わりに `out/<デモ>/build/3d/<ショット>.mp4` を並べる。
 前後には 0.25 秒の溶かしが入る。絵の質が変わる継ぎ目はそのほうが落ち着く。
 
 3D は 1 フレーム数秒かかるので、`make` の既定経路では焼き直さない。`make 3d` を
@@ -80,5 +80,5 @@ EEVEE は `--background` でも動く（Blender 5.2.3 / Intel UHD で確認）�
 
 ## 渡すもの
 
-クリエイタに渡すのは mp4 ではなく **`out/<デモ>/3d/<ショット>.blend`**。
+クリエイタに渡すのは mp4 ではなく **`out/<デモ>/build/3d/<ショット>.blend`**。
 開けば板・カメラ・ライト・キーが全部そこにあり、続きが作れる。mp4 は確認用。

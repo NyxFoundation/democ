@@ -4,29 +4,38 @@
 スクリプト、編集は MLT XML。どれもテキストなので AI が直接書けて、直したら `make`
 で同じものが出てくる。GUI は人が確かめて手直しするために開く。
 
-デモ 1 本は `demos/<名前>/` 一式。**文字を直すのは `demos/<名前>/<名前>.yaml` だけ**で、
-場面の型は `engine/scenes/` にある。文言を変えれば、画面に出ている時間も文字数から付いてくる。
+このリポジトリにあるのは**道具だけ**。デモ 1 本ぶんは `out/<名前>/` に置き、git には
+入らない。残したくなったら `make example` で `examples/` へ写す。
 
 ```
-demos/nyxis/
-  nyxis.yaml         ← 台本。文字を直すのはここ
-  notes.md           数字の出典、言い切りの線引き
-  layers/split.yaml  3D にする場面の切り方
-  shots/split.py     その 3D の組み方
+out/nyxis/              ← 作業場（git 管理外）
+  nyxis.yaml              台本。文字を直すのはここ
+  notes.md                数字の出典、言い切りの線引き
+  layers/split.yaml       3D にする場面の切り方
+  shots/split.py          その 3D の組み方
+  build/                  生成物。make clean はここだけ消す
+    page.html  screens/  parts/  3d/  edit.mlt  edit.kdenlive  demo.mp4
 ```
 
 ```
-make edit N=nyxis    組んでブラウザで開く。文言を詰めるときはここから
-make watch N=nyxis   保存するたびに組み直す。ブラウザは F5
-make                 demos/*/ → 録画 → タイムライン → out/<デモ>/demo.mp4
-make html            HTML だけ組む
-make screens         組んで録り直す（シーンごとに 1 本）
-make snaps           止め絵で確かめる
-make layers          画面を部品ごとの透過 PNG に切り出す
-make 3d              その部品を Blender で 3D に置いて撮る（.blend も出る）
-make preview         melt で再生する
-make open            Kdenlive で out/edit.mlt を開く
-make new NAME=foo    templates/starter.yaml から新しいデモを作る
+make new N=foo [FROM=nyxis]  作業場を作る
+make edit N=foo              組んでブラウザで開く。文言を詰めるときはここから
+make watch N=foo             保存するたびに組み直す。ブラウザは F5
+make                         out/*/ → 録画 → タイムライン → build/demo.mp4
+make screens                 組んで録り直す（中身が変わったシーンだけ）
+make snaps                   止め絵で確かめる
+make layers                  画面を部品ごとの透過 PNG に切り出す
+make 3d                      その部品を Blender で 3D に置いて撮る（.blend も出る）
+make open N=foo              Kdenlive で開く（尺と順番を触る）
+make example N=foo           examples/ へ写して commit できるようにする
+```
+
+はじめてなら:
+
+```sh
+make new N=nyxis FROM=nyxis   # 同梱の見せ札から作業場を作る
+make edit N=nyxis             # ブラウザで見る
+make                          # 録って out/nyxis/build/demo.mp4
 ```
 
 `melt` が PATH に無ければ Makefile が `nix develop` を噛ませるので、素の端末から
@@ -34,7 +43,7 @@ make new NAME=foo    templates/starter.yaml から新しいデモを作る
 
 ## 文言を直す
 
-文字の正本は `demos/<名前>/<名前>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
+文字の正本は `out/<名前>/<名前>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
 そこでは直せない。
 
 ```sh
@@ -42,7 +51,7 @@ make watch N=nyxis       # 別の端末で開いておく
 make edit  N=nyxis       # ブラウザが開く
 ```
 
-あとは `demos/nyxis/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
+あとは `out/nyxis/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
 で F5 を押すと入れ替わる。組み直しは 0.3 秒。`watch` を使わないなら保存のたびに
 `make html` を叩く。
 
@@ -82,10 +91,9 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 
 | 場所 | 中身 |
 |---|---|
-| `demos/<名前>/<名前>.yaml` | 台本。人が触るのはここだけ |
-| `demos/<名前>/notes.md` | そのデモの注記。数字の出典、言い切りの線引き |
-| `demos/<名前>/layers/` `shots/` | 3D にする場面の切り方と組み方 |
-| `templates/` | 新しいデモの雛形 |
+| `templates/starter.yaml` | 台本の雛形 |
+| `templates/shots/` | Blender ショットの雛形 |
+| `examples/<名前>/` | 見せ札。`make new FROM=` の出発点になる |
 | `engine/engine.{css,js}` | ステージと再生の土台 |
 | `engine/scenes/*.{css,js}` | 場面の型。増やすときはここに足す |
 | `assets/` | デモをまたいで使い回す素材 |
@@ -97,23 +105,9 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 
 ## 出力の置き場
 
-デモ 1 本ぶんの生成物は `out/<デモ>/` にまとまる。
-
-```
-out/nyxis/
-  page.html            組み上がった画面
-  screens/             シーンごとの録画と index.json
-  layers/<ショット>/     部品ごとの透過 PNG
-  3d/<ショット>.blend    クリエイタに渡すのはこれ
-  3d/<ショット>.mp4
-  edit.mlt             melt が描画する
-  edit.kdenlive        人が Kdenlive で開く
-  demo.mp4             確認用
-```
-
 ## シーンは 1 つ 1 クリップ
 
-録画はシーンごとに分かれて `out/<デモ>/screens/00-数字.mp4` … と並ぶ。1 本に繋げて
+録画はシーンごとに分かれて `out/<デモ>/build/screens/00-数字.mp4` … と並ぶ。1 本に繋げて
 録ると「7 番目だけ 3D 版に差し替える」が切り貼りになるし、文言を一つ直したときに
 全部録り直すことになる。分けておけばタイムラインがクリップの並びになって、人が
 Kdenlive で開いたときに触れるものになる。
@@ -122,7 +116,7 @@ Kdenlive で開いたときに触れるものになる。
 シーンごとにハッシュを持たせてあるので、1 語直せば 1 本（約 10 秒）で済む。
 エンジンを触ったときは全部録り直しになる。
 
-どの 3D カットがどのシーンを置き換えるかは `demos/<デモ>/layers/<ショット>.yaml` の `scene:` が
+どの 3D カットがどのシーンを置き換えるかは `out/<デモ>/layers/<ショット>.yaml` の `scene:` が
 宣言していて、`edit/timeline.py` がそれを見て差し替える。3D は重いので `make` の
 既定経路では焼き直さない。`make 3d` を通したあとに `make` すれば取り込まれる。
 

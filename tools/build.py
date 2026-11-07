@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""demos/<name>.yaml を 1 枚の HTML に組み立てる。
+"""out/<デモ>/<デモ>.yaml を 1 枚の HTML に組み立てる。
 
 人が触るのは YAML だけ。文言も、コードも、保持時間の方針もそこにある。
 エンジンとシーンの型は engine/ にあり、使ったシーンの CSS と JS だけが埋め込まれる。
 
-  python3 tools/build.py demos/nyxis/nyxis.yaml -o out/nyxis/page.html
+  python3 tools/build.py out/nyxis/nyxis.yaml -o out/nyxis/build/page.html
 """
 
 from __future__ import annotations
@@ -225,4 +225,5 @@ if __name__ == "__main__":
     ap.add_argument("-o", "--out", default=None)
     a = ap.parse_args()
     sp = Path(a.spec).resolve()
-    assemble(sp, Path(a.out).resolve() if a.out else ROOT / "out" / sp.stem / "page.html")
+    assemble(sp, Path(a.out).resolve() if a.out
+             else ROOT / "out" / sp.stem / "build" / "page.html")

@@ -10,8 +10,10 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -157,9 +159,51 @@ def build_policy(s):
             s[field + "Html"] = hl_lines(s.pop(field), "cedar")
 
 
+def build_motion(s):
+    presets = {"auto-layout", "spatial-carousel", "cursor-zoom"}
+    if s.get("preset") not in presets:
+        raise SpecError(f"motion: preset は {', '.join(sorted(presets))} のいずれか")
+    duration = s.setdefault("duration", 6)
+    if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
+        raise SpecError("motion: duration は正の秒数")
+    if "labels" in s:
+        count = 3 if s["preset"] == "auto-layout" else 7
+        if not isinstance(s["labels"], list) or len(s["labels"]) != count:
+            raise SpecError(f"motion: labels は {count} 個の配列")
+    if "colors" in s and (not isinstance(s["colors"], list) or len(s["colors"]) != 7 or
+                          not all(re.fullmatch(r"#[0-9a-fA-F]{6}", str(c)) for c in s["colors"])):
+        raise SpecError("motion: colors は7個の #RRGGBB の配列")
+    if "turns" in s and (not isinstance(s["turns"], (int, float)) or not math.isfinite(s["turns"])):
+        raise SpecError("motion: turns は有限の回転数")
+    if "rows" in s:
+        rows = s["rows"]
+        if not isinstance(rows, list) or len(rows) != 6 or any(
+                not isinstance(row, list) or len(row) != 5 for row in rows):
+            raise SpecError("motion: rows は見出しを含め6行5列")
+        try:
+            valid = all(math.isfinite(float(row[4])) for row in rows[1:])
+        except (ValueError, TypeError):
+            valid = False
+        if not valid:
+            raise SpecError("motion: rows の最終列は数値")
+
+
+def build_study(s):
+    if s.get('preset') not in {'terminal-flow', 'code-diff', 'network-globe', 'market-chart'}:
+        raise SpecError('study: 知らない preset')
+    duration = s.setdefault('duration', 4.8)
+    if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
+        raise SpecError('study: duration は正の秒数')
+    if s.get('texture_path'):
+        image = Path(s.pop('texture_path'))
+        mime = 'image/png' if image.suffix.lower() == '.png' else 'image/jpeg'
+        s['earth_map'] = 'data:' + mime + ';base64,' + base64.b64encode(image.read_bytes()).decode()
+
+
 BUILDERS = {"card": build_card, "browser": build_browser, "code": build_code,
             "split": build_split, "tree": build_tree, "terminal": build_terminal,
-            "incident": build_incident, "policy": build_policy, "kernel": lambda s: None}
+            "incident": build_incident, "policy": build_policy, "kernel": lambda s: None,
+            "motion": build_motion, "study": build_study}
 
 
 # --- 組み立て ---------------------------------------------------------------

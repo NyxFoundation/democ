@@ -7,6 +7,9 @@
 場面のつながり、文字量、コピーの整え方を含む制作手順は、
 [demo-creatorスキル](https://github.com/NyxFoundation/skills/tree/main/creative/demo-creator)にまとめている。
 
+製品動画の参考カットと、HTML / Blenderで再現する動きのテンプレートは
+[Motion library](templates/library/README.md)へ。`make library` で参考映像・再現MP4・比較一覧を生成できる。
+
 このリポジトリにあるのは**道具だけ**。デモ 1 本ぶんは `out/<名前>/` に置き、git には
 入らない。残したくなったら `make example` で `examples/` へ写す。
 

@@ -94,6 +94,24 @@ accent 色、`<s>` が灰色、`<br>` が改行。
 を書く。`mount()` は一度だけ呼ばれて markup を返し、`play(s)` が YAML の 1 要素を受け取る。
 `tools/build.py` の `BUILDERS` に変換関数を足せば、YAML 側で素のコードを書けるようになる。
 
+## motion — 製品動画から抽出した動き
+
+`preset` は `auto-layout`（要素の整列）、`spatial-carousel`（立体的なカード列）、
+`cursor-zoom`（表の操作へズーム）のいずれか。`duration` は秒（既定6秒）。
+文字による見出しを足さず、UIや図形の動きで伝える。
+
+| 鍵 | 内容 |
+|---|---|
+| `brand` | UIのアプリ名。既定Orbit |
+| `labels` | 整列するカード3枚、またはカルーセル7枚の名前 |
+| `turns` | カルーセルの回転数。既定0.36 |
+| `colors` | カルーセル用の7個の `#RRGGBB` |
+| `rows` | 表の見出しを含む6行5列。データ行の最終列は数値 |
+
+`labels` / `brand` / `rows` はプレーンテキストとして描く。HTML装飾は使わない。
+出典、参考クリップ、Blender用テンプレート、差し替え方法は
+[Motion library](../templates/library/README.md)を参照。
+
 ## incident — コードレビューとブログを並べる
 
 左のendpointと、右のブログ下書きUIを同時に見せる。URLの投稿IDが3から7に変わる。
@@ -141,3 +159,15 @@ count_msで数字が最終値に到達する時間をミリ秒で指定できる
 HTMLでは動画の最終フレームも保持し、次の画面が準備できてから切り替える。
 録画素材も最終状態を保持し、MP4では同じ長さで末尾と先頭を重ねる。
 MLT / Kdenliveでは、その境目が短い独立したクリップとして並ぶ。
+
+## study — 分野別の短いモーション
+
+`preset` は `terminal-flow`（端末の入力・選択・処理）、`code-diff`（コード差分）、
+`network-globe`（地球上の取引の流れ）、`market-chart`（金融チャート）。
+`duration` は秒（既定4.8秒）。表示内容はアニメーション用の合成データ。
+
+`network-globe` の `texture_path` には地表画像のローカルパスを渡す。
+ビルド時にHTMLへ埋め込む。画像準備の `ready` Promiseを公開し、ライブラリの録画は準備完了を待つ。
+通常の台本では `type: study` と `preset`、`duration` で呼び出せる。
+出典・使用条件は [素材台帳](../templates/library/ASSETS.md)、一覧生成は
+[ショーケースの手順](../templates/library/README.md)を参照。

@@ -1,0 +1,369 @@
+version: 1
+reviewed_on: 2026-11-08
+review_method: 公式ページの埋め込み素材を取得し、時刻付きコンタクトシートと個別フレームで選定。
+templates:
+- id: auto-layout
+  title: 要素が一つの秩序に揃う
+  category: software
+  renderer: html
+  duration: 4.7
+  tags:
+  - shared-element
+  - snap
+  - interface
+  takeaway: 散らばった要素が揃う瞬間で、機能の価値を見せる。
+  mechanics:
+  - 操作前から同じ要素を置き、変化を追えるようにする。
+  - クリックを先に見せ、少し遅れて位置と選択枠を揃える。
+  - 整った結果を短く保持して切る。
+  reference:
+    brand: Figma Slides
+    page: https://www.figma.com/slides/
+    asset: https://cdn.sanity.io/files/599r6htc/regionalized/6de5d88f394e65771dbbe06fe853a2e6e79efbe9.mp4
+    start: 0.1
+    end: 4.8
+    observed: レイアウト設定の操作から選択されたテキストフレームへ切り替わり、位置と枠の変化を見せる。
+  adaptation: 自作の3枚のカードが横並びになる動きへ置き換えた。元の画面構成を複製していない。
+  parameters: {}
+- id: spatial-carousel
+  title: 平面が奥行きのある帯になる
+  category: software
+  renderer: html
+  duration: 6.0
+  tags:
+  - perspective
+  - carousel
+  - showcase
+  takeaway: 複数の作例を一つの空間で見せ、続きへの期待を作る。
+  mechanics:
+  - カードを円周に置き、手前から奥への連なりを作る。
+  - 手前のカードを読ませ、奥のカードは暗くする。
+  - 等速の回転を途中で切り、次のカードを予感させる。
+  reference:
+    brand: Framer
+    page: https://www.framer.com/
+    asset: https://framerusercontent.com/assets/EGqLxawrgBiyYfcyRAdEFPRAMWo.mp4
+    start: 1.0
+    end: 7.0
+    observed: 作例カードが縦軸の周囲を回り、平面の画面を立体的な帯として見せる。
+  adaptation: 作例画像を使わず、独自のSVG図形7枚とCSSの透視投影で構成。
+  parameters:
+    turns: 0.36
+- id: cursor-zoom
+  title: 操作する場所へ視線が届く
+  category: software
+  renderer: html
+  duration: 5.9
+  tags:
+  - camera
+  - cursor
+  - focus
+  takeaway: 全体、操作、結果をカメラの往復でつなぐ。
+  mechanics:
+  - 操作の直前に寄り、選択範囲とカーソルを同時に追う。
+  - カーソルの移動先へパンしてからメニューを開く。
+  - 結果が変わった後に全体へ戻す。
+  reference:
+    brand: Screen Studio
+    page: https://screen.studio/
+    asset: https://screen.studio/videos/hero/hero-demo.mp4
+    start: 0.2
+    end: 6.1
+    observed: 表の数値を選択し、書式メニューに寄って通貨へ変換し、全体へ戻る。
+  adaptation: 独自の表計算UIで再構成。人物、字幕、原画面は使用しない。
+  parameters: {}
+- id: port-orbit
+  title: 天面から機能面へ回り込む
+  category: hardware
+  renderer: blender
+  duration: 3.5
+  tags:
+  - orbit
+  - hero
+  - ports
+  takeaway: 美しい形を見せてから、使う場所へ視線を導く。
+  mechanics:
+  - 天面から前面へカメラを下げ、形の厚みを見せる。
+  - 前面を短く保持し、側面を経て背面へ回る。
+  - 背面の端子に着地し、次の機能紹介へ渡す。
+  reference:
+    brand: Apple Mac mini
+    page: https://www.apple.com/mac-mini/
+    asset: https://www.apple.com/105/media/us/mac-mini/2024/58e5921e-f447-487a-a789-3452c23b8400/anim/ports/large_2x.webm
+    start: 0.05
+    end: 3.55
+    observed: 銀色の筐体を上から前面へ回り込み、間を置いて背面の端子へ回転する。
+  adaptation: Apple公開ARモデルの形状・UV・ノーマル・粗さマップを保持し、写真ベースのスタジオHDRIとCyclesで撮影。素材はローカル研究用。
+  assets:
+  - apple-mac-mini
+  - studio-small-05
+  parameters:
+    body_width: 5.6
+    model_asset: apple-mac-mini
+    hdri_asset: studio-small-05
+    camera_radius: 18.5
+- id: rim-reveal
+  title: 輪郭が質感へ変わる
+  category: hardware
+  renderer: blender
+  duration: 2.4
+  tags:
+  - lighting
+  - silhouette
+  - material
+  takeaway: 暗い輪郭から素材が現れる瞬間に、製品への期待を集める。
+  mechanics:
+  - 背面の光で輪郭だけを残す。
+  - 正面の面光源を上げ、曲面と素材を順に見せる。
+  - 小さな回転で反射を動かし、全体が見えたところで切る。
+  reference:
+    brand: Apple AirPods Pro
+    page: https://www.apple.com/airpods-pro/
+    asset: https://www.apple.com/105/media/us/airpods-pro/2025/ab88f834-9c62-4bab-8cf8-f5e866987d6e/anim/design/large.webm
+    start: 0.0
+    end: 2.4
+    observed: 暗い二つの本体の輪郭から、白い曲面が照明によって現れる。分解アニメーションではない。
+  adaptation: 形状を流用せず、独自のセラミック製センサーモジュールを生成。
+  parameters:
+    hdri_asset: studio-small-05
+    hdri_strength: 0.035
+  assets:
+  - studio-small-05
+  engine: cycles
+  samples: 32
+- id: macro-controls
+  title: 斜光が操作面をなぞる
+  category: hardware
+  renderer: blender
+  duration: 3.2
+  tags:
+  - macro
+  - raking-light
+  - tactile
+  takeaway: 触れたくなるディテールを、近さと光の移動で見せる。
+  mechanics:
+  - 低い斜光でノブの縁と凹凸を拾う。
+  - 操作面に沿ってカメラを滑らせる。
+  - 小さな点灯を次の操作への手がかりにする。
+  reference:
+    brand: teenage engineering OP–XY
+    page: https://teenage.engineering/products/op-xy
+    asset: https://assets.teenage.engineering/_videos/6992dc080788f45520eabc88/h264/1080p/media.m3u8
+    start: 0.2
+    end: 6.2
+    observed: 黒いノブの列を斜光で見せ、斜めの近接カットへ移る。
+  adaptation: 元映像のカット割りを一続きのドリー移動へ翻案。自作の操作面、波形、点灯を使用。
+  parameters:
+    hdri_asset: studio-small-05
+    hdri_strength: 0.22
+    motion_duration: 6.0
+  assets:
+  - studio-small-05
+  engine: eevee
+  samples: 48
+- id: drone-orbit
+  title: 機体の輪郭と機構を追う
+  category: drone
+  renderer: blender
+  duration: 4.0
+  tags:
+  - drone
+  takeaway: 機体の輪郭と機構を追う
+  mechanics:
+  - 輪郭が読める斜め前から入る。
+  - アームとカメラが重ならない角度へ回る。
+  - ローターの回転と小さな浮遊を重ねる。
+  reference:
+    brand: DJI Mavic 4 Pro
+    page: https://www.dji.com/mavic-4-pro
+    asset: https://www-cdn.djiits.com/reactor/assets/_next/static/videos/837841de-0aea-4187-863f-3ca1cb1a0185.mp4
+    start: 0.05
+    end: 2.65
+    observed: 機体のカメラと展開したアームへ寄り、ジンバルの向きが変わる。
+  adaptation: 公開されたCesium Droneモデルに置き換え、質感付きの機体を回り込むカメラとローターの動きを再利用する。
+  parameters:
+    model_asset: cesium-drone
+    hdri_asset: studio-small-05
+    hdri_strength: 0.3
+  engine: eevee
+  samples: 32
+  assets:
+  - cesium-drone
+  - studio-small-05
+- id: humanoid-articulation
+  title: 関節から意図が伝わる
+  category: humanoid
+  renderer: blender
+  duration: 4.0
+  tags:
+  - humanoid
+  takeaway: 関節から意図が伝わる
+  mechanics:
+  - 実機の形状と関節階層を読み込む。
+  - 肩と肘を連動させて腕を持ち上げる。
+  - 緩いカメラ移動と接地影で大きさを伝える。
+  reference:
+    brand: Unitree G1
+    page: https://www.unitree.com/g1/
+    asset: https://www.unitree.com/images/7504897529034b05890225e149d3af28.mp4
+    start: 0.2
+    end: 5.2
+    observed: 屋外を歩くG1を、正面と斜めから見せる。
+  adaptation: Unitree公開の実機用URDF・STLを使用。歩行制御の再現ではなく、肩と肘の協調動作を見せる運動学的な製品カットへ翻案。
+  parameters:
+    model_asset: unitree-g1
+    hdri_asset: studio-small-05
+    hdri_strength: 0.4
+  engine: eevee
+  samples: 32
+  assets:
+  - unitree-g1
+  - studio-small-05
+- id: orbital-earth
+  title: 地球の輪郭から広がるスケール
+  category: space
+  renderer: blender
+  duration: 4.0
+  tags:
+  - space
+  takeaway: 地球の輪郭から広がるスケール
+  mechanics:
+  - 地表画像を球体のUVへ投影する。
+  - 小さな自転とカメラの接近を重ねる。
+  - 太陽光と薄い大気の縁で立体感を出す。
+  reference:
+    brand: NASA · EPIC
+    page: https://images.nasa.gov/details/GSFC_20170822_Total_m12690_Eclipse
+    asset: https://images-assets.nasa.gov/video/GSFC_20170822_Total_m12690_Eclipse/GSFC_20170822_Total_m12690_Eclipse~medium.mp4
+    start: 0.05
+    end: 2.85
+    observed: 宇宙から見た地球を同じ画角に保ち、地表と雲がゆっくりと回転する。
+  adaptation: 公開地表・雲テクスチャを用い、地球の自転、太陽光、薄い大気の縁をBlenderで再構成。日食の物理シミュレーションは含めない。
+  parameters:
+    texture_asset: earth-daymap
+    clouds_asset: earth-clouds
+  engine: eevee
+  samples: 48
+  assets:
+  - earth-daymap
+  - earth-clouds
+- id: terrain-flyover
+  title: 地形の起伏へ降りていく
+  category: geographic
+  renderer: blender
+  duration: 4.0
+  tags:
+  - geographic
+  takeaway: 地形の起伏へ降りていく
+  mechanics:
+  - 実際の標高を読み込む。
+  - 斜光と等高線で起伏を見せる。
+  - カメラを滑らせながら地形へ寄る。
+  reference:
+    brand: Mapbox GL JS
+    page: https://www.mapbox.com/mapbox-gljs
+    asset: https://static-assets.mapbox.com/www/videos/gl-js/section_hero/video@720p.mp4
+    start: 0.3
+    end: 5.8
+    observed: ニュージーランドの立体地形へ斜めに接近し、山の起伏を横切る。
+  adaptation: 富士山周辺の実標高タイルからメッシュを生成し、等高線付きの地形模型へ翻案。
+  parameters:
+    terrain_asset: fuji-dem
+    hdri_asset: studio-small-05
+    hdri_strength: 0.25
+  engine: eevee
+  samples: 32
+  assets:
+  - fuji-dem
+  - studio-small-05
+- id: terminal-flow
+  title: 選ぶ、走る、完了する
+  category: tui
+  renderer: html
+  duration: 4.8
+  tags:
+  - tui
+  takeaway: 選ぶ、走る、完了する
+  mechanics:
+  - 入力する文字を先に見せる。
+  - 選択肢へフォーカスを移す。
+  - 進行する処理から完了へ着地する。
+  reference:
+    brand: Charm Gum
+    page: https://github.com/charmbracelet/gum
+    asset: https://vhs.charm.sh/vhs-1qY57RrQlXCuydsEgDp68G.gif
+    start: 0.1
+    end: 5.9
+    observed: コマンド実行から名前の入力、次の質問へ、端末内の表示が切り替わる。
+  adaptation: デプロイ環境の選択と段階的な処理へ置換。実際のコマンドは実行しない決定的な画面描画。
+  parameters: {}
+  scene_type: study
+- id: code-diff
+  title: 変更と結果が同じ場所でつながる
+  category: source-code
+  renderer: html
+  duration: 4.8
+  tags:
+  - source-code
+  takeaway: 変更と結果が同じ場所でつながる
+  mechanics:
+  - 元の関数を見せる。
+  - 同じ行の差分として変更を入れる。
+  - 結果を下部へ短く出す。
+  reference:
+    brand: GitHub Copilot · VS Code
+    page: https://github.com/features/copilot
+    asset: https://videos.ctfassets.net/8aevphvgewt8/2J6C3wOFzxG17KW0kXjwSH/da62dfe681e514bbdf89f30c20a1835a/vscode-desktop-windows-dark.mp4
+    start: 7.6
+    end: 13.6
+    observed: エディタの横で実行計画を示した後、変更したコードを緑の差分として見せる。
+  adaptation: 短い非同期関数の修正とテスト表示へ翻案。コードとテスト結果はアニメーション用の合成UI。
+  parameters: {}
+  scene_type: study
+- id: network-globe
+  title: 取引の流れが世界をつなぐ
+  category: blockchain
+  renderer: html
+  duration: 4.8
+  tags:
+  - blockchain
+  takeaway: 取引の流れが世界をつなぐ
+  mechanics:
+  - 地球上の点を弧でつなぐ。
+  - 光点が弧を移動して方向を伝える。
+  - 回転で奥行きと広がりを保つ。
+  reference:
+    brand: XNOHub
+    page: https://github.com/dalindev/XNOHub.com
+    asset: https://github.com/user-attachments/assets/d2efe6c6-585b-4553-aec3-240edbd930b5
+    start: 0.2
+    end: 7.8
+    observed: 回転する地球上でノードを結ぶ弧と取引の光が連続して動く。
+  adaptation: 同様の地球と弧の構成を独立したCanvasコードで再構成。ノードと取引は合成データ。
+  parameters:
+    texture_asset: earth-daymap
+  scene_type: study
+  assets:
+  - earth-daymap
+- id: market-chart
+  title: 変化する価格へ視線を集める
+  category: finance
+  renderer: html
+  duration: 4.8
+  tags:
+  - finance
+  takeaway: 変化する価格へ視線を集める
+  mechanics:
+  - ローソク足と出来高を描き進める。
+  - 最新の値を追うクロスヘアを置く。
+  - 最後に少し寄って注目点へ着地する。
+  reference:
+    brand: TradingView Advanced Charts
+    page: https://www.tradingview.com/advanced-charts/
+    asset: https://static.tradingview.com/static/bundles/advanced-charts-video.943087cf19f9f7adba9b.webm
+    start: 0.15
+    end: 6.9
+    observed: 複数の金融チャートを奥行きと発光する折れ線でつなぐ。
+  adaptation: 架空のACME銘柄のローソク足、出来高、比較線を合成データで描画する。
+  parameters: {}
+  scene_type: study

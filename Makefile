@@ -47,6 +47,22 @@ else
 endif
 PY := uv run --quiet --with pyyaml --with playwright python3
 
+# 製品動画の参考カットと再現テンプレート。既存デモの作業場とは独立。
+LIBRARY_ID := $(if $(ID),--id $(ID),)
+.PHONY: library library-list library-collect library-render library-catalog library-check
+library:
+	$(PY) tools/template_library.py all $(LIBRARY_ID)
+library-list:
+	$(PY) tools/template_library.py list $(LIBRARY_ID)
+library-collect:
+	$(PY) tools/template_library.py collect $(LIBRARY_ID)
+library-render:
+	$(PY) tools/template_library.py render $(LIBRARY_ID)
+library-catalog:
+	$(PY) tools/template_library.py catalog
+library-check:
+	$(PY) tools/template_library.py verify $(LIBRARY_ID)
+
 OUT    := out
 # デモ 1 本 = out/<名前>/ 一式。台本は out/<名前>/<名前>.yaml
 DEMOS  := $(foreach d,$(notdir $(wildcard $(OUT)/*)),\

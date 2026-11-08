@@ -1,0 +1,20 @@
+title: Motion studies
+transition: {duration: 0.2}
+scenes:
+  - type: motion
+    name: 操作から整列へ
+    preset: auto-layout
+    duration: 4.7
+    brand: Orbit
+    labels: [Discover, Build, Ship]
+  - type: motion
+    name: 奥行きのあるショーケース
+    preset: spatial-carousel
+    duration: 6
+    turns: 0.36
+    labels: [Form, Focus, Motion, Light, Rhythm, Space, Flow]
+  - type: motion
+    name: 視線を操作へ導く
+    preset: cursor-zoom
+    duration: 5.9
+    brand: Orbit

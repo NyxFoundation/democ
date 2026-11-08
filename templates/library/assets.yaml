@@ -1,0 +1,125 @@
+version: 1
+assets:
+  apple-mac-mini:
+    filename: mac-mini.usdz
+    role: model
+    page: https://www.apple.com/mac-mini/
+    url: https://www.apple.com/105/media/us/mac-mini/2026/2140fd43-1461-420d-942c-6f254535a9a4/ar/mac-mini-silver.usdz
+    creator: Apple
+    license: Apple website terms; not an open-content license
+    license_url: https://www.apple.com/legal/internet-services/terms/site.html
+    usage: Local reference study. Do not redistribute the model or assume a commercial
+      production license.
+    redistributable: false
+    sha256: 3d36f189975cb24e2614e1aadabc1ae6112c8a298722c2eabc67f56a4d986ace
+  apple-mac-studio:
+    filename: mac-studio.usdz
+    role: model
+    page: https://www.apple.com/mac-studio/
+    url: https://www.apple.com/105/media/us/mac-studio/2026/e5b92529-6fd3-439c-9461-9d111718310f/ar/mac-studio-studio.usdz
+    creator: Apple
+    license: Apple website terms; not an open-content license
+    license_url: https://www.apple.com/legal/internet-services/terms/site.html
+    usage: Local reference study. Do not redistribute the model or assume a commercial
+      production license.
+    redistributable: false
+    sha256: 2509bf56a41ca6cb09be8bbe8b293419b470717b12622befef187573e9b8290e
+  studio-small-05:
+    filename: studio_small_05_2k.hdr
+    role: hdri
+    page: https://polyhaven.com/a/studio_small_05
+    url: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_05_2k.hdr
+    creator: Greg Zaal / Poly Haven
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Photographed studio illumination and reflections.
+    redistributable: true
+    sha256: 3aa7a64b60cc143e596077318977bf7876650a1f65d019a7e05b3ea165cfd398
+  cesium-drone:
+    filename: drone-model.glb
+    role: model
+    url: https://raw.githubusercontent.com/CesiumGS/cesium/main/Apps/SampleData/models/CesiumDrone/CesiumDrone.glb
+    page: https://github.com/CesiumGS/cesium/tree/main/Apps/SampleData/models/CesiumDrone
+    creator: Ed Mackey / Analytical Graphics, Inc.
+    license: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    usage: Credit in production notes; preserve source metadata.
+    redistributable: true
+    sha256: 77e8a8cfa4763ec83097f492cd48b2143e9c40797ff7211d5752604a35ac3d9d
+  unitree-g1:
+    filename: g1/g1_23dof.urdf
+    role: model
+    url: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/g1_23dof.urdf
+    page: https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description
+    creator: Unitree Robotics
+    license: BSD-3-Clause
+    license_url: https://github.com/unitreerobotics/unitree_ros/blob/master/LICENSE
+    usage: Keep copyright, license and disclaimer with the source bundle. Kinematic
+      visual study, not a robot control policy.
+    redistributable: true
+    dependencies:
+      g1/meshes/head_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/head_link.STL
+      g1/meshes/left_ankle_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_ankle_pitch_link.STL
+      g1/meshes/left_ankle_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_ankle_roll_link.STL
+      g1/meshes/left_elbow_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_elbow_link.STL
+      g1/meshes/left_hip_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_hip_pitch_link.STL
+      g1/meshes/left_hip_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_hip_roll_link.STL
+      g1/meshes/left_hip_yaw_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_hip_yaw_link.STL
+      g1/meshes/left_knee_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_knee_link.STL
+      g1/meshes/left_shoulder_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_shoulder_pitch_link.STL
+      g1/meshes/left_shoulder_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_shoulder_roll_link.STL
+      g1/meshes/left_shoulder_yaw_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_shoulder_yaw_link.STL
+      g1/meshes/left_wrist_roll_rubber_hand.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/left_wrist_roll_rubber_hand.STL
+      g1/meshes/logo_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/logo_link.STL
+      g1/meshes/pelvis.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/pelvis.STL
+      g1/meshes/pelvis_contour_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/pelvis_contour_link.STL
+      g1/meshes/right_ankle_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_ankle_pitch_link.STL
+      g1/meshes/right_ankle_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_ankle_roll_link.STL
+      g1/meshes/right_elbow_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_elbow_link.STL
+      g1/meshes/right_hip_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_hip_pitch_link.STL
+      g1/meshes/right_hip_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_hip_roll_link.STL
+      g1/meshes/right_hip_yaw_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_hip_yaw_link.STL
+      g1/meshes/right_knee_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_knee_link.STL
+      g1/meshes/right_shoulder_pitch_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_shoulder_pitch_link.STL
+      g1/meshes/right_shoulder_roll_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_shoulder_roll_link.STL
+      g1/meshes/right_shoulder_yaw_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_shoulder_yaw_link.STL
+      g1/meshes/right_wrist_roll_rubber_hand.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/right_wrist_roll_rubber_hand.STL
+      g1/meshes/torso_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/torso_link.STL
+      g1/meshes/waist_support_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/waist_support_link.STL
+      g1/meshes/waist_yaw_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/waist_yaw_link.STL
+      g1/LICENSE: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/LICENSE
+    sha256: 5d5a7380ec2f747e82dfd7c61fe70515715d413c3521a02911ef5dd9a007e374
+  earth-daymap:
+    filename: earth-daymap.jpg
+    role: texture
+    url: https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg
+    page: https://www.solarsystemscope.com/textures/
+    creator: Solar System Scope
+    license: CC BY 4.0
+    license_url: https://www.solarsystemscope.com/textures/
+    usage: Earth visualization; credit Solar System Scope.
+    redistributable: true
+    sha256: 767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c
+  fuji-dem:
+    filename: fuji-terrarium.png
+    url: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/10/906/404.png
+    page: https://registry.opendata.aws/terrain-tiles/
+    role: terrain
+    creator: Mapzen / Tilezen terrain tiles; underlying source attribution applies
+    license: Open terrain data; see source attribution
+    license_url: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
+    usage: Actual Terrarium elevation tile near Mount Fuji, z10/x906/y404; not an
+      invented heightfield.
+    redistributable: true
+    sha256: 6b609fa0925076a86b000a5e58f3994562ea2d277b20937772ad122c9e64dacb
+  earth-clouds:
+    filename: earth-clouds.jpg
+    role: texture
+    url: https://www.solarsystemscope.com/textures/download/2k_earth_clouds.jpg
+    page: https://www.solarsystemscope.com/textures/
+    creator: Solar System Scope
+    license: CC BY 4.0
+    license_url: https://www.solarsystemscope.com/textures/
+    usage: Separate cloud layer; credit Solar System Scope.
+    redistributable: true
+    sha256: fffd7f68d41b37274822150e54a6ef605af1d3ec35624d9f628c3b896bfa42ed

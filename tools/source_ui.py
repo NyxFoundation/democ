@@ -46,7 +46,7 @@ def assets():
     notices = [p for p in notices if 'node_modules' not in p.parts]
     notices.append(SOURCE / 'font-OFL.txt')
     for name in ['monaco-editor', '@xterm/xterm', '@vscode/codicons', 'lightweight-charts',
-                 '@primer/primitives', 'chroma-js', 'dompurify', 'marked', 'fancy-canvas']:
+                 '@primer/primitives', 'chroma-js', 'dompurify', 'marked', 'fancy-canvas', 'three']:
         notices.extend(p for p in (SOURCE / 'node_modules' / name).glob('LICENSE*') if p.is_file())
         notices.extend(p for p in (SOURCE / 'node_modules' / name).glob('NOTICE*') if p.is_file())
     notices.extend((SOURCE / 'node_modules/monaco-editor').glob('ThirdPartyNotices.txt'))

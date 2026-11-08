@@ -4,6 +4,7 @@ D.SourceStudy = {
   icon(name, extra='') { return `<i class="codicon codicon-${name} ${extra}" aria-hidden="true"></i>`; },
   async prepare(s) {
     this.term?.dispose(); this.editor?.dispose(); this.diff?.dispose();
+    this.network?.dispose();this.network=null;
     this.models?.forEach(m=>m.dispose()); this.charts?.forEach(c=>c.remove());
     this.term=this.editor=this.diff=null;this.models=[];this.charts=[];
     this.root=D.q('sourceUi');this.root.className='source-ui '+s.preset;this.root.innerHTML='';
@@ -11,6 +12,7 @@ D.SourceStudy = {
     if(s.preset==='terminal-flow')await this.terminal();
     else if(s.preset==='code-diff')await this.code();
     else if(s.preset==='market-chart')await this.market();
+    else if(s.preset==='network-globe')this.network=await D.NetworkStudy.create(this.root,s);
   },
   async terminal() {
     this.root.innerHTML='<div class="gum-screen"><div class="gum-terminal"></div></div>';
@@ -148,6 +150,7 @@ D.SourceStudy = {
     });
   },
   drawAt(s,seconds) {
+    if(s.preset==='network-globe')return this.network.drawAt(seconds,s.duration);
     const p=Math.max(0,Math.min(1,seconds/s.duration)),ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
     if(s.preset==='terminal-flow'){
       const t=seconds+.1,events=DemoSourceUI.gum.events.filter(([at])=>at<=t);

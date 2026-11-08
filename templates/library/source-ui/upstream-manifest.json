@@ -27,5 +27,38 @@
       "sha256": "d45100e84ee24fe488c56714f2ee59274f5332e73459d1b55bd0dc9c477ecfd9"
     }
   ],
-  "normalization": "Trailing spaces and surplus EOF blank lines removed; executable content unchanged."
+  "normalization": "Trailing spaces and surplus EOF blank lines removed; executable content unchanged.",
+  "derived_sources": [
+    {
+      "url": "https://github.com/dalindev/XNOHub.com/blob/58d9c1d4ead259855fa462205da7ca4a10bf813a/components/three-mesh.tsx",
+      "local": "engine/scenes/network-globe.js",
+      "adaptation": "Ported material settings, spherical interpolation, tilt, and coordinate transform; deterministic fixtures replace live streams.",
+      "source_sha256": "fe5baca63512bc66f6ad7505ad0fd75e19988d0a02a9c3e691128649876508d9",
+      "review_copy_sha256": "1be56201bd83aebf05e6bfe9c3147bce60596dff5ee0f238e9642579e676f033"
+    },
+    {
+      "url": "https://github.com/dalindev/XNOHub.com/blob/58d9c1d4ead259855fa462205da7ca4a10bf813a/components/network-arc.tsx",
+      "local": "engine/scenes/network-globe.js",
+      "adaptation": "Ported material settings, spherical interpolation, tilt, and coordinate transform; deterministic fixtures replace live streams.",
+      "source_sha256": "78f654066d289574312e6db5dbfd830e6c0d728ff6dfeb369c20e6c84011727a",
+      "review_copy_sha256": "4a193ba75ec0efa7aa64a50fae56be86a48f26170e510d7c2df9e6ce5db33614"
+    },
+    {
+      "url": "https://github.com/dalindev/XNOHub.com/blob/58d9c1d4ead259855fa462205da7ca4a10bf813a/components/nano-rep-nodes.tsx",
+      "local": "engine/scenes/network-globe.js",
+      "adaptation": "Ported material settings, spherical interpolation, tilt, and coordinate transform; deterministic fixtures replace live streams.",
+      "source_sha256": "ce770a1820acbecf117ecc03bd749333777f9f22df5ecef3dfcf7b9c26008a04",
+      "review_copy_sha256": "a166479fb92528370c7b0fa776d3516c066015e82432c90abb644e97fce9752c"
+    },
+    {
+      "url": "https://github.com/dalindev/XNOHub.com/blob/58d9c1d4ead259855fa462205da7ca4a10bf813a/data/defualtMergedRepsData.ts",
+      "local": "xno/nodes.json",
+      "local_sha256": "22baff746028fed8c1450ed3a5d215ac7e5657831e806ce41da348de4e2d64e4",
+      "adaptation": "87 public latitude/longitude pairs only; account and IP fields omitted.",
+      "source_sha256": "b595c9a0d6799f4a4e940283fb83a54f22b48c797e9e08a43126169b7c4e9489",
+      "review_copy_sha256": "b595c9a0d6799f4a4e940283fb83a54f22b48c797e9e08a43126169b7c4e9489"
+    }
+  ],
+  "derived_snapshot_date": "2026-11-09",
+  "derived_commit": "58d9c1d4ead259855fa462205da7ca4a10bf813a"
 }

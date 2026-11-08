@@ -194,10 +194,32 @@ def build_study(s):
     duration = s.setdefault('duration', 4.8)
     if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
         raise SpecError('study: duration は正の秒数')
-    if s.get('texture_path'):
-        image = Path(s.pop('texture_path'))
+    if s['preset'] == 'network-globe':
+        from library_assets import acquire_assets
+        defaults = {'texture': 'earth-nasa-day', 'clouds': 'earth-clouds-8k',
+                    'night': 'earth-nasa-night', 'water': 'earth-nasa-water'}
+        embedded = {'texture': 'earth_map', 'clouds': 'earth_cloud_map',
+                    'night': 'earth_night_map', 'water': 'earth_water_map'}
+        missing = {kind: name for kind, name in defaults.items()
+                   if not s.get(kind+'_path') and not s.get(embedded[kind])}
+        if missing:
+            paths = acquire_assets(missing.values(), ROOT / 'out/template-library')
+            s.update({kind+'_path': str(paths[name]) for kind, name in missing.items()})
+    for key, field in [('texture_path', 'earth_map'), ('clouds_path', 'earth_cloud_map'),
+                       ('night_path', 'earth_night_map'), ('water_path', 'earth_water_map')]:
+        if not s.get(key):
+            continue
+        image = Path(s.pop(key))
+        if s['preset'] == 'network-globe':
+            import subprocess
+            compact = image.with_name(image.stem + '-web-4k.jpg')
+            if not compact.exists() or compact.stat().st_mtime < image.stat().st_mtime:
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(image),
+                                '-vf', 'scale=4096:-2:flags=lanczos', '-q:v', '3',
+                                '-threads', '2', str(compact)], check=True)
+            image = compact
         mime = 'image/png' if image.suffix.lower() == '.png' else 'image/jpeg'
-        s['earth_map'] = 'data:' + mime + ';base64,' + base64.b64encode(image.read_bytes()).decode()
+        s[field] = 'data:' + mime + ';base64,' + base64.b64encode(image.read_bytes()).decode()
 
 
 BUILDERS = {"card": build_card, "browser": build_browser, "code": build_code,
@@ -235,11 +257,14 @@ def assemble(spec_path: Path, out_path: Path) -> Path:
         css.append((ENGINE / "scenes" / f"{t}.css").read_text(encoding="utf-8"))
         js.append((ENGINE / "scenes" / f"{t}.js").read_text(encoding="utf-8"))
     if any(s['type'] == 'study' and s.get('preset') in
-           {'terminal-flow', 'code-diff', 'market-chart'} for s in scenes):
+           {'terminal-flow', 'code-diff', 'market-chart', 'network-globe'} for s in scenes):
         from source_ui import assets as source_ui_assets
         upstream_css, upstream_js = source_ui_assets()
         css.extend([upstream_css, (ENGINE / 'scenes/source-ui.css').read_text()])
         js = [upstream_js, *js, (ENGINE / 'scenes/source-ui.js').read_text()]
+        if any(s.get('preset')=='network-globe' for s in scenes):
+            css.append((ENGINE/'scenes/network-globe.css').read_text())
+            js.append((ENGINE/'scenes/network-globe.js').read_text())
 
     # 文言を一つ直したときに、そのシーンだけ録り直せるようにする。
     # エンジンが変わったら全部が変わったものとして扱う。

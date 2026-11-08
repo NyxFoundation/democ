@@ -166,8 +166,11 @@ MLT / Kdenliveでは、その境目が短い独立したクリップとして並
 `network-globe`（地球上の取引の流れ）、`market-chart`（金融チャート）。
 `duration` は秒（既定4.8秒）。表示内容はアニメーション用の合成データ。
 
-`network-globe` の `texture_path` には地表画像のローカルパスを渡す。
-ビルド時にHTMLへ埋め込む。画像準備の `ready` Promiseを公開し、ライブラリの録画は準備完了を待つ。
+`network-globe` はXNOHub公開ソースを参照したThree.js / WebGL。
+地表・雲・夜景・水域の画像は初回ビルドで取得する。差し替える場合は
+`texture_path`・`clouds_path`・`night_path`・`water_path`へローカルパスを渡す。
+4Kへ縮小してHTMLへ内包する。WebGL 2対応のブラウザが必要。
+画像準備の `ready` Promiseを公開し、録画は準備完了を待つ。
 通常の台本では `type: study` と `preset`、`duration` で呼び出せる。
 出典・使用条件は [素材台帳](../templates/library/ASSETS.md)、一覧生成は
 [ショーケースの手順](../templates/library/README.md)を参照。

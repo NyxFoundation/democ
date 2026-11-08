@@ -418,3 +418,188 @@ assets:
     license_url: https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt
     redistributable: true
     sha256: f1a7a03672cdd494ce0d5543fac6e4360fe22403c6de297fdc2e55a815f7baff
+  apple-airpods-pro:
+    filename: airpods-pro.usdz
+    role: model
+    page: https://www.apple.com/airpods-pro/
+    url: https://www.apple.com/105/media/us/airpods-pro/2025/7acffb13-4adb-40b1-9393-8f1c99bc6c90/ar/airpods-pro.usdz
+    creator: Apple
+    license: Apple website terms; not an open-content license
+    license_url: https://www.apple.com/legal/internet-services/terms/site.html
+    usage: Local reference study; preserve the original geometry and materials. Not an open redistribution
+      license.
+    redistributable: false
+    sha256: e39e77471fb84c60c12d14f5449df4f0f4a0dffc281ba3f7ab1068db13164f2a
+  dji-mavic-3-cine:
+    filename: mavic-3-cine.glb
+    role: model
+    page: https://sketchfab.com/3d-models/mavic-3-cine-60d4a042a6eb4a1e944b1af2d4e9368b
+    url: https://raw.githubusercontent.com/HKUOpenSource/OpenAirTwin/master/backend/static/assets/radar/drones/dji-mavic-3-cine/visual.glb
+    creator: aurumjuda747; normalized derivative by OpenAirTwin
+    license: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    redistributable: true
+    usage: Credit aurumjuda747. Preserve derivative provenance from OpenAirTwin; Mavic 3 Cine, not Mavic
+      4 Pro.
+    sha256: 5e5b8f5cb0eff4a36c6fe27350e90248114bc21cbbb793874e2626e87f36574f
+  earth-nasa-day:
+    filename: earth/nasa-blue-marble.png
+    role: texture
+    page: https://github.com/matteason/daily-cloud-maps
+    url: https://raw.githubusercontent.com/matteason/daily-cloud-maps/main/static_images/earth.png
+    creator: NASA / Matt Eason
+    license: CC0 / NASA public domain source
+    license_url: https://github.com/matteason/daily-cloud-maps/blob/main/LICENSE.md
+    redistributable: true
+    usage: NASA Blue Marble source texture; credit NASA GIBS/EOSDIS and Matt Eason in production notes.
+    sha256: aaddcd967a9f09fb2d7ef50ff452bebfcf10192c520465d5eb1ad8446c716e98
+  earth-nasa-night:
+    filename: earth/nasa-night.png
+    role: texture
+    page: https://github.com/matteason/daily-cloud-maps
+    url: https://raw.githubusercontent.com/matteason/daily-cloud-maps/main/static_images/earth-night.png
+    creator: NASA / Matt Eason
+    license: CC0 / NASA public domain source
+    license_url: https://github.com/matteason/daily-cloud-maps/blob/main/LICENSE.md
+    redistributable: true
+    usage: NASA Blue Marble source texture; credit NASA GIBS/EOSDIS and Matt Eason in production notes.
+    sha256: 28faec3ab9a377a97547b186aae7d7da768ad2d4d0c980da4e76e6624607d941
+  earth-nasa-water:
+    filename: earth/nasa-water.png
+    role: texture
+    page: https://github.com/matteason/daily-cloud-maps
+    url: https://raw.githubusercontent.com/matteason/daily-cloud-maps/main/static_images/specular-base.png
+    creator: NASA / Matt Eason
+    license: CC0 / NASA public domain source
+    license_url: https://github.com/matteason/daily-cloud-maps/blob/main/LICENSE.md
+    redistributable: true
+    usage: NASA Blue Marble source texture; credit NASA GIBS/EOSDIS and Matt Eason in production notes.
+    sha256: 0675f26f7d61824c9b08c5c4090e97d68a1c33af13fac698e71ca717d8b25f46
+  urban-courtyard-02:
+    filename: urban-courtyard-02.hdr
+    role: hdri
+    page: https://polyhaven.com/a/urban_courtyard_02
+    url: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/urban_courtyard_02_2k.hdr
+    creator: Sergej Majboroda / Poly Haven
+    license: CC0
+    license_url: https://polyhaven.com/license
+    redistributable: true
+    sha256: e948119143c4170d32ff16bdb7faa6c94db117eb6335980941c229cb4d484358
+  azores-tiles:
+    filename: azores/dem-1752-1580.png
+    role: terrain
+    url: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1752/1580.png
+    page: https://cloudless.eox.at/documentation/faq
+    creator: Mapzen/Tilezen elevation; EOX IT Services / Copernicus Sentinel 2016 imagery
+    license: CC BY 4.0 imagery; open elevation with source attributions
+    license_url: https://cloudless.eox.at/documentation/faq
+    redistributable: true
+    usage: 'Rendered landscape credit: Sentinel-2 cloudless 2016 by EOX IT Services GmbH. Contains modified
+      Copernicus Sentinel data 2016. Elevation: Mapzen/Tilezen source attribution. Do not redistribute
+      raw imagery as a standalone GIS dataset.'
+    tile_zoom: 12
+    tile_origin:
+    - 1752
+    - 1580
+    tile_count:
+    - 4
+    - 4
+    dependencies:
+      azores/dem-1753-1580.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1753/1580.png
+      azores/dem-1754-1580.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1754/1580.png
+      azores/dem-1755-1580.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1755/1580.png
+      azores/dem-1752-1581.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1752/1581.png
+      azores/dem-1753-1581.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1753/1581.png
+      azores/dem-1754-1581.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1754/1581.png
+      azores/dem-1755-1581.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1755/1581.png
+      azores/dem-1752-1582.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1752/1582.png
+      azores/dem-1753-1582.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1753/1582.png
+      azores/dem-1754-1582.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1754/1582.png
+      azores/dem-1755-1582.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1755/1582.png
+      azores/dem-1752-1583.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1752/1583.png
+      azores/dem-1753-1583.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1753/1583.png
+      azores/dem-1754-1583.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1754/1583.png
+      azores/dem-1755-1583.png: https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1755/1583.png
+      azores/satellite-3504-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3504.jpg
+      azores/satellite-3505-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3505.jpg
+      azores/satellite-3506-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3506.jpg
+      azores/satellite-3507-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3507.jpg
+      azores/satellite-3508-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3508.jpg
+      azores/satellite-3509-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3509.jpg
+      azores/satellite-3510-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3510.jpg
+      azores/satellite-3511-3160.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3160/3511.jpg
+      azores/satellite-3504-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3504.jpg
+      azores/satellite-3505-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3505.jpg
+      azores/satellite-3506-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3506.jpg
+      azores/satellite-3507-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3507.jpg
+      azores/satellite-3508-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3508.jpg
+      azores/satellite-3509-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3509.jpg
+      azores/satellite-3510-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3510.jpg
+      azores/satellite-3511-3161.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3161/3511.jpg
+      azores/satellite-3504-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3504.jpg
+      azores/satellite-3505-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3505.jpg
+      azores/satellite-3506-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3506.jpg
+      azores/satellite-3507-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3507.jpg
+      azores/satellite-3508-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3508.jpg
+      azores/satellite-3509-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3509.jpg
+      azores/satellite-3510-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3510.jpg
+      azores/satellite-3511-3162.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3162/3511.jpg
+      azores/satellite-3504-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3504.jpg
+      azores/satellite-3505-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3505.jpg
+      azores/satellite-3506-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3506.jpg
+      azores/satellite-3507-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3507.jpg
+      azores/satellite-3508-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3508.jpg
+      azores/satellite-3509-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3509.jpg
+      azores/satellite-3510-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3510.jpg
+      azores/satellite-3511-3163.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3163/3511.jpg
+      azores/satellite-3504-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3504.jpg
+      azores/satellite-3505-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3505.jpg
+      azores/satellite-3506-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3506.jpg
+      azores/satellite-3507-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3507.jpg
+      azores/satellite-3508-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3508.jpg
+      azores/satellite-3509-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3509.jpg
+      azores/satellite-3510-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3510.jpg
+      azores/satellite-3511-3164.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3164/3511.jpg
+      azores/satellite-3504-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3504.jpg
+      azores/satellite-3505-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3505.jpg
+      azores/satellite-3506-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3506.jpg
+      azores/satellite-3507-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3507.jpg
+      azores/satellite-3508-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3508.jpg
+      azores/satellite-3509-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3509.jpg
+      azores/satellite-3510-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3510.jpg
+      azores/satellite-3511-3165.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3165/3511.jpg
+      azores/satellite-3504-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3504.jpg
+      azores/satellite-3505-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3505.jpg
+      azores/satellite-3506-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3506.jpg
+      azores/satellite-3507-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3507.jpg
+      azores/satellite-3508-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3508.jpg
+      azores/satellite-3509-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3509.jpg
+      azores/satellite-3510-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3510.jpg
+      azores/satellite-3511-3166.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3166/3511.jpg
+      azores/satellite-3504-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3504.jpg
+      azores/satellite-3505-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3505.jpg
+      azores/satellite-3506-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3506.jpg
+      azores/satellite-3507-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3507.jpg
+      azores/satellite-3508-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3508.jpg
+      azores/satellite-3509-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3509.jpg
+      azores/satellite-3510-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3510.jpg
+      azores/satellite-3511-3167.jpg: https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/13/3167/3511.jpg
+    sha256: 4fcfdd8fbc702879e491242fc08d77e6305ca6c6847fb360c6e0994e40adf9bc
+    satellite_zoom: 13
+    satellite_origin:
+    - 3504
+    - 3160
+    satellite_count:
+    - 8
+    - 8
+  earth-clouds-8k:
+    filename: earth/clouds-8k.jpg
+    role: texture
+    page: https://www.solarsystemscope.com/textures/
+    url: https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg
+    creator: Solar System Scope / INOVE
+    license: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    redistributable: true
+    usage: Complete static cloud composite, separate from the NASA surface; not live weather.
+    sha256: c792eca228989d36ebb45d3ea6ff1198be5e21a25d70d2fbcb2124ffd14ba7f5

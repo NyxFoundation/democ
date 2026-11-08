@@ -6,7 +6,8 @@
     "chroma-js": "2.1.2",
     "esbuild": "0.28.2",
     "lightweight-charts": "5.2.1",
-    "monaco-editor": "0.57.0"
+    "monaco-editor": "0.57.0",
+    "three": "0.166.1"
   },
   "private": true,
   "name": "demo-creator-source-ui",

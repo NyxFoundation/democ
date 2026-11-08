@@ -13,12 +13,12 @@
 | `rim-reveal` | AirPods Pro | 輪郭から質感へ | Blender / Cycles |
 | `macro-controls` | OP–XY | 斜光と近接ドリー | Blender / Cycles |
 | `drone-orbit` | DJI Mavic 4 Pro | 機構へ寄り、機体を回り込む | Blender / EEVEE |
-| `humanoid-articulation` | Unitree G1 | 肩と肘の協調動作 | Blender / EEVEE |
+| `humanoid-articulation` | Unitree G1 | 接地と足の振り出し、腕振り | Blender / EEVEE |
 | `orbital-earth` | NASA EPIC | 地表・雲・大気の縁と自転 | Blender / EEVEE |
 | `terrain-flyover` | Mapbox GL JS | 起伏を横切るカメラ | Blender / EEVEE |
 | `terminal-flow` | Charm Gum | 公式デモの入力と質問 | HTML / xterm.js / 実PTY出力 |
 | `code-diff` | GitHub Copilot / VS Code | 計画からコードの変更へ | HTML / Monaco / 公式CSS・テーマ |
-| `network-globe` | XNOHub | 地球上を移動する取引の光 | HTML / Canvas |
+| `network-globe` | XNOHub | 地球上を移動する取引の光 | HTML / Three.js / WebGL |
 | `market-chart` | TradingView | 重なるチャートから価格線へ寄る | HTML / Lightweight Charts / CSS 3D |
 
 選定根拠、公式・作者の出典ページ、原素材内の開始・終了秒、動きの構成、翻案した点は
@@ -27,7 +27,7 @@
 金融・ブロックチェーン・コード・端末の再現データは、アニメーション用の合成データ。
 実際の相場、取引、Copilotの実行、テスト結果を示さない。
 Gumは公式のシェルを実際に実行した出力を記録して再生する。
-3本のUIに取り込んだ公開ソースと再構成した範囲は[`source-ui/SOURCES.md`](source-ui/SOURCES.md)へ。
+4本のUIに取り込んだ公開ソースと再構成した範囲は[`source-ui/SOURCES.md`](source-ui/SOURCES.md)へ。
 
 ## 作る・見る
 
@@ -49,7 +49,7 @@ uv run --with pyyaml --with playwright python3 tools/template_library.py render 
   --id port-orbit --force
 ```
 
-`uv`、Chromium / Playwright、FFmpegを使う。上記3本の初回ビルドにはNode.js / npmが必要。
+`uv`、Chromium / Playwright、FFmpegを使う。上記4本の初回ビルドにはNode.js / npmが必要。
 出力したHTMLはライブラリ・フォント・Workerを内包し、オフラインでも再生できる。
 3DにはBlender 5.xが必要。
 PATHにない場合は `nix develop .#full` 内で実行する。既存の動画はスキップする。
@@ -73,11 +73,14 @@ templates/library/                Gitに残す選定記録とコード
   catalog.yaml                    出典・秒数・動き・翻案・初期設定
   assets.yaml                     外部モデル・画像・HDRIの取得元と条件
   ASSETS.md                       素材の出典とクレジット
-  hardware.py                     モデル取込、地形、照明、カメラ、関節のテンプレート
+  hardware.py                     モデル取込とBlenderシーンの組立
+  quality_scenes.py               製品、歩行、地球、衛星地形のカット
   gallery.html                    シンプルな比較一覧の雛形
   software-demo.yaml              通常台本で使う例
 engine/scenes/motion.{js,css}      整列・カルーセル・ズーム
-engine/scenes/study.{js,css}       TUI・コード・ネットワーク・金融
+engine/scenes/study.{js,css}       各分野の再生制御
+engine/scenes/source-ui.{js,css}   端末・エディタ・金融UI
+engine/scenes/network-globe.{js,css} XNOHub由来のWebGL
 tools/template_library.py         一覧・取得・再現・ショーケース生成
 tools/library_assets.py           外部素材の取得とハッシュ記録
 out/template-library/             ローカル成果物。Git管理外
@@ -134,10 +137,13 @@ Mac StudioのARモデルも素材台帳に登録済み。同じモデル取り�
 これらのApple素材はローカル研究用としてキャッシュし、リポジトリへ含めない。
 商用・配布向けには、その用途に許諾されたモデルへ差し替える。
 
-ドローンは質感付きのCesium Droneモデル、G1はUnitree公開のURDFとSTLを利用する。
-G1の再現は関節を見せるキーフレームアニメーションで、歩行制御や動力学の検証ではない。
-地形はMapzen / TilezenのTerrarium標高画像を復号し、富士山周辺の地形メッシュへ変換する。
-地球は公開の地表と雲のテクスチャを別レイヤーにする。日食の物理計算は含めない。
+AirPodsはApple公式ARモデルの左右の本体を分離し、メッシュ・印字・元の材質を保持する。
+ドローンはaurumjuda747のMavic 3 Cine（CC BY 4.0）。参考のMavic 4 Proとは機種が異なる。
+G1はUnitree公開のURDF・STLの材質指定と関節位置を読み、脚の逆運動学で歩行を付ける。
+実機の歩行制御や動力学の検証ではない。屋外照明はSergej MajborodaのUrban Courtyard 02（CC0）。
+地形は参考と同じアゾレス諸島サンミゲル島。Terrarium標高16枚とEOXの2016年衛星画像64枚を
+Mercator座標で結合して湖・カルデラ・海岸を再構成する。標高は1.65倍。
+地球はNASA由来の8K地表とSolar System Scopeの8K雲を別レイヤーにする。日食の物理計算は含めない。
 
 `hardware.py` は `--config` のJSONから `model_path`、`hdri_path`、`texture_path`、
 `clouds_path`、`terrain_path` を受け取る。モデルはUSDZ / USD / glTF / GLB / blendに対応。
@@ -183,7 +189,9 @@ scenes:
 ```
 
 `study` の `preset` は `terminal-flow`、`code-diff`、`network-globe`、`market-chart`。
-地球上のネットワークには `texture_path` へ地表画像のローカルパスを指定する。
+XNOHubのネットワークは元のThree.js実装を参照したWebGL。
+`network-globe`は地表・雲・夜景・水域を初回に取得する。画像の差し替えは
+`texture_path`・`clouds_path`・`night_path`・`water_path`で指定できる。
 ビルド時に画像を埋め込むため、生成HTMLを単独で持ち運べる。
 通常の `make edit` / 録画 / 編集パイプラインで利用できる。
 

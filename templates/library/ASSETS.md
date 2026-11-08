@@ -8,12 +8,16 @@
 | --- | --- | --- |
 | Mac mini | [Apple Mac mini AR](https://www.apple.com/mac-mini/) | Apple公開USDZ。ローカル研究用。オープンコンテンツのライセンスではない。モデル・画像はGitへ含めない。 |
 | Mac Studioの差し替え素材 | [Apple Mac Studio AR](https://www.apple.com/mac-studio/) | 同上。モデルはキャッシュ済み。 |
+| AirPods Pro | [Apple AirPods Pro AR](https://www.apple.com/airpods-pro/) — Apple | 公式USDZの左右のイヤホンを使用。原材質・UV・メッシュ・印字を保持。充電ケースは除外。Mac miniと同じくローカル研究用で、オープンな再配布許諾ではない。 |
 | スタジオ照明・反射 | [Studio Small 05](https://polyhaven.com/a/studio_small_05) — Greg Zaal / Poly Haven | CC0。実写のHDRI。 |
 | 操作部の接写 | [Boombox](https://polyhaven.com/a/boombox) — Thomas Paul Mouilleron | CC0。作者の印字・UV・PBRマップを保持し、`macro-controls`へ採用。 |
-| ドローン | [Cesium Drone](https://github.com/CesiumGS/cesium/tree/main/Apps/SampleData/models/CesiumDrone) — Ed Mackey / Analytical Graphics, Inc. | CC BY 4.0。原GLBのcopyright欄にも作者・条件がある。DJIの機体そのものではない。 |
+| ドローン | [Mavic 3 Cine](https://sketchfab.com/3d-models/mavic-3-cine-60d4a042a6eb4a1e944b1af2d4e9368b) — aurumjuda747 | CC BY 4.0。[OpenAirTwinの正規化GLB](https://github.com/HKUOpenSource/OpenAirTwin/tree/master/backend/static/assets/radar/drones/dji-mavic-3-cine)を使用。作者と元モデルのクレジットを保持。参考のMavic 4 Proとは機種が異なる。旧Cesiumモデルも台帳には残す。 |
 | ヒューマノイド | [Unitree G1](https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description) — Unitree Robotics | リポジトリのBSD-3-Clause。URDF・STLと共にLICENSEを取得し、著作権表示・免責を保持。 |
-| 地表・雲 | [Solar System Scope textures](https://www.solarsystemscope.com/textures/) — Solar System Scope / INOVE | CC BY 4.0。NASA等の観測データを元に調整された地図。地表と雲を別レイヤーで使用。 |
-| 地形 | [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) — Mapzen / Tilezen | Terrarium z10/x906/y404、富士山周辺。元データごとの条件を引き継ぐ。標高を任意の山に置き換えた合成データではない。 |
+| 屋外照明 | [Urban Courtyard 02](https://polyhaven.com/a/urban_courtyard_02) — Sergej Majboroda / Poly Haven | CC0。2K HDRIをG1の反射・背景へ使用。 |
+| 地表・夜景・水域 | [NASA textures / daily-cloud-maps](https://github.com/matteason/daily-cloud-maps) — NASA / Matt Eason | 8Kの地表・夜景・水域。CC0、NASAの原データはパブリックドメイン。NASA GIBS/EOSDISとMatt Easonをクレジット。NASAによる推薦を示さない。 |
+| 雲 | [Solar System Scope textures](https://www.solarsystemscope.com/textures/) — Solar System Scope / INOVE | CC BY 4.0。8Kの静的な雲の合成画像。地表とは独立して動くレイヤー。ライブの気象表示ではない。 |
+| 地形の標高 | [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) — Mapzen / Tilezen | Terrarium z12/x1752–1755/y1580–1583、アゾレス諸島サンミゲル島。元データごとの条件を引き継ぐ。標高を1.65倍に強調。 |
+| 地形の衛星画像 | [Sentinel-2 cloudless 2016](https://cloudless.eox.at/documentation/faq) — EOX IT Services GmbH / Copernicus | **2016版のCC BY 4.0**。z13の64枚から2Kモザイクを生成。Sentinel-2 cloudless 2016 by EOX IT Services GmbH. Contains modified Copernicus Sentinel data 2016. 地形の映像化へ使用。新しい年の非商用条件のタイルと混同しない。生のGISデータセットとしては再配布しない。 |
 
 ## CC0の追加素材
 

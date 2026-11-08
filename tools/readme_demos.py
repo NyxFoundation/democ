@@ -45,7 +45,10 @@ def table(items):
     def cell(item):
         name = item['id']
         title = html.escape(item['reference']['brand'])
-        code = ('templates/library/hardware.py' if item['renderer'] == 'blender' else
+        code = ('templates/library/quality_scenes.py' if name in {
+                    'rim-reveal', 'drone-orbit', 'humanoid-articulation', 'orbital-earth', 'terrain-flyover'} else
+                'templates/library/hardware.py' if item['renderer'] == 'blender' else
+                'engine/scenes/network-globe.js' if name == 'network-globe' else
                 'engine/scenes/source-ui.js' if name in {'terminal-flow','code-diff','market-chart'} else
                 'engine/scenes/study.js' if item.get('scene_type') == 'study' else
                 'engine/scenes/motion.js')

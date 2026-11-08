@@ -123,11 +123,15 @@ templates:
     start: 0.0
     end: 2.4
     observed: 暗い二つの本体の輪郭から、白い曲面が照明によって現れる。分解アニメーションではない。
-  adaptation: 形状を流用せず、独自のセラミック製センサーモジュールを生成。
+  adaptation: Apple公式ARモデルから左右のイヤホンを分離して使用。メッシュ、ノズル、継ぎ目、印字、元の材質を保持し、暗い輪郭から白い外装が現れる照明をCyclesで再構成。
   parameters:
+    model_asset: apple-airpods-pro
+    model_roots:
+    - BLvfImZvTRtJYtd
+    - bqtvQbjelRVbbzz
     hdri_asset: studio-small-05
-    hdri_strength: 0.035
   assets:
+  - apple-airpods-pro
   - studio-small-05
   engine: cycles
   samples: 32
@@ -173,7 +177,7 @@ templates:
   mechanics:
   - 輪郭が読める斜め前から入る。
   - アームとカメラが重ならない角度へ回る。
-  - ローターの回転と小さな浮遊を重ねる。
+  - 実モデルのUV・レンズ・モーター・プロペラを保持し、柔らかな反射で細部を見せる。
   reference:
     brand: DJI Mavic 4 Pro
     page: https://www.dji.com/mavic-4-pro
@@ -181,18 +185,23 @@ templates:
     start: 0.05
     end: 2.65
     observed: 機体のカメラと展開したアームへ寄り、ジンバルの向きが変わる。
-  adaptation: 公開されたCesium Droneモデルに置き換え、質感付きの機体を回り込むカメラとローターの動きを再利用する。
+  adaptation: aurumjuda747によるCC BY 4.0のMavic 3 Cineモデルを使用。OpenAirTwinの正規化GLBから元のUVと材質を保持し、機体を回り込むカメラへ翻案。参考のMavic
+    4 Proとは機種が異なる。
   parameters:
-    model_asset: cesium-drone
-    hdri_asset: studio-small-05
-    hdri_strength: 0.3
+    model_asset: dji-mavic-3-cine
+    model_rotation:
+    - -90
+    - 0
+    - 0
+    hdri_asset: studio-small-03
+    hdri_strength: 0.42
   engine: eevee
-  samples: 32
+  samples: 24
   assets:
-  - cesium-drone
-  - studio-small-05
+  - dji-mavic-3-cine
+  - studio-small-03
 - id: humanoid-articulation
-  title: 関節から意図が伝わる
+  title: 接地する足から動きが伝わる
   category: humanoid
   renderer: blender
   duration: 4.0
@@ -200,9 +209,9 @@ templates:
   - humanoid
   takeaway: 関節から意図が伝わる
   mechanics:
-  - 実機の形状と関節階層を読み込む。
-  - 肩と肘を連動させて腕を持ち上げる。
-  - 緩いカメラ移動と接地影で大きさを伝える。
+  - UnitreeのURDF・STLと材質名を読み込み、実機の外装と関節位置を保持する。
+  - 実寸の脚リンクから逆運動学を解き、接地と足の振り出しに腕振りを連動する。
+  - 歩行に追従するカメラと屋外の光で全身の動きを見せる。
   reference:
     brand: Unitree G1
     page: https://www.unitree.com/g1/
@@ -210,16 +219,16 @@ templates:
     start: 0.2
     end: 5.2
     observed: 屋外を歩くG1を、正面と斜めから見せる。
-  adaptation: Unitree公開の実機用URDF・STLを使用。歩行制御の再現ではなく、肩と肘の協調動作を見せる運動学的な製品カットへ翻案。
+  adaptation: Unitree公開のG1 URDF・STLを使用し、URDFの白・黒の材質を復元。歩行は実寸リンクの二関節IKによるキーフレームで、実機の歩行制御・動力学や接触シミュレーションは含めない。
   parameters:
     model_asset: unitree-g1
-    hdri_asset: studio-small-05
-    hdri_strength: 0.4
+    hdri_asset: urban-courtyard-02
+    hdri_strength: 0.65
   engine: eevee
-  samples: 32
+  samples: 24
   assets:
   - unitree-g1
-  - studio-small-05
+  - urban-courtyard-02
 - id: orbital-earth
   title: 地球の輪郭から広がるスケール
   category: space
@@ -239,15 +248,15 @@ templates:
     start: 0.05
     end: 2.85
     observed: 宇宙から見た地球を同じ画角に保ち、地表と雲がゆっくりと回転する。
-  adaptation: 公開地表・雲テクスチャを用い、地球の自転、太陽光、薄い大気の縁をBlenderで再構成。日食の物理シミュレーションは含めない。
+  adaptation: NASA由来の8K地表とSolar System Scopeの8K雲を別の球面に配置。ほぼ正面の太陽光と薄い大気を用い、EPICの全照明に近い見え方へ調整。雲は静的な合成画像。日食の物理計算は含めない。
   parameters:
-    texture_asset: earth-daymap
-    clouds_asset: earth-clouds
+    texture_asset: earth-nasa-day
+    clouds_asset: earth-clouds-8k
   engine: eevee
-  samples: 48
+  samples: 24
   assets:
-  - earth-daymap
-  - earth-clouds
+  - earth-nasa-day
+  - earth-clouds-8k
 - id: terrain-flyover
   title: 地形の起伏へ降りていく
   category: geographic
@@ -257,26 +266,25 @@ templates:
   - geographic
   takeaway: 地形の起伏へ降りていく
   mechanics:
-  - 実際の標高を読み込む。
-  - 斜光と等高線で起伏を見せる。
-  - カメラを滑らせながら地形へ寄る。
+  - アゾレス諸島サンミゲル島の標高と衛星画像を同じMercator座標で結合する。
+  - 実際のカルデラ・湖・海岸を斜光で見せる。
+  - 斜めの視点から滑らかに降下し、セテ・シダデスへ寄る。
   reference:
     brand: Mapbox GL JS
     page: https://www.mapbox.com/mapbox-gljs
     asset: https://static-assets.mapbox.com/www/videos/gl-js/section_hero/video@720p.mp4
     start: 0.3
     end: 5.8
-    observed: ニュージーランドの立体地形へ斜めに接近し、山の起伏を横切る。
-  adaptation: 富士山周辺の実標高タイルからメッシュを生成し、等高線付きの地形模型へ翻案。
+    observed: アゾレス諸島サンミゲル島のセテ・シダデスへ斜めに接近し、湖とカルデラの起伏を横切る。
+  adaptation: 参考と同じサンミゲル島西部のMapzen / Tilezen Terrarium標高16枚とEOX Sentinel-2 cloudless 2016衛星画像64枚を登録し、連続した地形メッシュへ変換。標高は1.65倍に強調。等高線や模型の台座を使わず、海岸から湖へ飛行する。Mapbox
+    SDK自体は使用しない。
   parameters:
-    terrain_asset: fuji-dem
-    hdri_asset: studio-small-05
-    hdri_strength: 0.25
+    terrain_asset: azores-tiles
+    terrain_mosaic: true
   engine: eevee
-  samples: 32
+  samples: 24
   assets:
-  - fuji-dem
-  - studio-small-05
+  - azores-tiles
 - id: terminal-flow
   title: 入力が次の対話につながる
   category: tui
@@ -335,7 +343,7 @@ templates:
   title: 取引の流れが世界をつなぐ
   category: blockchain
   renderer: html
-  duration: 4.8
+  duration: 6.8
   tags:
   - blockchain
   takeaway: 取引の流れが世界をつなぐ
@@ -350,12 +358,23 @@ templates:
     start: 0.2
     end: 7.8
     observed: 回転する地球上でノードを結ぶ弧と取引の光が連続して動く。
-  adaptation: 同様の地球と弧の構成を独立したCanvasコードで再構成。ノードと取引は合成データ。
+  adaptation: XNOHub公開MITソースのThree.js材質・地球の傾斜・座標変換・大円補間を参照してWebGLで再構成。公開ノード87地点を使い、地表・雲・水域・夜景を別マップとして描画。取引・金額・発光のタイミングは固定データで、ライブ接続は行わない。
   parameters:
-    texture_asset: earth-daymap
+    texture_asset: earth-nasa-day
+    clouds_asset: earth-clouds-8k
+    night_asset: earth-nasa-night
+    water_asset: earth-nasa-water
   scene_type: study
   assets:
-  - earth-daymap
+  - earth-nasa-day
+  - earth-clouds-8k
+  - earth-nasa-night
+  - earth-nasa-water
+  source_implementation:
+  - https://github.com/dalindev/XNOHub.com/blob/main/components/three-mesh.tsx
+  - https://github.com/dalindev/XNOHub.com/blob/main/components/network-arc.tsx
+  - https://github.com/dalindev/XNOHub.com/blob/main/components/nano-rep-nodes.tsx
+  - https://github.com/mrdoob/three.js/tree/r166
 - id: market-chart
   title: 重なるチャートから価格線へ
   category: finance

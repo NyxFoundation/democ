@@ -1,10 +1,12 @@
 """Hardware motion studies, with optional imported product models and studio HDRIs.
 blender -b -t 8 -P templates/library/hardware.py -- --preset port-orbit --out out/library/port-orbit
 """
-import argparse,json,math,sys,xml.etree.ElementTree as ET
+import argparse,json,math,sys
 from pathlib import Path
 import bpy
-from mathutils import Vector, Matrix, Euler, Quaternion
+from mathutils import Vector, Matrix, Euler
+from types import SimpleNamespace
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 
 p=argparse.ArgumentParser()
 p.add_argument('--preset',required=True,choices=['port-orbit','rim-reveal','macro-controls','drone-orbit','humanoid-articulation','orbital-earth','terrain-flyover','asset-inspect'])
@@ -69,6 +71,15 @@ def import_product(path,width=5.6):
    if ob is not None and ob.name not in s.objects:s.collection.objects.link(ob)
  else:raise ValueError('Supported models: USDZ, USD, GLB, glTF, blend')
  imported=set(s.objects)-before
+ if config.get('model_roots'):
+  selected=[ob for ob in imported if ob.name in config['model_roots']]
+  if len(selected)!=len(config['model_roots']):raise ValueError('Source model roots changed')
+  keep=set(selected)
+  for ob in selected:
+   keep.update(ob.children_recursive)
+   while ob.parent in imported:ob=ob.parent;keep.add(ob)
+  for ob in imported-keep:bpy.data.objects.remove(ob,do_unlink=True)
+  imported=keep
  for ob in list(imported):
   if ob.type in ['LIGHT','CAMERA']:bpy.data.objects.remove(ob,do_unlink=True);imported.remove(ob)
  for image in set(bpy.data.images)-previous_images:
@@ -154,6 +165,9 @@ def camera(t,pos,target,fstop=7):
  key(cam,'location',pos,t);key(look,'location',target,t)
  cam.data.dof.aperture_fstop=fstop;cam.data.dof.keyframe_insert('aperture_fstop',frame=1+round(t*(motion_last-1)))
 
+rig=SimpleNamespace(scene=s,cam=cam,target=look,config=config,frames=last,fps=a.fps,duration=a.duration,
+ key=key,light=light,shot=camera,material=material,box=box,sphere=sphere,import_product=import_product)
+
 
 if a.preset=='asset-inspect':
  h=import_product(config['model_path'],5.6)
@@ -203,20 +217,8 @@ elif a.preset=='port-orbit':
   camera(t,(r*math.cos(el)*math.cos(az),r*math.cos(el)*math.sin(az),h/2+r*math.sin(el)),(0,0,h/2),10)
 
 elif a.preset=='rim-reveal':
- for i,x in enumerate((-1.55,1.55)):
-  bpy.ops.object.empty_add(location=(x,0,.2));root=bpy.context.object;root.name='Sensor module %d'%i
-  pieces=[sphere('Ceramic sensor shell',(0,0,.35),(.79,.60,.74),ceramic),
-          box('Sensor stem',(.23,0,-.7),(.48,.45,1.35),ceramic,.22),
-          sphere('Acoustic aperture',(0,-.575,.44),(.32,.035,.34),black),
-          sphere('Inner diaphragm',(0,-.61,.44),(.19,.022,.20),silver)]
-  for piece in pieces:piece.parent=root
-  for t,rz,ry in [(0,(-12 if i==0 else 14),(-20 if i==0 else 25)),(.65,(-5 if i==0 else 8),(15 if i==0 else -12)),(1,5,20 if i==0 else -5)]:
-   key(root,'rotation_euler',(math.radians(-10),math.radians(ry),math.radians(rz)),t)
- rim1=light('Left outline',(-4,3,4),900,5,(.75,.83,1))
- rim2=light('Right outline',(5,3,1),850,4)
- fill=light('Material reveal',(-2,-5,5),0,6,(1,.98,.92))
- for t,power in [(0,0),(.17,0),(.55,1000),(.78,1450),(1,1450)]:key(fill.data,'energy',power,t)
- camera(0,(0,-13,3),(0,0,0),9);camera(1,(2,-12.5,3.4),(0,0,0),9)
+ from quality_scenes import rim_reveal
+ rim_reveal(rig)
 
 elif a.preset=='macro-controls':
  if config.get('model_path'):
@@ -234,129 +236,20 @@ elif a.preset=='macro-controls':
   raise ValueError('macro-controls requires a textured model_path; choose a reviewed source asset')
 
 elif a.preset=='drone-orbit':
- import_product(config['model_path'],5.7)
- root=s.objects['Imported product'];root.location.z=.45
- # The source model already has UVs, metallic/roughness maps and real propellers.
- for ob in s.objects:
-  if 'PropClockwise' in ob.name or 'PropCounterClockwise' in ob.name:
-   key(ob,'rotation_euler',ob.rotation_euler.copy(),0)
-   rotation=ob.rotation_euler.copy();rotation.y+=math.tau*18*(1 if 'Counter' in ob.name else -1)
-   key(ob,'rotation_euler',rotation,1)
- for t,z in [(0,.45),(.35,.55),(.75,.47),(1,.52)]:key(root,'location',(0,0,z),t)
- light('Overhead strip',(-4,-4,9),1100,8,shape='RECTANGLE')
- light('Camera fill',(4,-4,5),450,6);light('Rear separation',(2,6,7),900,7)
- for i in range(last):
-  t=i/(last-1);angle=math.radians(-112+76*t)
-  camera(t,(12.5*math.cos(angle),12.5*math.sin(angle),7.2-1.2*t),(0,0,1),9)
+ from quality_scenes import drone_orbit
+ drone_orbit(rig)
 
 elif a.preset=='humanoid-articulation':
- source=Path(config['model_path']);tree=ET.parse(source).getroot()
- shell=material('Pearl alloy shell',(.53,.55,.57),.55,.29)
- jointmat=material('Graphite joint housings',(.018,.023,.028),.28,.34)
- rubber=material('Elastomer hands',(.012,.015,.018),0,.55)
- nodes={};rotors={};rest={};axes={}
- for link in tree.findall('link'):
-  bpy.ops.object.empty_add();node=bpy.context.object;node.name=link.get('name');nodes[node.name]=node
-  for visual in link.findall('visual'):
-   mesh=visual.find('geometry/mesh')
-   if mesh is None:continue
-   path=source.parent/'meshes'/mesh.get('filename').split('/')[-1]
-   before=set(s.objects);bpy.ops.wm.stl_import(filepath=str(path))
-   origin=visual.find('origin');xyz=[0,0,0];rpy=[0,0,0]
-   if origin is not None:
-    xyz=list(map(float,origin.get('xyz','0 0 0').split()));rpy=list(map(float,origin.get('rpy','0 0 0').split()))
-   for ob in set(s.objects)-before:
-    ob.parent=node;ob.location=xyz;ob.rotation_euler=rpy
-    ob.data.materials.append(rubber if 'hand' in node.name else jointmat if any(x in node.name for x in ['pitch','roll','yaw','support','contour']) else shell)
-    for face in ob.data.polygons:face.use_smooth=True
-    if hasattr(ob.data,'set_sharp_from_angle'):ob.data.set_sharp_from_angle(angle=.7)
- for joint in tree.findall('joint'):
-  parent=nodes[joint.find('parent').get('link')];child=nodes[joint.find('child').get('link')]
-  bpy.ops.object.empty_add();origin=bpy.context.object;origin.name=joint.get('name');origin.parent=parent
-  frame=joint.find('origin')
-  if frame is not None:
-   origin.location=list(map(float,frame.get('xyz','0 0 0').split()))
-   origin.rotation_euler=list(map(float,frame.get('rpy','0 0 0').split()))
-  bpy.ops.object.empty_add();rotor=bpy.context.object;rotor.name=joint.get('name')+' motion';rotor.parent=origin
-  rotor.rotation_mode='QUATERNION';child.parent=rotor;rotors[joint.get('name')]=rotor
-  axis=joint.find('axis');axes[joint.get('name')]=Vector(list(map(float,axis.get('xyz','0 0 1').split()))) if axis is not None else Vector((0,0,1))
- roots=[ob for ob in nodes.values() if ob.parent is None]
- bpy.ops.object.empty_add();root=bpy.context.object;root.name='G1 assembly'
- for ob in roots:ob.parent=root
- root.scale=(3.1,)*3;root.rotation_euler.z=-math.pi/2
- bpy.context.view_layer.update()
- low=min((ob.matrix_world@Vector(p)).z for ob in s.objects if ob.type=='MESH' for p in ob.bound_box);root.location.z=-low
- # A slow, readable articulation study. This is not a locomotion controller.
- for name,rotor in rotors.items():
-  if 'shoulder_pitch' in name:values=[(0,0),(.35,-.65),(.65,-.9),(1,-.15)]
-  elif 'elbow' in name:values=[(0,.15),(.35,.9),(.65,1.2),(1,.2)]
-  elif 'shoulder_roll' in name:values=[(0,.12 if 'left' in name else -.12),(1,.12 if 'left' in name else -.12)]
-  else:continue
-  for t,angle in values:key(rotor,'rotation_quaternion',Quaternion(axes[name],angle),t)
- box('Studio floor',(0,0,-.045),(200,200,.08),material('Warm studio gray',(.13,.14,.15),0,.6),.005)
- light('Soft daylight',(-5,-4,9),1700,8);light('Rim strip',(4,5,7),1300,6,shape='RECTANGLE')
- for i in range(last):
-  t=i/(last-1);angle=math.radians(-105+30*t)
-  camera(t,(13*math.cos(angle),13*math.sin(angle),3.8),(0,0,2.05),8)
+ from quality_scenes import humanoid_articulation
+ humanoid_articulation(rig)
 
 elif a.preset=='orbital-earth':
- earth=material('Earth daylight',(.4,.5,.6),0,.65)
- shader=next(n for n in earth.node_tree.nodes if n.type=='BSDF_PRINCIPLED')
- tex=earth.node_tree.nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(config['texture_path'])
- earth.node_tree.links.new(tex.outputs['Color'],shader.inputs['Base Color'])
- globe=sphere('Earth',(0,0,0),(3.0,)*3,earth)
- # The stock UV sphere is low resolution; add subdivisions for a clean limb.
- sub=globe.modifiers.new('Smooth globe silhouette','SUBSURF');sub.levels=2
- key(globe,'rotation_euler',(0,0,math.radians(-95)),0);key(globe,'rotation_euler',(0,0,math.radians(-65)),1)
- if config.get('clouds_path'):
-  # Photographic cloud coverage blended in the surface shader: the same imagery
-  # without tracing multiple semitransparent shells through every ocean pixel.
-  clouds=earth.node_tree.nodes.new('ShaderNodeTexImage');clouds.image=bpy.data.images.load(config['clouds_path'])
-  composite=earth.node_tree.nodes.new('ShaderNodeMixRGB');composite.inputs[2].default_value=(.83,.87,.92,1)
-  earth.node_tree.links.new(clouds.outputs['Color'],composite.inputs[0])
-  earth.node_tree.links.new(tex.outputs['Color'],composite.inputs[1])
-  earth.node_tree.links.new(composite.outputs[0],shader.inputs['Base Color'])
- # A thin geometric limb avoids stochastic transparency noise in EEVEE.
- # This is a visual Earth study rather than atmospheric radiative transfer.
- bpy.ops.curve.primitive_bezier_circle_add(radius=3.014,location=(0,0,0))
- limb=bpy.context.object;limb.name='Thin atmospheric limb';limb.data.bevel_depth=.007;limb.data.bevel_resolution=3
- limb.data.materials.append(material('Atmospheric blue',(.06,.22,.48),0,.5,1.2))
- facing=limb.constraints.new('TRACK_TO');facing.target=cam;facing.track_axis='TRACK_Z';facing.up_axis='UP_Y'
- light('Sun',(-8,-9,9),1800,2)
- for i in range(last):
-  t=i/(last-1);camera(t,(.7,-17+1.6*t,4.2-.9*t),(0,0,0),16)
+ from quality_scenes import orbital_earth
+ orbital_earth(rig)
 
 elif a.preset=='terrain-flyover':
- image=bpy.data.images.load(config['terrain_path']);image.colorspace_settings.name='Non-Color';width,height=image.size;pixels=list(image.pixels)
- resolution=128;vertices=[];faces=[];heights=[]
- for y in range(resolution):
-  for x in range(resolution):
-   px=min(width-1,round(x/(resolution-1)*(width-1)));py=min(height-1,round(y/(resolution-1)*(height-1)))
-   i=(py*width+px)*4;r,g,b=[round(v*255) for v in pixels[i:i+3]]
-   elevation=r*256+g+b/256-32768;heights.append(elevation)
-   vertices.append(((x/(resolution-1)-.5)*12,(y/(resolution-1)-.5)*12,elevation/2300))
- for y in range(resolution-1):
-  for x in range(resolution-1):
-   i=y*resolution+x;faces.append((i,i+1,i+1+resolution,i+resolution))
- mesh=bpy.data.meshes.new('Terrarium elevation mesh');mesh.from_pydata(vertices,[],faces);mesh.update()
- ob=bpy.data.objects.new('Mount Fuji DEM',mesh);s.collection.objects.link(ob)
- mat=material('Topographic paper',(.32,.39,.31),0,.88);ob.data.materials.append(mat)
- nodes=mat.node_tree.nodes;links=mat.node_tree.links;shader=next(n for n in nodes if n.type=='BSDF_PRINCIPLED')
- geometry=nodes.new('ShaderNodeNewGeometry');separate=nodes.new('ShaderNodeSeparateXYZ');links.new(geometry.outputs['Position'],separate.inputs[0])
- ramp=nodes.new('ShaderNodeValToRGB');ramp.color_ramp.elements[0].position=.02;ramp.color_ramp.elements[0].color=(.09,.17,.12,1);ramp.color_ramp.elements[1].position=1;ramp.color_ramp.elements[1].color=(.85,.81,.66,1)
- links.new(separate.outputs['Z'],ramp.inputs[0]);links.new(ramp.outputs[0],shader.inputs['Base Color'])
- # Thin elevation contours make the real relief legible without labels.
- frequency=nodes.new('ShaderNodeMath');frequency.operation='MULTIPLY';frequency.inputs[1].default_value=12
- fraction=nodes.new('ShaderNodeMath');fraction.operation='PINGPONG';fraction.inputs[1].default_value=1
- threshold=nodes.new('ShaderNodeMath');threshold.operation='GREATER_THAN';threshold.inputs[1].default_value=.94
- ink=nodes.new('ShaderNodeMixRGB');ink.inputs[2].default_value=(.025,.05,.038,1)
- links.new(separate.outputs['Z'],frequency.inputs[0]);links.new(frequency.outputs[0],fraction.inputs[0]);links.new(fraction.outputs[0],threshold.inputs[0]);links.new(threshold.outputs[0],ink.inputs[0]);links.new(ramp.outputs[0],ink.inputs[1]);links.new(ink.outputs[0],shader.inputs['Base Color'])
- box('Terrain plinth',(0,0,-.18),(12,12,.35),material('Cut terrain edge',(.055,.08,.065),0,.85),.05)
- box('Studio ground',(0,0,-.39),(200,200,.08),material('Map studio',(.16,.18,.16),0,.9),.01)
- for face in mesh.polygons:face.use_smooth=True
- light('Low afternoon sun',(-8,-10,10),2600,4)
- for i in range(last):
-  t=i/(last-1);camera(t,(-18+4*t,-22+4*t,21-2*t),(0,0,.55),11)
+ from quality_scenes import terrain_flyover
+ terrain_flyover(rig)
 
 for ob in list(s.objects)+list(bpy.data.lights):
  if ob.animation_data and ob.animation_data.action:

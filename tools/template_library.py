@@ -93,7 +93,7 @@ def render_html(item, args, work, frames):
     pagefile = assemble(spec, work / 'page.html')
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright, headless=True)
-        native_ui = item['id'] in {'terminal-flow', 'code-diff', 'market-chart'}
+        native_ui = item['id'] in {'terminal-flow', 'code-diff', 'market-chart', 'network-globe'}
         page = browser.new_page(viewport={'width': args.width, 'height': args.height},
                                 device_scale_factor=2 if native_ui else 1)
         errors = []
@@ -133,10 +133,13 @@ def render(item, args):
     assets = acquire_assets(item.get('assets', []), args.out)
     parameters['asset_sources'] = [json.loads(path.with_suffix(path.suffix + '.json').read_text())
                                    for path in assets.values()]
-    for kind in ('model', 'hdri', 'texture', 'terrain', 'clouds'):
+    for kind in ('model', 'hdri', 'texture', 'terrain', 'clouds', 'night', 'water'):
         key = kind + '_asset'
         if key in parameters:
             parameters[kind + '_path'] = str(assets[parameters[key]])
+    if parameters.get('terrain_mosaic'):
+        from library_geography import prepare_terrain
+        parameters.update(prepare_terrain(parameters['terrain_asset'],args.out))
     if item['renderer'] == 'html':
         render_html(dict(item, parameters=parameters), args, work, frames)
     else:
@@ -145,7 +148,7 @@ def render(item, args):
         config = work / 'parameters.json'
         config.write_text(json.dumps(parameters))
         with (work / 'blender.log').open('w') as log:
-            run(['blender', '-b', '-t', args.threads, '-P', LIBRARY / 'hardware.py', '--',
+            run(['blender', '-b', '-t', args.threads, '--python-exit-code', '1', '-P', LIBRARY / 'hardware.py', '--',
                  '--preset', item['id'], '--out', frames, '--config', config,
                  '--duration', item['duration'], '--fps', args.fps,
                  '--width', args.width, '--height', args.height, '--samples', args.samples,

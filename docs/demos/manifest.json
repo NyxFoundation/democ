@@ -31,8 +31,8 @@
     "id": "rim-reveal",
     "title": "輪郭が質感へ変わる",
     "reference": "https://www.apple.com/airpods-pro/",
-    "movie_sha256": "d72afb77b6ae03a1a3209601daa9277c9fb8da612611d1d7476223fcf06f3236",
-    "preview_sha256": "8f9065e720ee8acd88baeb25d8c4b284caab6918136764f15fa8d02c84da5629"
+    "movie_sha256": "291bf7042270d46f45666a992a59d185d93ad5563139941ef4ae143a49a72c96",
+    "preview_sha256": "0b46f36c41696b037c25e899d99628f6a7526b114e27b2df569a954a085c2e78"
   },
   {
     "id": "macro-controls",
@@ -45,29 +45,29 @@
     "id": "drone-orbit",
     "title": "機体の輪郭と機構を追う",
     "reference": "https://www.dji.com/mavic-4-pro",
-    "movie_sha256": "5e993bde7b8b39d247d6c44e391946b647ad70565df790e2ac71e0fcc72ffa57",
-    "preview_sha256": "46718ab20f26977becf0e3a5b8e68103c12325646ef3ee8391afa3031f6c9464"
+    "movie_sha256": "d98d295a1bad8cbb4d4692b3206d195e926567ad137b781d6de33351d7b9be69",
+    "preview_sha256": "0e0a4fc997a57b7d240e1e148bed640ad738eb86d4af797c2b24ab553f10826c"
   },
   {
     "id": "humanoid-articulation",
-    "title": "関節から意図が伝わる",
+    "title": "接地する足から動きが伝わる",
     "reference": "https://www.unitree.com/g1/",
-    "movie_sha256": "1afa790b70e114a121f6210bd130d37ac1e96059be7d1713b552f40f13147904",
-    "preview_sha256": "5ab44498c12cf3a5d0fedbdf0d48548f7b41cd6b5d64b8e70803225554864e22"
+    "movie_sha256": "65e05ef47ddfc4ad8f0baefba12d19c3c4e33575dfd15b1a5a99d570848765a4",
+    "preview_sha256": "8cd3f79479a2f82f143dcd1cee7926d17f698f3bf74fcb341d57347227d5ff71"
   },
   {
     "id": "orbital-earth",
     "title": "地球の輪郭から広がるスケール",
     "reference": "https://images.nasa.gov/details/GSFC_20170822_Total_m12690_Eclipse",
-    "movie_sha256": "821313505ccf90619b345c01adb8c0a3cb94cae7d3ed24cea7da98ddae196a84",
-    "preview_sha256": "42b954926f06cf79bdf97b5359be5157eefe395bdd9bfc1e9a6dbcd3dd3c5cdc"
+    "movie_sha256": "d96001cf213c0e083d2a23821e5fb2f776d7e75afabc1e4017caa3d5265e33d1",
+    "preview_sha256": "26baf19f50de006059cbf827d9badc04c261312be968654c1f1e96aaa39db0d2"
   },
   {
     "id": "terrain-flyover",
     "title": "地形の起伏へ降りていく",
     "reference": "https://www.mapbox.com/mapbox-gljs",
-    "movie_sha256": "d7d7e574728ab276f17b8b2287138456c8fb37fb72c7dadf43945c8278d7f6bd",
-    "preview_sha256": "7487d54fca90ac3dfeb81a847552bc3447aff16a11b29e658b58964f431c5002"
+    "movie_sha256": "fde0cd35336bf1d33f5bab905ac15b1c6393cf22692f0f775d76f2418ab37b03",
+    "preview_sha256": "870579f1161afc0aa61342092e8eb2b4f222917f0183b76745846f9a83e208e2"
   },
   {
     "id": "terminal-flow",
@@ -87,8 +87,8 @@
     "id": "network-globe",
     "title": "取引の流れが世界をつなぐ",
     "reference": "https://github.com/dalindev/XNOHub.com",
-    "movie_sha256": "1567bd94c3d18b4fac697bea30bf8e751531e5513a095b768c4e6c8896d87197",
-    "preview_sha256": "9e03f03e0fbb41edca33fe8ed2f3c92581007fc2141fbb4586eed3a16179f8b9"
+    "movie_sha256": "0e1211f7500da197a1515c07d3cdebd29c62c114baa3439484c0c3806759cf2a",
+    "preview_sha256": "0d43b01d4ae0d1c381fdcb669a0f7c0c35395cd6cca835b310519fd2d2e956a0"
   },
   {
     "id": "market-chart",

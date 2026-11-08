@@ -53,6 +53,6 @@ D.register('browser', {
     } else {
       await D.sleep(s.hold != null ? s.hold * 1000 : 1800);
     }
-    D.cls('#brw', 'on', false);
+    if (!D.smooth) D.cls('#brw', 'on', false);
   },
 });

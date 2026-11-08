@@ -21,6 +21,7 @@
 """
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
@@ -64,12 +65,18 @@ def _run(html, out, scene, hold, maxs, settle, width, height):
         ctx = b.new_context(viewport={"width": width, "height": height},
                             record_video_dir=tmp,
                             record_video_size={"width": width, "height": height})
+        video_started = time.monotonic()
         pg = ctx.new_page()
         pg.on("pageerror", lambda e: errors.append(str(e)))
-        pg.goto(f"file://{html}?rec=1")
+        pg.goto(f"file://{html}?rec=1&autoplay=0")
+        pg.wait_for_timeout(int(settle * 1000))
+        # Start only the requested scene. Do not await its Promise here: the polling
+        # loop must keep Chromium awake while the animation is running.
+        trim_start = time.monotonic() - video_started
         if scene is not None:
-            pg.wait_for_timeout(400)
-            pg.evaluate("(i) => D.playScene(i)", scene)
+            pg.evaluate("(i) => { void D.playScene(i); }", scene)
+        else:
+            pg.evaluate("() => { void D.replay(); }")
         t0 = time.time()
         seen = None
         while time.time() - t0 < maxs:
@@ -82,7 +89,7 @@ def _run(html, out, scene, hold, maxs, settle, width, height):
         ctx.close()
         b.close()
     webm = max(glob.glob(os.path.join(tmp, "*.webm")), key=os.path.getmtime)
-    _encode(webm, out, settle)
+    _encode(webm, out, trim_start)
     shutil.rmtree(tmp, ignore_errors=True)
     if errors:
         print("JS errors:", *errors, sep="\n  ", file=sys.stderr)
@@ -94,7 +101,7 @@ def scene_list(html, width, height):
     with sync_playwright() as p:
         b = launch_chromium(p)
         pg = b.new_context(viewport={"width": width, "height": height}).new_page()
-        pg.goto(f"file://{html}?rec=1")
+        pg.goto(f"file://{html}?rec=1&autoplay=0")
         pg.wait_for_timeout(400)
         out = pg.evaluate("""() => ({
           engine: D.spec.engine || '',
@@ -109,7 +116,9 @@ def record_scenes(html, outdir, hold=0.35, maxs=180, settle=0.8, width=1600, hei
     outdir = os.path.abspath(outdir)
     os.makedirs(outdir, exist_ok=True)
     info = scene_list(html, width, height)
-    engine, names = info["engine"], info["scenes"]
+    recorder = hashlib.sha1(open(__file__, "rb").read()).hexdigest()[:12]
+    engine = f"{info['engine']}-{recorder}-{width}x{height}"
+    names = info["scenes"]
 
     # 前回の録画を読んで、中身が変わっていないシーンはそのまま使う
     prev = {}

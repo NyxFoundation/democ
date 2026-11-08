@@ -1,254 +1,117 @@
-# nyxis の訴求動画。
-#
-# 直すのはこのファイル。文言を変えれば、画面に出る時間もその場で付いてくる
-# （reading の設定から文字数で決まる）。hold を書いた場面だけは秒で固定する。
-# 行き先は out/screens/nyxis.html。make screens で録る。
-
-title: Nyxis
+title: Nyxis — 認可に、証明を。
 accent: "#5fd7d7"
-
-# 読む速さ。日本語字幕の実務値（4 CPS 基準・最大 7・1 枚 6 秒まで）の内側を取る
-reading:
-  cps: 5.5          # 1 秒あたりの文字数
-  lead: 0.9         # 目が文字に追いつくまでの頭
-  min: 2.4
-  max: 5.2
-
+transition: {duration: 0.4}
+reading: {cps: 5.5, lead: 0.9, min: 2.4, max: 6}
 scenes:
+  - type: card
+    name: 認可の不備
+    style: hero
+    text: "Webアプリの脆弱性リスク<br>第1位は、<em>認可の不備</em>"
+    hold: 2.6
 
-# ── 事故。数字から入る ───────────────────────────────────────────────
-- type: card
-  name: 数字
-  text: "OWASP Top 10 の 1 位は、<br><em>認可の不備</em>"
-  hold: 3.8
+  - type: card
+    name: 年間CVE
+    style: danger
+    text: "年間の脆弱性報告件数（2025年CVE）"
+    number: 120
+    count_ms: 700
+    unit: "件"
+    hold: 1.9
 
-- type: card
-  name: CVE
-  text: "紐づく CVE は"
-  number: 19013
-  hold: 3.6
+  - type: incident
+    name: 抜けた2行
+    timing: {settle: 1.0, request: 0.4, reveal: 0.5}
+    text: "例）ブログアプリ<br>他ユーザーの下書きに<em>アクセスできてしまう。</em>"
+    lang: js
+    code: |
+      app.get('/posts/:id', requireAuth,
+        async (req, res) => {
+          const post = await db.post.findUnique({
+            where: { id: +req.params.id }
+          })
 
-- type: browser
-  name: 事故
-  brand: Bulletin
-  nav: [Posts, Drafts, Members]
-  user: { email: rin@example.com, initial: R }
-  url: "app.example.com/posts/{{3}}/attachments"
-  crumb: "Posts / <b>#3 Weekly notes</b> / Attachments"
-  files:
-    - [PDF,  rin-draft-notes.pdf, 182 KB]
-    - [PNG,  screenshot.png,      64 KB]
-    - [XLSX, todo.xlsx,           21 KB]
-  change:
-    url: "app.example.com/posts/{{7}}/attachments"
-    crumb: "Posts / <b>#7 Pricing change</b> / Attachments"
-    files:
-      - [PDF,  価格改定_社外秘.pdf,  182 KB]
-      - [PDF,  取締役会_議事録.pdf,  1.1 MB]
-      - [XLSX, 給与テーブル.xlsx,     21 KB]
-    stamp: "GET /posts/7/attachments → 200 OK"
-  settle: 1.9        # 何事もない画面を見せておく時間。ここが短いと事故が事故に見えない
-  hold: 2.6
+          res.json(post)
+        })
+    missing: |
+      if (!post.published && post.authorId !== req.user.id)
+        return res.sendStatus(403)
+    caption: "<b>たった2行のチェック漏れで発生しうる。レビュー・テスト・ファジングでは見逃しがち。</b>"
+    hold: 2.7
 
-# ── レビューを通ったコード ───────────────────────────────────────────
-- type: code
-  name: レビュー
-  tab: server.js
-  icon: js
-  lang: js
-  lines: |
-    41 // 投稿の詳細。下書きは作者だけが読める
-    42 app.get('/posts/:id', requireAuth, async (req, res) => {
-    43   const post = await db.post.findUnique({ where: { id: +req.params.id } })
-    44   if (!post.published && post.authorId !== req.user.id)
-    45     return res.sendStatus(403)
-    46   res.json(post)
-    47 })
+  - type: card
+    name: 簡単に
+    style: hero
+    text: "正しい認可を、<br><em>簡単に実装する。</em>"
+    hold: 2.0
 
-    49 // 添付の一覧
-    50 app.get('/posts/:id/attachments', requireAuth, async (req, res) => {
-    51   res.json(await db.attachment.findMany({ where: { postId: +req.params.id } }))
-    52 })
-  good: [44, 45]
-  bad: [51]
-  badges:
-    45: "✓ LGTM"
-    51: "✕ 誰でも読めた"
-  missing:
-    after: 50
-    text: "同じ 2 行がない"
-  note: "この <b>2 行が書かれていない</b>"
-  read: 1.7
-  hold: 3.6
+  - type: policy
+    name: 書いてビルド
+    timing: {line: 0.3, prepare: 0.45, build: 0.65, pass: 2.0, fail: 2.2}
+    text: "数行の「認可ポリシー」を記述するだけ"
+    code: |
+      permit (
+        principal is User,
+        action == Action::"readPost",
+        resource is Post
+      ) when { resource.author == principal };
+    schema: |
+      @effect("update Post(title, body)")
+      action "editPost" appliesTo {
+        principal: [User], resource: [Post]
+      };
+    invalid: |
+      @effect("update Post(title, {{bodyy}})")
+      action "editPost" appliesTo {
+        principal: [User], resource: [Post]
+      };
 
-- type: card
-  name: 通過
-  text: "このコードはレビューを通っている"
-  hold: 3.8
+  - type: kernel
+    name: Leanカーネル
+    text: '核となる技術は定理証明器<em>「Lean」</em>'
+    root: Nyxis.Runtime.authorization_safety
+    proposition: "認証済みユーザーの操作は、承認したポリシーの許可範囲を超えない。"
+    duration: 18
+    inspections:
+      - title: "theorem authorization_safety"
+        description: "発行される操作は、承認した<br>ポリシーの許可範囲内。"
+      - title: "theorem trace_authorized"
+        description: "リクエスト列が発行した操作にも、<br>正当な権限がある。"
+        code: "Authorized app.schema app.policies i"
+      - title: "structure Run (α : Type) where"
+        code: |
+          store : Store
+          issued : List Issued
+          external : List External
+          result : α
+      - title: "authorization_safety"
+        description: "依存する項の型を確認。証明が成立。"
+        code: "t : P"
+    captions:
+      - "記述したポリシーは定理証明器 <b>Lean</b>の値となり、認可安全性の命題に組み込まれます。"
+      - "エラボレータが、型が命題となる<b>証明項</b> を組み立てます。"
+      - "Leanカーネルは、依存する項が<b>要求された型を持つか</b>を検査します。"
+      - "型の検査が通ることが<b>認可安全性の証明が成立することを意味します。</b>"
 
-# ── 書くのはポリシーだけ ─────────────────────────────────────────────
-- type: card
-  name: ポリシー
-  text: "開発者が書くのは、<br><em>Cedar のスキーマとポリシー</em>"
-  hold: 4.8
-
-- type: card
-  name: 実物
-  tab: policies.cedar
-  icon: cedar
-  lang: cedar
-  code: |
-    // 公開済みは誰でも読める
-    permit (principal, action in [Action::"readPost", Action::"listPosts"],
-            resource is Post) when { resource.published };
-
-    // 下書きは作者と管理者だけ
-    permit (principal is User, action in [Action::"readPost", Action::"listPosts"],
-            resource is Post) when { resource.author == principal || principal.admin };
-
-    // 編集・公開・削除も作者と管理者だけ
-    permit (principal is User, action in [Action::"editPost", Action::"deletePost"],
-            resource is Post) when { resource.author == principal || principal.admin };
-  hold: 4.6
-
-# ── 書いたものが Lean の値になる。移植は 1 回だけ ─────────────────────
-- type: split
-  name: 移植
-  left:
-    tab: policies.cedar
-    icon: cedar
+  - type: incident
+    name: 同じURLを403に
+    timing: {settle: 0.8, request: 0.35, reveal: 0.45}
+    safe: true
+    text: "証明された認可ポリシーは、<em>そのまま実行できる。</em>"
     lang: cedar
     code: |
-      permit ( principal is User,
-        action in [Action::"readPost", …],
-        resource is Post )
-      when { resource.author == principal };
-      …
-    fly: "1-3"
-  right:
-    tab: BulletinBoard/Approved.lean
-    icon: lean
-    lang: lean
-    code: |
-      nyxis_approved sources from "policies.cedar"
+      permit (
+        principal is User,
+        action == Action::"readPost",
+        resource is Post
+      ) when {
+        resource.author == principal
+      };
+    caption: "<b>他人の下書きにはアクセス拒否。</b>"
+    hold: 2.3
 
-      def sources : Nyxis.Approved :=
-        ⟨{ id := "read-draft-post",
-          effect := .permit,
-          principalScope := .is "User", … }, … ⟩
-
-      theorem authorization_safety :=
-        Nyxis.Approved.authorization_safety sources …
-    land: "4-6"
-  band: "Cedar の記述が Lean の値になり、<b>証明済みの定理に渡される</b>"
-  read: 0.9
-  hold: 4.7
-
-# ── 型検査が何をしているのか ─────────────────────────────────────────
-- type: tree
-  name: 型検査
-  command: lake build
-  lang: lean
-  root: Nyxis.Runtime.authorization_safety
-  error: |
-    error: nyxis: 効果が参照する列 {{bodyy}} はテーブル Post に無い
-    exit 1
-  levels:
-    l1: [trace_authorized, trace_coherent, trace_entries, trace_list, trace_origin,
-         trace_external, trace_signed, trace_call, trace_called]
-    l2: [handleRequest_authorized, runHandler_authorized, runHandler_coherent, Authz.step,
-         Runtime.trace, Authz.Authorized, List.mem_append, List.mem_map, Prod.mk.inj,
-         Db.Store.apply, Cedar.Spec.evaluate]
-    dots: 56
-  axioms: [propext, Classical.choice, Quot.sound]
-  total: 877
-  unit: 件
-  labels:
-    built:   "この証明は <b>877 件の定義と補題</b>に依存している"
-    compare: "要求された型と、実際の型が<b>一致するか</b>"
-    ok:      "全ての節で一致した。<b>証明に飛躍はない</b>"
-    fail:    "一箇所でも型が合わなければ、<b>ビルドは失敗する</b>"
-  inspect_labels:
-    need: "親が、ここに求めている型"
-    has:  "この項が、実際に持っている型"
-    ok:   "型が一致"
-    ng:   "型が一致しない"
-  inspect:
-    - node: trace_authorized
-      ok: true
-      need: |
-        ∀ r i, (r, i) ∈ (trace app store requests).issued →
-          i.principal = r.principal ∧ i.generated = r.generated ∧
-          Authorized app.schema app.policies i
-      has: |
-        ∀ r i, (r, i) ∈ (trace app store requests).issued →
-          i.principal = r.principal ∧ i.generated = r.generated ∧
-          Authorized app.schema app.policies i
-    - node: trace_coherent
-      ok: false
-      need: |
-        ∀ r i, (r, i) ∈ (trace app store requests).issued →
-          i.principal = r.principal ∧ i.generated = r.generated ∧
-          Authorized app.schema app.policies i
-      has: |
-        ∀ r i, (r, i) ∈ (trace app store requests).issued →
-          i.principal = {{q}}.principal ∧ i.generated = r.generated ∧
-          Authorized app.schema app.policies i
-  done: |
-    ✓ 型検査 ok
-    → .lake/build/bin/sample
-  hold: 1.9
-
-# ── 出てくるのは普通のバイナリ ───────────────────────────────────────
-- type: terminal
-  name: 成果物
-  title: "~/bulletin-board — zsh"
-  lines: |
-    $ lake exe .lake/build/bin/sample
-      listening on :8080  · jwks=supabase · db=postgres
-
-    $ curl -H 'Bearer aoi' -X PATCH :8080/posts/7             204
-    $ curl -H 'Bearer rin'          :8080/posts/7             403
-    $ curl -H 'Bearer rin'          :8080/posts/7/attachments 403  <<← 冒頭のあれ>>
-  side:
-    tab: "app/posts/[id]/page.tsx"
-    icon: ts
-    lang: ts
-    code: |
-      await fetch(`/posts/${id}`, {
-        method: 'PATCH',
-        headers: { Authorization: bearer },
-        body: JSON.stringify({ title, body })
-      })
-    after: 2
-  gap_ms: 600
-  hold: 2.6
-
-# ── 締め ─────────────────────────────────────────────────────────────
-- type: card
-  name: ハンドラ
-  tab: BulletinBoard/Handlers.lean
-  icon: lean
-  lang: lean
-  text: "readPost は callAction を呼ぶだけで、<em>認可を判断していない</em>"
-  code: |
-    def readPost (id : Key) : … := fun _ _ _ => do
-      let outcome ← Handler.callAction (act "readPost") id
-      pure (respond .ok … outcome)
-  hold: 5.8
-
-- type: card
-  name: 範囲
-  text: "承認したポリシーが許す範囲を超える操作は、<em>発行されない</em>"
-  hold: 5.0
-
-- type: card
-  name: ゼロ
-  text: "ハンドラに書かれた認可コード"
-  number: 0
-  hold: 3.4
-
-- type: card
-  name: 入口
-  text: "github.com/NyxFoundation/<em>nyxis</em>"
-  hold: 2.9
+  - type: card
+    name: Nyxis
+    style: brand
+    text: "<em>Nyxis</em>"
+    sub: '認可を安全に実装する開発ツール<br><a href="https://github.com/NyxFoundation/nyxis">github.com/NyxFoundation/nyxis</a>'
+    hold: 2.6

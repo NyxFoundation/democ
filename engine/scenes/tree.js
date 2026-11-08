@@ -161,6 +161,6 @@ D.register('tree', {
       D.html('#treeDone', s.doneHtml); D.cls('#treeDone', 'on');
       await D.sleep(s.hold != null ? s.hold * 1000 : D.read(s.donePlain, 1.1));
     }
-    D.cls('#tree', 'on', false);
+    if (!D.smooth) D.cls('#tree', 'on', false);
   },
 });

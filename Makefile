@@ -73,7 +73,7 @@ $(OUT)/$(1)/build/page.html: $(OUT)/$(1)/$(1).yaml tools/build.py tools/highligh
 $(OUT)/$(1)/build/screens/index.json: $(OUT)/$(1)/build/page.html tools/record.py tools/browser.py
 	$$(PY) tools/record.py $$< --out $(OUT)/$(1)/build/screens
 
-$(OUT)/$(1)/build/edit.mlt: edit/timeline.py edit/kdenlive.py \
+$(OUT)/$(1)/build/edit.mlt: edit/timeline.py edit/kdenlive.py edit/dissolve.py edit/retime.py \
                             $(OUT)/$(1)/build/screens/index.json FORCE
 	$$(PY) edit/timeline.py $(1)
 

@@ -39,6 +39,6 @@ D.register('code', {
 
     if (s.note) { D.cls('#codeNote', 'on'); D.cls('#code', 'dim'); }
     await D.sleep(s.hold != null ? s.hold * 1000 : D.read(s.note, 1.25));
-    D.cls('#code', 'on', false); D.cls('#code', 'dim', false);
+    if (!D.smooth) { D.cls('#code', 'on', false); D.cls('#code', 'dim', false); }
   },
 });

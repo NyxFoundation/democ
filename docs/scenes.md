@@ -93,3 +93,51 @@ accent 色、`<s>` が灰色、`<br>` が改行。
 `engine/scenes/<名前>.css` と `<名前>.js` を足して、`D.register('<名前>', {mount, reset, play})`
 を書く。`mount()` は一度だけ呼ばれて markup を返し、`play(s)` が YAML の 1 要素を受け取る。
 `tools/build.py` の `BUILDERS` に変換関数を足せば、YAML 側で素のコードを書けるようになる。
+
+## incident — コードレビューとブログを並べる
+
+左のendpointと、右のブログ下書きUIを同時に見せる。URLの投稿IDが3から7に変わる。
+
+| 鍵 | 内容 |
+|---|---|
+| text / caption | 場面上部の見出し / 下部の字幕 |
+| code / lang | 左のコードと構文色 |
+| missing | 欠落している2行。codeの最初の空行に赤い挿入欄を開く |
+| safe | trueならポリシー実行後の403を表示。省略時は他人の下書きを200で表示 |
+| hold | URLを変えて結果を出した後の保持秒数 |
+| timing | `settle`（最初の画面）、`request`（URL変更後）、`reveal`（結果表示後）の待ち秒数 |
+
+## policy — ポリシー入力とビルド判定
+
+codeにCedarの短いポリシー、schemaに正しい効果宣言、invalidに不整合がある宣言を書く。
+行単位でポリシーを入力し、ビルド成功→不整合で失敗の2状態を見せる。
+textは見出し。出典や保証の範囲は制作ノートに記録する。
+映像中の結果は挙動を説明するアニメーションで、実際のビルド処理を起動しない。
+timingで各待ち秒数を上書きできる。lineは入力1行、prepareは入力後、buildは検査中、
+pass / failは成功・失敗の表示時間。
+
+## kernel — Leanの証明依存ツリー
+
+rootに定理名、propositionに短い命題、captionsに説明文の配列、durationに秒数。
+textは左上の見出し。#kernelHeaderを文字と背景の合成用レイヤーとして切り出す。
+3d/kernel.mp4がHTMLから見える相対位置にあれば、そのBlender映像を再生する。
+未生成ならHTMLの概形を再生する。タイムラインへの差し替えはlayers/kernel.yamlで指定。
+speedは再生倍率（既定1）。durationは元動画の秒数で、実際の尺はduration / speed。
+HTMLとMP4の両方に反映し、元のBlender動画は保持する。編集用の加速素材はbuild/retimed/にキャッシュする。
+inspectionsにノードの一時表示を記述する。titleは宣言名、descriptionは短い説明、codeは定義や型の抜粋。
+`D.Scenes.kernel.inspect(s, i)`でHTMLの内容を設定し、layers/kernel.yamlから透過画像として切り出す。
+球体・輪・接続線と表示のタイミングはshots/kernel.pyで構成する。常駐する小さな補題ラベルは使わない。
+
+## cardの追加フィールド
+
+unitは数字の単位。補足説明やリンクはsubに記述する。番号付きの小見出しや細かい脚注は表示しない。
+styleはhero（青緑の明るい背景）、danger（赤い数字）、brand（大きい製品名）。
+count_msで数字が最終値に到達する時間をミリ秒で指定できる。holdはカウント後の保持秒数。
+
+## 場面転換
+
+全体の設定に transition: {duration: 0.4} を指定すると、場面間の空白をなくし、
+前の画面を残したまま次へ溶かす。durationは秒数。指定がなければ従来の再生方法を使う。
+HTMLでは動画の最終フレームも保持し、次の画面が準備できてから切り替える。
+録画素材も最終状態を保持し、MP4では同じ長さで末尾と先頭を重ねる。
+MLT / Kdenliveでは、その境目が短い独立したクリップとして並ぶ。

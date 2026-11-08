@@ -57,9 +57,11 @@ D.register('split', {
       D.html('#spBand', s.band); D.cls('#sp', 'dim');
       await D.sleep(40); D.cls('#spBand', 'on');
       await D.sleep(s.hold != null ? s.hold * 1000 : D.read(s.band, 1.2));
-      D.cls('#spBand', 'on', false); D.cls('#sp', 'dim', false);
-      await D.sleep(230);
+      if (!D.smooth) {
+        D.cls('#spBand', 'on', false); D.cls('#sp', 'dim', false);
+        await D.sleep(230);
+      }
     }
-    D.cls('#sp', 'on', false);
+    if (!D.smooth) D.cls('#sp', 'on', false);
   },
 });

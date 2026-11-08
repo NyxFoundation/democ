@@ -1,0 +1,20 @@
+.kernel{z-index:32;padding:65px 80px;background:radial-gradient(ellipse at 50% 40%,#142d3b,#05070d 68%)}.kernel h1{font-size:43px;color:var(--ink);margin:20px 0}.kernel h1 em{font-style:normal;color:var(--accent)}.kernel-space{position:absolute;left:80px;top:220px;width:1440px;height:620px;perspective:800px;transform:rotateX(12deg)}.kernel-wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.kernel-wires path{fill:none;stroke:#335871;stroke-width:1.2;stroke-dasharray:1000;stroke-dashoffset:1000;animation:kernelDraw 2s forwards;animation-delay:var(--delay)}
+.kernel-node{position:absolute;transform:translate(-50%,-50%);font:13px var(--mono);color:#9ebbd1;border:1px solid #3c6d83;border-radius:5px;background:#102736;padding:10px 12px;opacity:0;animation:kernelAppear .6s forwards;animation-delay:var(--delay)}.kernel-node.layer-2,.kernel-node.layer-3{width:8px;height:8px;padding:0;background:#63b6bd;border-radius:50%}.kernel-node.layer-3{width:5px;height:5px;opacity:.5}
+.kernel-theorem{position:absolute;left:300px;right:300px;top:615px;border:1px solid #478a98;background:#0b1c27;padding:25px 34px;border-radius:12px;box-shadow:0 18px 80px #0009}.theorem-kicker{font:13px var(--mono);letter-spacing:.17em;color:var(--accent)}.theorem-name{font:23px var(--mono);color:#e2edf5;margin-top:16px}.theorem-proposition{font:20px var(--ui);margin-top:18px;color:#aec1d4}.theorem-term{font:24px var(--mono);color:var(--accent);margin-top:20px}.verified .kernel-theorem{border-color:var(--ok)}.verified .kernel-node{border-color:var(--ok);color:var(--ok)}.verified .theorem-term{color:var(--ok)}
+.kernel-caption{position:absolute;bottom:100px;left:80px;right:80px;text-align:center;font:600 28px/1.6 var(--ui);color:#e2eaf5}.kernel-caption b{color:var(--accent)}.kernel-footnote{position:absolute;bottom:42px;left:80px;right:80px;text-align:center;font:15px var(--ui);color:#7b91a8}.kernel video{display:none;position:absolute;inset:0;width:1600px;height:1000px;z-index:20;background:#05070d}.kernel.video-ready video{display:block}
+@keyframes kernelDraw{to{stroke-dashoffset:0}}@keyframes kernelAppear{to{opacity:1}}
+
+.kernel-node.layer-0,.kernel-node.layer-1{width:14px;height:14px;padding:0;border-radius:50%}
+.theorem-name{margin-top:0}
+.kernel-inspection{display:none;position:absolute;left:1000px;top:290px;width:525px;color:#edf4ff;text-shadow:0 2px 10px #000c}
+.inspection-title{font:600 26px/1.5 var(--mono);color:#ffd18a;white-space:nowrap}
+.inspection-description{font:500 26px/1.55 var(--ui);margin-top:12px}
+.kernel-inspection pre{font:24px/1.55 var(--mono);margin:14px 0 0;color:#dce8f4;white-space:pre}
+.kernel-theorem{left:575px;right:auto;top:600px;width:68px;height:68px;padding:0;border-radius:50%;border:0;background:radial-gradient(circle at 32% 26%,#c4e4ff 0%,#498cce 15%,#235389 52%,#0b223f 100%);box-shadow:0 0 36px #448cf029}
+.kernel-theorem>*{display:none}.verified .kernel-theorem{background:radial-gradient(circle at 32% 26%,#fff5da 0%,#ffd18a 15%,#c88b32 60%,#633a0c 100%);box-shadow:0 0 40px #ffc26650}
+.kernel-node{border:0;background:radial-gradient(circle at 32% 26%,#c4e4ff,#498cce 25%,#0b223f);border-radius:50%}
+.verified .kernel-node{background:#ffd18a}
+.kernel-theorem{display:none}.kernel-wires circle{fill:#8dcbf8}.kernel-wires path{stroke:#3b6996}
+.verified .kernel-wires path{stroke:#efad4f}.verified .kernel-wires circle{fill:#ffe1a3}
+.kernel-header{position:absolute;left:0;top:55px;width:1600px;height:110px;background:linear-gradient(to bottom,transparent 0,#000 15px,#000 95px,transparent 110px)}
+.kernel .kernel-header h1{position:absolute;left:80px;top:30px;width:1440px;margin:0}

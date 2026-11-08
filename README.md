@@ -4,6 +4,9 @@
 スクリプト、編集は MLT XML。どれもテキストなので AI が直接書けて、直したら `make`
 で同じものが出てくる。GUI は人が確かめて手直しするために開く。
 
+場面のつながり、文字量、コピーの整え方を含む制作手順は、
+[demo-creatorスキル](https://github.com/NyxFoundation/skills/tree/main/creative/demo-creator)にまとめている。
+
 このリポジトリにあるのは**道具だけ**。デモ 1 本ぶんは `out/<名前>/` に置き、git には
 入らない。残したくなったら `make example` で `examples/` へ写す。
 
@@ -11,8 +14,8 @@
 out/nyxis/              ← 作業場（git 管理外）
   nyxis.yaml              台本。文字を直すのはここ
   notes.md                数字の出典、言い切りの線引き
-  layers/split.yaml       3D にする場面の切り方
-  shots/split.py          その 3D の組み方
+  layers/kernel.yaml      3D にする場面の切り方（ショット名は任意）
+  shots/kernel.py         その 3D の組み方
   build/                  生成物。make clean はここだけ消す
     page.html  screens/  parts/  3d/  edit.mlt  edit.kdenlive  demo.mp4
 ```
@@ -55,8 +58,9 @@ make edit  N=nyxis       # ブラウザが開く
 で F5 を押すと入れ替わる。組み直しは 0.3 秒。`watch` を使わないなら保存のたびに
 `make html` を叩く。
 
-開いた画面では数字キーで場面を飛べて、`r` で頭から再生される。14 場面目だけ見たい
-ときは `13` を押す。よければ `make` で録り直して書き出す。
+開いた画面では1桁の数字キーで場面を指定し、`r` で頭から再生できる。
+1場面だけ確認する場合は、ブラウザのコンソールで `D.playScene(番号)` を使う（0始まり）。
+よければ `make` で録り直して書き出す。
 
 引数の一覧は [docs/scenes.md](docs/scenes.md)。文章には `<em>`（accent 色）`<b>`
 `<s>`（灰色）`<br>` が書ける。コードは素のまま書けば `lang` から色が付き、
@@ -100,10 +104,8 @@ Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書い�
 | `tools/build.py` | YAML → 1 枚の HTML |
 | `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
 | `edit/timeline.py` | 素材を並べて `.mlt` を書く |
-| `layers/<デモ>/*.yaml` | 画面をどう部品に切るか |
+| `out/<名前>/layers/*.yaml` | 画面をどう部品に切るか |
 | `out/<デモ>/` | 生成物。git には入れない |
-
-## 出力の置き場
 
 ## シーンは 1 つ 1 クリップ
 
@@ -123,9 +125,8 @@ Kdenlive で開いたときに触れるものになる。
 ## HTML のままにしないもの
 
 画面そのものを映す場面——ブラウザ UI、コードエディタ、ターミナル——は HTML が正しい
-素材で、3D で作り直すと遅いうえに嘘くさくなる。一方で HTML が原理的に出せないものが
-四つある。モーションブラー、被写界深度、実光源が縁を拾う反射、フレームの正確さ。
-「安っぽく見える」の正体はだいたいこれで、幾何の精度ではない。
+素材として使う。立体的な関係や、物理カメラの被写界深度、モーションブラー、
+光源による反射、フレーム単位の3D演出にはBlenderを使う。
 
 そこで、UI はモデリングせず、部品ごとの透過 PNG に切り出して Blender の空間に板と
 して並べる。文言を直したらレイヤーを撮り直すだけで、`.blend` の中のアニメーションは
@@ -136,7 +137,7 @@ Kdenlive で開いたときに触れるものになる。
 
 ## 場面の型
 
-いまあるのは 6 つ。足りなければ `engine/scenes/` に増やす（手順は
+いまあるのは 9 つ。足りなければ `engine/scenes/` に増やす（手順は
 [docs/scenes.md](docs/scenes.md) の末尾）。
 
 `card` は全画面の文字と数字。`browser` は事故を起こしているウェブアプリ。`code` は
@@ -144,6 +145,10 @@ Kdenlive で開いたときに触れるものになる。
 は左に書いたものが箱になって飛び、空中で表記を変えて右の一部に着地する。`tree` は
 依存の木を伸ばし、節を一つ開いて型の照合を見せてから残りに広げる。`terminal` は
 出てくる成果物を実際に叩いて見せる。
+
+Nyxis の8場面版では、コードレビューとブログを同時に見せる `incident`、ポリシー入力と
+ビルド判定を見せる `policy`、Blender の依存ツリー映像を再生する `kernel` も使える。
+`kernel` は映像の生成前には HTML の概形を表示する。
 
 ## 踏んだ穴
 

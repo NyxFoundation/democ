@@ -1,0 +1,31 @@
+scene: 5
+scale: 1.5
+clear: [".sc", ".stage", ".stage-wrap"]
+layers:
+  - name: header
+    select: "#kernelHeader"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on');"
+  - name: inspect0
+    select: "#kernelInspection"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.Scenes.kernel.inspect(s,0); D.q('kernelInspection').style.display='block'; D.q('kernelSpace').style.visibility='hidden'; D.q('kernelTheorem').style.visibility='hidden';"
+  - name: inspect1
+    select: "#kernelInspection"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.Scenes.kernel.inspect(s,1); D.q('kernelInspection').style.display='block'; D.q('kernelSpace').style.visibility='hidden'; D.q('kernelTheorem').style.visibility='hidden';"
+  - name: inspect2
+    select: "#kernelInspection"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.Scenes.kernel.inspect(s,2); D.q('kernelInspection').style.display='block'; D.q('kernelSpace').style.visibility='hidden'; D.q('kernelTheorem').style.visibility='hidden';"
+  - name: inspect3
+    select: "#kernelInspection"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.Scenes.kernel.inspect(s,3); D.q('kernelInspection').style.display='block'; D.q('kernelSpace').style.visibility='hidden'; D.q('kernelTheorem').style.visibility='hidden';"
+  - name: caption0
+    select: "#kernelCaption"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.html('kernelCaption',s.captions[0]);"
+  - name: caption1
+    select: "#kernelCaption"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.html('kernelCaption',s.captions[1]);"
+  - name: caption2
+    select: "#kernelCaption"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.html('kernelCaption',s.captions[2]);"
+  - name: caption3
+    select: "#kernelCaption"
+    js: "D.Scenes.kernel.setup(s); D.cls('kernel','on'); D.html('kernelCaption',s.captions[3]);"

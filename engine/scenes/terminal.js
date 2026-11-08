@@ -23,6 +23,6 @@ D.register('terminal', {
       await D.sleep(s.codeHtml[i].trim() ? gap : gap * 0.5);
     }
     await D.sleep(s.hold != null ? s.hold * 1000 : 1600);
-    D.cls('#term', 'on', false);
+    if (!D.smooth) D.cls('#term', 'on', false);
   },
 });

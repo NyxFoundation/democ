@@ -1,0 +1,9 @@
+D.register('policy',{
+ mount:()=>'<section id="policy" class="sc policy"><h1 id="policyTitle"></h1><div class="policy-workspace"><div class="policy-editor"><div class="window-top"><span class="traffic">● ● ●</span>policies.cedar<span class="policy-lang">Cedar</span></div><pre id="policyCode"></pre><div class="schema-tab">schema.cedarschema</div><pre id="policySchema"></pre></div><div class="policy-result"><div class="build-command">$ lake build</div><div id="buildLog" class="build-log"></div><div class="build-verdict" id="buildVerdict"></div><div id="buildDetail" class="build-detail"></div></div></div><div class="policy-caption" id="policyCaption"></div></section>',
+ reset(){D.q('policy').className='sc policy';},
+ async play(s){const t=s.timing||{};const pause=(name,seconds)=>D.sleep((t[name]??seconds)*1000);this.reset();D.html('policyTitle',s.text);D.html('policyCode','');D.html('policySchema',(s.schemaHtml||[]).join('\n'));D.html('buildLog','');D.text('buildVerdict','');D.text('buildDetail','');D.html('policyCaption','数行のポリシーを書いてビルド。');D.cls('policy','on');
+ for(const row of s.codeHtml){D.q('policyCode').insertAdjacentHTML('beforeend','<div>'+(row||'&nbsp;')+'</div>');await pause('line',0.36);}
+ await pause('prepare',1);D.html('buildLog','✓ Approved sources bound<br>✓ Schema accepted<br>✓ Authorization theorem checked');await pause('build',1.4);D.cls('policy','passed');D.text('buildVerdict','✓ PROVEN');D.text('buildDetail','Build passed · exit 0');D.html('policyCaption','ポリシーの許可範囲を超えないことを機械的に<b>証明できる。</b>');await pause('pass',3.4);
+ D.cls('policy','passed',false);D.cls('policy','failed');D.html('policySchema',(s.invalidHtml||[]).join('\n'));D.html('buildLog','✕ column bodyy is not in table Post');D.text('buildVerdict','✕ REJECTED');D.text('buildDetail','Build failed · exit 1');D.html('policyCaption','認可に不整合があればビルドエラーが発生。');await pause('fail',3.6);
+ if(!D.smooth){D.cls('policy','on',false);await D.sleep(300);}}
+});

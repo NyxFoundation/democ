@@ -66,3 +66,12 @@ mark{background:rgba(251,113,133,.24);border-radius:3px;padding:1px 4px;color:#f
 .band s{text-decoration:none;color:var(--dim2)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Shared editor/browser chrome for adjacent surfaces. */
+.scene-eyebrow{font:16px/1.3 var(--mono);letter-spacing:.18em;color:var(--accent)}
+.window-top{height:48px;display:flex;align-items:center;gap:20px;padding:0 20px;background:#181e29;border-bottom:1px solid #2b364b;font:14px var(--mono);color:#9caac1}
+.traffic{font-size:13px;letter-spacing:2px;color:#67778c}.window-top .traffic:first-letter{color:#f27878}
+
+/* Keep the outgoing picture until the next scene is ready, then dissolve it. */
+.stage.smooth #scenes > .sc{transition:none}
+.scene-outgoing{position:absolute;inset:0;z-index:100;pointer-events:none;overflow:hidden;will-change:opacity}

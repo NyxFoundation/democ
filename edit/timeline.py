@@ -28,6 +28,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kdenlive                                  # noqa: E402
+import dissolve                                  # noqa: E402
+import retime                                    # noqa: E402
 
 
 def probe_duration(path: Path) -> float:
@@ -163,7 +165,9 @@ class Timeline:
                 n += 1
                 in_f = self._f(clip.start)
                 prod = ET.SubElement(mlt, "producer", {
-                    "id": pid, "in": str(in_f), "out": str(in_f + frames - 1)})
+                    # The playlist applies the trim. Setting it here as well makes
+                    # MLT skip the source head twice at every dissolved boundary.
+                    "id": pid, "in": "0", "out": str(in_f + frames - 1)})
 
                 def prop(k, v):
                     ET.SubElement(prod, "property", {"name": k}).text = str(v)
@@ -247,26 +251,36 @@ def build(demo: str) -> Path:
         raise SystemExit(f"{index} がない。make screens を先に通す")
 
     tl = Timeline(width=1600, height=1000, fps=fps, tracks=2)
+    import yaml
+    spec = yaml.safe_load((ROOT / "out" / demo / f"{demo}.yaml").read_text())
     sub = shots(demo)
     clips = []
     for s in json.loads(index.read_text(encoding="utf-8"))["scenes"]:
         three = sub.get(s["i"])
+        if three is not None:
+            three = retime.video(three, speed=float(spec["scenes"][s["i"]].get("speed", 1)),
+                                 duration=probe_duration(three), fps=fps,
+                                 directory=base / "retimed")
         clips.append((three or index.parent / s["file"], s["name"], three is not None))
 
+    transition = float((spec.get("transition") or {}).get("duration", 0))
     last = len(clips) - 1
     kd = []
     for i, (path, name, is3d) in enumerate(clips):
         # 見た目の違うカットの前後だけ短く溶かす。同じ絵の続きは切りっぱなし
         prev3d = i > 0 and clips[i - 1][2]
         next3d = i < last and clips[i + 1][2]
-        fi = 0.4 if i == 0 else (0.25 if is3d or prev3d else 0.0)
-        fo = 0.8 if i == last else (0.25 if is3d or next3d else 0.0)
-        tl.video(path, track=0, fade_in=fi, fade_out=fo)
+        fi = 0.4 if i == 0 else (0 if transition else 0.25 if is3d or prev3d else 0.0)
+        fo = 0.8 if i == last else (0 if transition else 0.25 if is3d or next3d else 0.0)
         kd.append({"path": path, "name": name, "in": 0,
                    "frames": max(int(round(probe_duration(path) * fps)), 1),
                    "fade_in": int(round(fi * fps)), "fade_out": int(round(fo * fps))})
         print("  %2d %-10s %s%s" % (i, name, path.name, "   ← 3D" if is3d else ""))
 
+    kd = dissolve.splice(kd, seconds=transition, fps=fps, directory=base / "transitions")
+    for clip in kd:
+        tl.video(clip["path"], start=clip["in"] / fps, length=clip["frames"] / fps,
+                 fade_in=clip["fade_in"] / fps, fade_out=clip["fade_out"] / fps)
     out = tl.write(base / "edit.mlt")
     # melt に渡すのは .mlt。人が開くのは .kdenlive のほう（素の MLT は開けない）
     kdenlive.write(base / "edit.kdenlive", kd, width=1600, height=1000, fps=fps, name=demo)

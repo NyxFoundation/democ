@@ -145,8 +145,21 @@ def build_terminal(s):
         side.pop("code", None)
 
 
+def build_incident(s):
+    for field in ("code", "missing"):
+        if s.get(field):
+            s[field + "Html"] = hl_lines(s.pop(field), s.get("lang", "js"))
+
+
+def build_policy(s):
+    for field in ("code", "schema", "invalid"):
+        if s.get(field):
+            s[field + "Html"] = hl_lines(s.pop(field), "cedar")
+
+
 BUILDERS = {"card": build_card, "browser": build_browser, "code": build_code,
-            "split": build_split, "tree": build_tree, "terminal": build_terminal}
+            "split": build_split, "tree": build_tree, "terminal": build_terminal,
+            "incident": build_incident, "policy": build_policy, "kernel": lambda s: None}
 
 
 # --- 組み立て ---------------------------------------------------------------

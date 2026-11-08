@@ -11,7 +11,7 @@
 | `cursor-zoom` | Screen Studio | 操作箇所への寄り、パン、引き | HTML |
 | `port-orbit` | Mac mini | 天面から前面、背面へ | Blender / Cycles |
 | `rim-reveal` | AirPods Pro | 輪郭から質感へ | Blender / Cycles |
-| `macro-controls` | OP–XY | 斜光と近接ドリー | Blender / EEVEE |
+| `macro-controls` | OP–XY | 斜光と近接ドリー | Blender / Cycles |
 | `drone-orbit` | DJI Mavic 4 Pro | 機構へ寄り、機体を回り込む | Blender / EEVEE |
 | `humanoid-articulation` | Unitree G1 | 肩と肘の協調動作 | Blender / EEVEE |
 | `orbital-earth` | NASA EPIC | 地表・雲・大気の縁と自転 | Blender / EEVEE |
@@ -38,6 +38,9 @@ make library-collect ID=port-orbit
 make library-render ID=port-orbit
 make library-catalog
 make library-check               # 尺・フレーム数・ハッシュ・デコードを検査
+make library-materials           # CC0素材取得 → Blender試し描画 → 素材一覧
+make library-materials-list
+xdg-open out/template-library/materials/index.html
 
 # コードを変えた後、対象だけ再生成する
 uv run --with pyyaml --with playwright python3 tools/template_library.py render \
@@ -78,11 +81,36 @@ out/template-library/             ローカル成果物。Git管理外
   references/<id>.mp4, .json       参考クリップと出典・取得時刻・SHA-256
   renders/<id>.mp4, .jpg, .json    再現映像・ポスター・設定・SHA-256
   assets/                         外部素材と取得元・条件・SHA-256
+  materials/index.html            CC0モデル・照明・マテリアルの一覧
+  materials/<asset-id>/            確認用PNG、画像パック済み.blend、取得元と設定
   build/<id>/                     フレーム列、HTML、台本、ログ
   build/<id>/<id>.blend           編集可能な3Dプロジェクト
 ```
 
 ## 3Dは形と素材から始める
+
+CC0のモデル12点、スタジオHDRI 3点、PBRマテリアル1組を取得・再利用できる。
+モデル8点はPoly Havenの質感付きデータ。カメラ、ラジカセ、カセットプレーヤー、無線機、
+ノートPC、基板、腕時計、宇宙機器を収集した。2KのUV・法線・粗さ・金属度マップも揃えて取得する。
+Innersceneのヘッドホン、イヤホン、シンセサイザー、FPVドローン4点も保存済みだが、
+形状や表面が単純なのでサブカット向けの候補として分けている。
+モデル12点はCyclesの中立照明で実際に描画し、画像と編集用のパック済み`.blend`を残す。
+照明・素材の単体取得とプレビュー生成は次で再実行できる。
+
+```sh
+uv run --with pyyaml python3 tools/library_materials.py fetch --id ph-camera-01
+uv run --with pyyaml python3 tools/library_materials.py inspect --id ph-camera-01 --force
+uv run --with pyyaml python3 tools/library_materials.py catalog
+```
+
+`all` はCC0素材だけを対象にする。AppleのARモデルはこの一括取得に含めない。
+PBRのZIPは検査してから同名ディレクトリへ展開し、原本と展開後のハッシュを残す。
+一覧の「元ファイル」は取得した原本、「Blender」は照明・カメラ・画像を含む編集用ファイル。
+`quality_status` は素材の確認結果で、最終動画の画質保証ではない。
+
+操作面の接写`macro-controls`は、自作のノブ列からPoly HavenのBoomboxへ差し替えた。
+印字・メッシュ・表面の傷を保持し、Cyclesと移動する面光源で撮影する。
+OP–XYはカメラと光の参考で、モデルの製品は異なる。
 
 1. 公式のARモデル、作者公開のCAD / URDF / glTF、質感付きモデルを探す。
    製品の世代・比率・端子・可動部を画像と照合する。入手できる品質の高いモデルを優先する。
@@ -112,7 +140,7 @@ G1の再現は関節を見せるキーフレームアニメーションで、歩
 `model_rotation` は度単位のXYZ、`body_width` はモデルの正規化後の幅。
 光源やカメラ位置は同じ正規化座標に置く。`.blend` には画像をパックする。
 `motion_duration` は動き全体の秒数。`duration` を短くすると、その動きの前半だけを出力できる。
-マクロカットは6秒の動きのうち前半3.2秒を使う。
+操作面の接写は3.2秒の一続きのドリー移動。
 
 ```sh
 blender -b -t 8 -P templates/library/hardware.py -- \

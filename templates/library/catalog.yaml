@@ -142,9 +142,9 @@ templates:
   - tactile
   takeaway: 触れたくなるディテールを、近さと光の移動で見せる。
   mechanics:
-  - 低い斜光でノブの縁と凹凸を拾う。
-  - 操作面に沿ってカメラを滑らせる。
-  - 小さな点灯を次の操作への手がかりにする。
+  - 低い斜光でノブの縁と印字を拾う。
+  - 実際の操作面に沿ってカメラを滑らせる。
+  - 反射の移動で金属・樹脂・スピーカーメッシュを見せる。
   reference:
     brand: teenage engineering OP–XY
     page: https://teenage.engineering/products/op-xy
@@ -152,15 +152,16 @@ templates:
     start: 0.2
     end: 6.2
     observed: 黒いノブの列を斜光で見せ、斜めの近接カットへ移る。
-  adaptation: 元映像のカット割りを一続きのドリー移動へ翻案。自作の操作面、波形、点灯を使用。
+  adaptation: OP–XYの斜光と近接ドリーを、Poly HavenのCC0 Boomboxへ翻案。作者のUV・印字・メッシュ・PBRマップを保持。製品形状の複製ではない。
   parameters:
+    model_asset: ph-boombox
     hdri_asset: studio-small-05
-    hdri_strength: 0.22
-    motion_duration: 6.0
+    hdri_strength: 0.2
   assets:
+  - ph-boombox
   - studio-small-05
-  engine: eevee
-  samples: 48
+  engine: cycles
+  samples: 32
 - id: drone-orbit
   title: 機体の輪郭と機構を追う
   category: drone

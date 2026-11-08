@@ -7,7 +7,7 @@ import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
 
 p=argparse.ArgumentParser()
-p.add_argument('--preset',required=True,choices=['port-orbit','rim-reveal','macro-controls','drone-orbit','humanoid-articulation','orbital-earth','terrain-flyover'])
+p.add_argument('--preset',required=True,choices=['port-orbit','rim-reveal','macro-controls','drone-orbit','humanoid-articulation','orbital-earth','terrain-flyover','asset-inspect'])
 p.add_argument('--out',required=True)
 p.add_argument('--duration',type=float,default=6)
 p.add_argument('--fps',type=int,default=25)
@@ -58,7 +58,7 @@ if config.get('hdri_path'):
 
 def import_product(path,width=5.6):
  """Keep the source geometry, UVs, normal maps and material assignments intact."""
- before=set(s.objects);path=Path(path).resolve()
+ before=set(s.objects);previous_images=set(bpy.data.images);path=Path(path).resolve()
  if path.suffix.lower() in ['.usd','.usdz','.usdc','.usda']:
   bpy.ops.wm.usd_import(filepath=str(path),import_materials=True,import_textures_mode='IMPORT_PACK')
  elif path.suffix.lower() in ['.gltf','.glb']:
@@ -71,7 +71,15 @@ def import_product(path,width=5.6):
  imported=set(s.objects)-before
  for ob in list(imported):
   if ob.type in ['LIGHT','CAMERA']:bpy.data.objects.remove(ob,do_unlink=True);imported.remove(ob)
- meshes=[ob for ob in imported if ob.type=='MESH']
+ for image in set(bpy.data.images)-previous_images:
+  if image.source!='FILE' or image.packed_file:continue
+  if not Path(bpy.path.abspath(image.filepath)).is_file():
+   candidates=[path.parent/image.filepath.removeprefix('//'),path.parent/'textures'/Path(image.filepath).name]
+   resolved=next((p for p in candidates if p.is_file()),None)
+   if resolved is None:raise FileNotFoundError(f'Missing texture for {path.name}: {image.filepath}')
+   image.filepath=str(resolved);image.reload()
+ bpy.context.view_layer.update()
+ meshes=[ob for ob in imported if ob.type=='MESH' and not ob.hide_render]
  if not meshes:raise ValueError('The imported model contains no meshes')
  rotation=Euler(tuple(math.radians(v) for v in config.get('model_rotation',[0,0,0]))).to_matrix().to_4x4()
  points=[rotation@ob.matrix_world@Vector(p) for ob in meshes for p in ob.bound_box]
@@ -147,7 +155,29 @@ def camera(t,pos,target,fstop=7):
  cam.data.dof.aperture_fstop=fstop;cam.data.dof.keyframe_insert('aperture_fstop',frame=1+round(t*(motion_last-1)))
 
 
-if a.preset=='port-orbit':
+if a.preset=='asset-inspect':
+ h=import_product(config['model_path'],5.6)
+ meshes=[ob for ob in s.objects if ob.type=='MESH' and not ob.hide_render]
+ points=[ob.matrix_world@Vector(p) for ob in meshes for p in ob.bound_box]
+ width=max(p.x for p in points)-min(p.x for p in points)
+ depth=max(p.y for p in points)-min(p.y for p in points)
+ largest=max(width,depth,h);target=tuple(config.get('inspection_target',(0,0,h*.46)))
+ # A neutral studio inspection makes missing maps, faceted silhouettes and
+ # oversimplified controls visible before a model reaches a production shot.
+ floor=material('Neutral studio sweep',(.09,.095,.10),0,.72)
+ box('Studio sweep',(0,0,-.09),(200,200,.16),floor,.01)
+ light('Large window',(-6,-5,10),1600,8,target=target,shape='RECTANGLE')
+ light('White bounce',(7,-2,6),350,9,target=target)
+ light('Strip reflection',(1,6,8),900,5,target=target,shape='RECTANGLE')
+ distance=largest*float(config.get('inspection_camera_scale',3.25))
+ camera(0,(distance*.58,-distance*.8,h*.46+distance*.45),target,11)
+ cam.data.lens=75
+ report={'model':config['model_path'],'meshes':len(meshes),'triangles':sum(sum(max(0,len(p.vertices)-2) for p in ob.data.polygons) for ob in meshes),
+         'materials':len({m for ob in meshes for m in ob.data.materials if m}),
+         'images':len(bpy.data.images),'dimensions':[width,depth,h]}
+ (out.parent/'inspection.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+
+elif a.preset=='port-orbit':
  w=float(config.get('body_width',5.6));d=float(config.get('body_depth',4.8));h=float(config.get('body_height',1.4))
  if config.get('model_path'):
   h=import_product(config['model_path'],w)
@@ -189,31 +219,19 @@ elif a.preset=='rim-reveal':
  camera(0,(0,-13,3),(0,0,0),9);camera(1,(2,-12.5,3.4),(0,0,0),9)
 
 elif a.preset=='macro-controls':
- panel=material('Anodized graphite',(.012,.016,.022),.83,.24)
- keymat=material('Graphite keys',(.022,.026,.033),.15,.25)
- softwhite=material('Porcelain accent',(.53,.56,.58),.08,.31)
- box('Control surface',(0,0,.25),(8.6,4.6,.58),panel,.16)
- for row in range(2):
-  for col in range(8):
-   x=-3.15+col*.9;y=-.05+row*1.05
-   cylinder('Control %d.%d'%(row,col),(x,y,.68),.30,.24,keymat)
-   sphere('Position mark %d.%d'%(row,col),(x,y-.16,.81),(.025,.025,.011),softwhite)
- for col in range(16):
-  x=-3.85+col*.51
-  box('Step key %02d'%col,(x,-1.43,.64),(.43,.60,.18),softwhite if col%5==0 else keymat,.06)
-  dot=sphere('Step light %02d'%col,(x,-1.13,.76),(.025,.025,.012),led)
-  key(dot,'hide_render',True,0);key(dot,'hide_render',True,max(0,col*.043-.001));key(dot,'hide_render',False,min(1,.10+col*.043))
- box('Display bezel',(-2.9,1.58,.58),(1.6,.69,.04),black,.045)
- # An original sparse waveform, not a source texture.
- for i in range(28):
-  x=-3.58+i*.05;height=.02+.21*(.5+.5*math.sin(i*.6))
-  box('Display signal %02d'%i,(x,1.58,.617),(.025,height,.008),softwhite,.002)
- rake=light('Raking strip',(-4,-4,5),1500,7,(.87,.92,1),shape='RECTANGLE')
- light('Back edge',(5,6,5),1800,6)
- key(rake,'location',(-4,-4,5),0);key(rake,'location',(4,-3,4),1)
- camera(0,(-4.5,-5,7),(-1.6,-.45,.6),4.5)
- camera(.48,(-1.5,-5.2,7),(0,-.25,.65),4.5)
- camera(1,(2.8,-4.7,6.6),(1.65,-.15,.65),4.5)
+ if config.get('model_path'):
+  import_product(config['model_path'],5.6)
+  # Preserve the downloaded controls, lettering, speaker mesh and wear maps.
+  # The camera follows the actual front panel rather than a generated knob grid.
+  rake=light('Moving strip',(-4,-4,5),650,5,shape='RECTANGLE',target=(0,-.5,1.4))
+  light('Gentle fill',(3,-4,4),160,7,target=(0,-.5,1.4))
+  light('Top separation',(2,3,6),500,5,target=(0,0,1.5),shape='RECTANGLE')
+  key(rake,'location',(-4,-4,5),0);key(rake,'location',(3,-3,5),1)
+  cam.data.lens=75
+  camera(0,(-2.5,-6.7,3.0),(-.65,-.55,1.25),8)
+  camera(1,(1.5,-6.7,2.8),(.65,-.55,1.25),8)
+ else:
+  raise ValueError('macro-controls requires a textured model_path; choose a reviewed source asset')
 
 elif a.preset=='drone-orbit':
  import_product(config['model_path'],5.7)

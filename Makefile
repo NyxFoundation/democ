@@ -63,6 +63,12 @@ library-catalog:
 library-check:
 	$(PY) tools/template_library.py verify $(LIBRARY_ID)
 
+.PHONY: library-materials library-materials-list
+library-materials:
+	$(PY) tools/library_materials.py all $(LIBRARY_ID)
+library-materials-list:
+	$(PY) tools/library_materials.py list $(LIBRARY_ID)
+
 OUT    := out
 # デモ 1 本 = out/<名前>/ 一式。台本は out/<名前>/<名前>.yaml
 DEMOS  := $(foreach d,$(notdir $(wildcard $(OUT)/*)),\

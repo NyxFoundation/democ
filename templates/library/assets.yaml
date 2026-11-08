@@ -8,8 +8,7 @@ assets:
     creator: Apple
     license: Apple website terms; not an open-content license
     license_url: https://www.apple.com/legal/internet-services/terms/site.html
-    usage: Local reference study. Do not redistribute the model or assume a commercial
-      production license.
+    usage: Local reference study. Do not redistribute the model or assume a commercial production license.
     redistributable: false
     sha256: 3d36f189975cb24e2614e1aadabc1ae6112c8a298722c2eabc67f56a4d986ace
   apple-mac-studio:
@@ -20,8 +19,7 @@ assets:
     creator: Apple
     license: Apple website terms; not an open-content license
     license_url: https://www.apple.com/legal/internet-services/terms/site.html
-    usage: Local reference study. Do not redistribute the model or assume a commercial
-      production license.
+    usage: Local reference study. Do not redistribute the model or assume a commercial production license.
     redistributable: false
     sha256: 2509bf56a41ca6cb09be8bbe8b293419b470717b12622befef187573e9b8290e
   studio-small-05:
@@ -35,6 +33,7 @@ assets:
     usage: Photographed studio illumination and reflections.
     redistributable: true
     sha256: 3aa7a64b60cc143e596077318977bf7876650a1f65d019a7e05b3ea165cfd398
+    title: Studio Small 05 · HDRI
   cesium-drone:
     filename: drone-model.glb
     role: model
@@ -54,8 +53,8 @@ assets:
     creator: Unitree Robotics
     license: BSD-3-Clause
     license_url: https://github.com/unitreerobotics/unitree_ros/blob/master/LICENSE
-    usage: Keep copyright, license and disclaimer with the source bundle. Kinematic
-      visual study, not a robot control policy.
+    usage: Keep copyright, license and disclaimer with the source bundle. Kinematic visual study, not
+      a robot control policy.
     redistributable: true
     dependencies:
       g1/meshes/head_link.STL: https://raw.githubusercontent.com/unitreerobotics/unitree_ros/master/robots/g1_description/meshes/head_link.STL
@@ -108,8 +107,7 @@ assets:
     creator: Mapzen / Tilezen terrain tiles; underlying source attribution applies
     license: Open terrain data; see source attribution
     license_url: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
-    usage: Actual Terrarium elevation tile near Mount Fuji, z10/x906/y404; not an
-      invented heightfield.
+    usage: Actual Terrarium elevation tile near Mount Fuji, z10/x906/y404; not an invented heightfield.
     redistributable: true
     sha256: 6b609fa0925076a86b000a5e58f3994562ea2d277b20937772ad122c9e64dacb
   earth-clouds:
@@ -123,3 +121,290 @@ assets:
     usage: Separate cloud layer; credit Solar System Scope.
     redistributable: true
     sha256: fffd7f68d41b37274822150e54a6ef605af1d3ec35624d9f628c3b896bfa42ed
+  ph-camera-01:
+    filename: polyhaven/Camera_01/Camera_01_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/Camera_01/Camera_01_2k.blend
+    page: https://polyhaven.com/a/Camera_01
+    creator: Rajil Jose Macatangay
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/Camera_01/textures/Camera_01_lens_body_metallic_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_lens_body_metallic_2k.png
+      polyhaven/Camera_01/textures/Camera_01_strap_nor_gl_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_strap_nor_gl_2k.png
+      polyhaven/Camera_01/textures/Camera_01_strap_diff_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_strap_diff_2k.png
+      polyhaven/Camera_01/textures/Camera_01_body_diff_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_body_diff_2k.png
+      polyhaven/Camera_01/textures/Camera_01_body_nor_gl_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_body_nor_gl_2k.png
+      polyhaven/Camera_01/textures/Camera_01_body_metallic_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_body_metallic_2k.png
+      polyhaven/Camera_01/textures/Camera_01_lens_body_roughness_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_lens_body_roughness_2k.png
+      polyhaven/Camera_01/textures/Camera_01_lens_body_diff_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_lens_body_diff_2k.png
+      polyhaven/Camera_01/textures/Camera_01_strap_metallic_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_strap_metallic_2k.png
+      polyhaven/Camera_01/textures/Camera_01_strap_roughness_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_strap_roughness_2k.png
+      polyhaven/Camera_01/textures/Camera_01_body_roughness_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_body_roughness_2k.png
+      polyhaven/Camera_01/textures/Camera_01_lens_body_nor_gl_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/Camera_01/Camera_01_lens_body_nor_gl_2k.png
+    quality_status: reviewed-textured
+    title: Camera 01
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 8bb2a85f9bdc4b28abd8b9902f9fe6972db6cbc8d98dd0d47326ef53fa8da05d
+  ph-boombox:
+    filename: polyhaven/boombox/boombox_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/boombox/boombox_2k.blend
+    page: https://polyhaven.com/a/boombox
+    creator: Thomas Paul Mouilleron
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/boombox/textures/boombox_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/boombox/boombox_metal_2k.exr
+      polyhaven/boombox/textures/boombox_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/boombox/boombox_nor_gl_2k.exr
+      polyhaven/boombox/textures/boombox_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/boombox/boombox_rough_2k.exr
+      polyhaven/boombox/textures/boombox_speakers_metal_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/boombox/boombox_speakers_metal_2k.png
+      polyhaven/boombox/textures/boombox_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/boombox/boombox_diff_2k.jpg
+      polyhaven/boombox/textures/boombox_speakers_diff_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/boombox/boombox_speakers_diff_2k.png
+      polyhaven/boombox/textures/boombox_speakers_rough_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/boombox/boombox_speakers_rough_2k.png
+    quality_status: reviewed-textured
+    title: Boombox
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: c1e108a931ccd98de82deb69eee655b6c95875c5022cf9f9673018d422032847
+  ph-portable-cassette-player:
+    filename: polyhaven/portable_cassette_player/portable_cassette_player_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/portable_cassette_player/portable_cassette_player_2k.blend
+    page: https://polyhaven.com/a/portable_cassette_player
+    creator: Mateusz Sadek
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/portable_cassette_player/textures/portable_cassette_player_alpha_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/portable_cassette_player/portable_cassette_player_alpha_2k.png
+      polyhaven/portable_cassette_player/textures/portable_cassette_player_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/portable_cassette_player/portable_cassette_player_diff_2k.jpg
+      polyhaven/portable_cassette_player/textures/portable_cassette_player_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/portable_cassette_player/portable_cassette_player_metal_2k.exr
+      polyhaven/portable_cassette_player/textures/portable_cassette_player_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/portable_cassette_player/portable_cassette_player_nor_gl_2k.exr
+      polyhaven/portable_cassette_player/textures/portable_cassette_player_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/portable_cassette_player/portable_cassette_player_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Portable Cassette Player
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 9d04eb7f2360e1d71a3e41b91d336eadd979702dbff6e59daebb2496f59359fb
+  ph-vintage-radio-transceiver:
+    filename: polyhaven/vintage_radio_transceiver/vintage_radio_transceiver_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/vintage_radio_transceiver/vintage_radio_transceiver_2k.blend
+    page: https://polyhaven.com/a/vintage_radio_transceiver
+    creator: Mateusz Sadek
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_accessories_diff_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_diff_2k.png
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_accessories_metal_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_metal_2k.png
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_accessories_nor_gl_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_nor_gl_2k.png
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_accessories_rough_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/vintage_radio_transceiver/vintage_radio_transceiver_accessories_rough_2k.png
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/vintage_radio_transceiver/vintage_radio_transceiver_diff_2k.jpg
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_radio_transceiver/vintage_radio_transceiver_metal_2k.exr
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_radio_transceiver/vintage_radio_transceiver_nor_gl_2k.exr
+      polyhaven/vintage_radio_transceiver/textures/vintage_radio_transceiver_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_radio_transceiver/vintage_radio_transceiver_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Vintage Radio Transceiver
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 38fe503e512d9686f4b52a986f7ee8bfd243f082e6acb931be95352f85acb6e5
+    inspection:
+      inspection_camera_scale: 1.9
+      inspection_target:
+      - 1
+      - 0
+      - 1.4
+  ph-classic-laptop:
+    filename: polyhaven/classic_laptop/classic_laptop_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/classic_laptop/classic_laptop_2k.blend
+    page: https://polyhaven.com/a/classic_laptop
+    creator: Arrangemonk
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/classic_laptop/textures/classic_laptop_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/classic_laptop/classic_laptop_diff_2k.jpg
+      polyhaven/classic_laptop/textures/classic_laptop_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/classic_laptop/classic_laptop_metal_2k.exr
+      polyhaven/classic_laptop/textures/classic_laptop_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/classic_laptop/classic_laptop_nor_gl_2k.exr
+      polyhaven/classic_laptop/textures/classic_laptop_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/classic_laptop/classic_laptop_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Classic Laptop
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 84831dca569cf31901c71f8f825716067d030fd3533fb8196977c7fdcfb57937
+  ph-circuit-board:
+    filename: polyhaven/circuit_board/circuit_board_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/circuit_board/circuit_board_2k.blend
+    page: https://polyhaven.com/a/circuit_board
+    creator: Benny Weimer
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/circuit_board/textures/circuit_board_alpha_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/circuit_board/circuit_board_alpha_2k.png
+      polyhaven/circuit_board/textures/circuit_board_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/circuit_board/circuit_board_diff_2k.jpg
+      polyhaven/circuit_board/textures/circuit_board_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/circuit_board/circuit_board_metal_2k.exr
+      polyhaven/circuit_board/textures/circuit_board_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/circuit_board/circuit_board_nor_gl_2k.exr
+      polyhaven/circuit_board/textures/circuit_board_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/circuit_board/circuit_board_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Circuit Board
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 31e07834d133f89bc1dad39f62c64366524ef5bc04750733fc398a8497424c7c
+  ph-digital-wrist-watch:
+    filename: polyhaven/digital_wrist_watch/digital_wrist_watch_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/digital_wrist_watch/digital_wrist_watch_2k.blend
+    page: https://polyhaven.com/a/digital_wrist_watch
+    creator: Adrian C
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/digital_wrist_watch/textures/digital_wrist_watch_alpha_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/digital_wrist_watch/digital_wrist_watch_alpha_2k.png
+      polyhaven/digital_wrist_watch/textures/digital_wrist_watch_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/digital_wrist_watch/digital_wrist_watch_diff_2k.jpg
+      polyhaven/digital_wrist_watch/textures/digital_wrist_watch_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/digital_wrist_watch/digital_wrist_watch_metal_2k.exr
+      polyhaven/digital_wrist_watch/textures/digital_wrist_watch_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/digital_wrist_watch/digital_wrist_watch_nor_gl_2k.exr
+      polyhaven/digital_wrist_watch/textures/digital_wrist_watch_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/digital_wrist_watch/digital_wrist_watch_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Digital Wrist Watch
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 141fa83b3f7c23b0ee27592ae9b89c924c32827e2073de29effd1449cb9c68c5
+    inspection:
+      model_rotation:
+      - 0
+      - 0
+      - 90
+  ph-vintage-spacecraft-instrument:
+    filename: polyhaven/vintage_spacecraft_instrument/vintage_spacecraft_instrument_2k.blend
+    role: model
+    url: https://dl.polyhaven.org/file/ph-assets/Models/blend/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_2k.blend
+    page: https://polyhaven.com/a/vintage_spacecraft_instrument
+    creator: Michał Wiśniewski
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free textured source model. Keep original UVs and PBR maps. Inspect close-up before adopting.
+    redistributable: true
+    resolution: 2k
+    dependencies:
+      polyhaven/vintage_spacecraft_instrument/textures/vintage_spacecraft_instrument_alpha_2k.png: https://dl.polyhaven.org/file/ph-assets/Models/png/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_alpha_2k.png
+      polyhaven/vintage_spacecraft_instrument/textures/vintage_spacecraft_instrument_diff_2k.jpg: https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_diff_2k.jpg
+      polyhaven/vintage_spacecraft_instrument/textures/vintage_spacecraft_instrument_metal_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_metal_2k.exr
+      polyhaven/vintage_spacecraft_instrument/textures/vintage_spacecraft_instrument_nor_gl_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_nor_gl_2k.exr
+      polyhaven/vintage_spacecraft_instrument/textures/vintage_spacecraft_instrument_rough_2k.exr: https://dl.polyhaven.org/file/ph-assets/Models/exr/2k/vintage_spacecraft_instrument/vintage_spacecraft_instrument_rough_2k.exr
+    quality_status: reviewed-textured
+    title: Vintage Spacecraft Instrument
+    review: 'Cycles studio preview checked: source UVs, maps and material assignments preserved.'
+    sha256: 81f0e533bfb3e945a5c290919195233cf75421f6125f388689a4b38c26386c02
+  free-headphones:
+    filename: innerscene/over-ear-headphones.glb
+    role: model
+    url: https://www.innerscene.com/api/library/over-ear-headphones-de211466/download
+    page: https://www.innerscene.com/tools/library/3d-parts/over-ear-headphones-de211466
+    creator: Innerscene
+    license: CC0
+    license_url: https://www.innerscene.com/tools/library/terms
+    usage: Free source model. Preserve PBR materials and inspect close-ups before adoption.
+    redistributable: true
+    sha256: 966fa425b79da148bf94150bd72a86acf762f3fe625efc51f602c0d279b9e214
+    quality_status: secondary
+    title: Over-ear Headphones
+    review: Preview checked. Simple geometry and relatively uniform surfaces; reserve for secondary shots,
+      not hero close-ups.
+  free-earbuds:
+    filename: innerscene/wireless-earbuds-with-case.glb
+    role: model
+    url: https://www.innerscene.com/api/library/wireless-earbuds-with-case-4599339a/download
+    page: https://www.innerscene.com/tools/library/3d-parts/wireless-earbuds-with-case-4599339a
+    creator: Innerscene
+    license: CC0
+    license_url: https://www.innerscene.com/tools/library/terms
+    usage: Free source model. Preserve PBR materials and inspect close-ups before adoption.
+    redistributable: true
+    sha256: e9ff35d6bd84cc220cc5842fb833200aaa18f734cb67fb68484a05fe44434d85
+    quality_status: secondary
+    title: Wireless Earbuds
+    review: Preview checked. Simple geometry and relatively uniform surfaces; reserve for secondary shots,
+      not hero close-ups.
+  free-synthesizer:
+    filename: innerscene/desktop-synthesizer.glb
+    role: model
+    url: https://www.innerscene.com/api/library/patch-voice-synthesizer-0b3e851c/download
+    page: https://www.innerscene.com/tools/library/3d-parts/patch-voice-synthesizer-0b3e851c
+    creator: Innerscene
+    license: CC0
+    license_url: https://www.innerscene.com/tools/library/terms
+    usage: Free source model. Preserve PBR materials and inspect close-ups before adoption.
+    redistributable: true
+    sha256: 73a70a37e669b92bf559ecca9e33e1a79b0a9ddd63d5f8a61102548f0b5ca253
+    quality_status: secondary
+    title: Desktop Synthesizer
+    review: Preview checked. Simple geometry and relatively uniform surfaces; reserve for secondary shots,
+      not hero close-ups.
+  free-fpv-drone:
+    filename: innerscene/fpv-racing-drone.glb
+    role: model
+    url: https://www.innerscene.com/api/library/fpv-racing-drone-037b67bd/download
+    page: https://www.innerscene.com/tools/library/3d-parts/fpv-racing-drone-037b67bd
+    creator: Innerscene
+    license: CC0
+    license_url: https://www.innerscene.com/tools/library/terms
+    usage: Free source model. Preserve PBR materials and inspect close-ups before adoption.
+    redistributable: true
+    sha256: 6b0c0d2bee4498d144d5a2ef2f850fc150428ca704b642a059449ac66edc11c9
+    quality_status: secondary
+    title: FPV Racing Drone
+    review: Preview checked. Simple geometry and relatively uniform surfaces; reserve for secondary shots,
+      not hero close-ups.
+  studio-small-03:
+    filename: studio_small_03_2k.hdr
+    role: hdri
+    url: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_03_2k.hdr
+    page: https://polyhaven.com/a/studio_small_03
+    creator: Greg Zaal / Poly Haven
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free photographic studio lighting; choose reflections to match the product.
+    redistributable: true
+    sha256: 156c2946a6cd0c1d8b662cd97e8a492436331ec2418a33901a324f4420618076
+    title: Studio Small 03 · HDRI
+  studio-small-09:
+    filename: studio_small_09_2k.hdr
+    role: hdri
+    url: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/studio_small_09_2k.hdr
+    page: https://polyhaven.com/a/studio_small_09
+    creator: Sergej Majboroda / Poly Haven
+    license: CC0
+    license_url: https://polyhaven.com/license
+    usage: Free photographic studio lighting; choose reflections to match the product.
+    redistributable: true
+    sha256: 36724313c0fc66dab126ff90f081b85a0b1ef47be65eda1417bd20b033f0573f
+    title: Studio Small 09 · HDRI
+  acg-metal012:
+    filename: ambientcg/Metal012_2K-JPG.zip
+    role: pbr-material
+    url: https://ambientcg.com/get?file=Metal012_2K-JPG.zip
+    page: https://ambientcg.com/view?id=Metal012
+    creator: ambientCG / Lennart Demes
+    license: CC0
+    license_url: https://docs.ambientcg.com/license/
+    usage: Procedural brushed steel, not anodized aluminum. Calibrate map scale and roughness on a close-up
+      before use.
+    redistributable: true
+    sha256: 68eba86af3ab65a1394cacc84bb35b92cd1006e9459ec5a6a4c9467d51a73d59
+    title: Brushed Steel · 2K PBR

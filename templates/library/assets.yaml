@@ -408,3 +408,13 @@ assets:
     redistributable: true
     sha256: 68eba86af3ab65a1394cacc84bb35b92cd1006e9459ec5a6a4c9467d51a73d59
     title: Brushed Steel · 2K PBR
+  jetbrains-mono:
+    filename: fonts/JetBrainsMono-Regular.woff2
+    role: font
+    url: https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2
+    page: https://github.com/JetBrains/JetBrainsMono
+    creator: JetBrains
+    license: SIL Open Font License 1.1
+    license_url: https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt
+    redistributable: true
+    sha256: f1a7a03672cdd494ce0d5543fac6e4360fe22403c6de297fdc2e55a815f7baff

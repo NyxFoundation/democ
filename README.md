@@ -1,182 +1,122 @@
 # demo-creator
 
-デモ動画を、録画ではなくビルドで作るための置き場。画面は HTML、3D は Blender の
-スクリプト、編集は MLT XML。どれもテキストなので AI が直接書けて、直したら `make`
-で同じものが出てくる。GUI は人が確かめて手直しするために開く。
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![Blender](https://img.shields.io/badge/Blender-5.x-E87D0D?logo=blender&logoColor=white)](https://www.blender.org/) [![FFmpeg](https://img.shields.io/badge/FFmpeg-MP4-007808?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/) [![Demos](https://img.shields.io/badge/Demos-14-8957e5)](#デモ)
 
-場面のつながり、文字量、コピーの整え方を含む制作手順は、
-[demo-creatorスキル](https://github.com/NyxFoundation/skills/tree/main/creative/demo-creator)にまとめている。
+**プロダクトのデモを、コードでつくる。**
 
-製品動画の参考カットと、HTML / Blenderで再現する動きのテンプレートは
-[Motion library](templates/library/README.md)へ。`make library` で参考映像・再現MP4・比較一覧を生成できる。
+YAMLで場面を組み、HTMLとBlenderからMP4を出力します。
+文言や動きを直して、同じ動画を何度でも書き出せます。
 
-このリポジトリにあるのは**道具だけ**。デモ 1 本ぶんは `out/<名前>/` に置き、git には
-入らない。残したくなったら `make example` で `examples/` へ写す。
+[デモ](#デモ) · [はじめる](#はじめる) · [編集する](#編集する) · [テンプレート](templates/library/README.md)
 
-```
-out/nyxis/              ← 作業場（git 管理外）
-  nyxis.yaml              台本。文字を直すのはここ
-  notes.md                数字の出典、言い切りの線引き
-  layers/kernel.yaml      3D にする場面の切り方（ショット名は任意）
-  shots/kernel.py         その 3D の組み方
-  build/                  生成物。make clean はここだけ消す
-    page.html  screens/  parts/  3d/  edit.mlt  edit.kdenlive  demo.mp4
-```
+## デモ
 
-```
-make new N=foo [FROM=nyxis]  作業場を作る
-make edit N=foo              組んでブラウザで開く。文言を詰めるときはここから
-make watch N=foo             保存するたびに組み直す。ブラウザは F5
-make                         out/*/ → 録画 → タイムライン → build/demo.mp4
-make screens                 組んで録り直す（中身が変わったシーンだけ）
-make snaps                   止め絵で確かめる
-make layers                  画面を部品ごとの透過 PNG に切り出す
-make 3d                      その部品を Blender で 3D に置いて撮る（.blend も出る）
-make open N=foo              Kdenlive で開く（尺と順番を触る）
-make example N=foo           examples/ へ写して commit できるようにする
-```
+参考映像の動きを、このツールで再構成した14本。プレビューは自動再生し、クリックするとMP4を開きます。
 
-はじめてなら:
+<!-- demos:start -->
+
+| | |
+| :--- | :--- |
+| **Figma Slides**<br>[![要素が一つの秩序に揃う](docs/demos/auto-layout.gif)](docs/demos/auto-layout.mp4)<br>[MP4](docs/demos/auto-layout.mp4) · [実装](engine/scenes/motion.js) | **Framer**<br>[![平面が奥行きのある帯になる](docs/demos/spatial-carousel.gif)](docs/demos/spatial-carousel.mp4)<br>[MP4](docs/demos/spatial-carousel.mp4) · [実装](engine/scenes/motion.js) |
+| **Screen Studio**<br>[![操作する場所へ視線が届く](docs/demos/cursor-zoom.gif)](docs/demos/cursor-zoom.mp4)<br>[MP4](docs/demos/cursor-zoom.mp4) · [実装](engine/scenes/motion.js) | **Apple Mac mini**<br>[![天面から機能面へ回り込む](docs/demos/port-orbit.gif)](docs/demos/port-orbit.mp4)<br>[MP4](docs/demos/port-orbit.mp4) · [実装](templates/library/hardware.py) |
+| **Apple AirPods Pro**<br>[![輪郭が質感へ変わる](docs/demos/rim-reveal.gif)](docs/demos/rim-reveal.mp4)<br>[MP4](docs/demos/rim-reveal.mp4) · [実装](templates/library/hardware.py) | **teenage engineering OP–XY**<br>[![斜光が操作面をなぞる](docs/demos/macro-controls.gif)](docs/demos/macro-controls.mp4)<br>[MP4](docs/demos/macro-controls.mp4) · [実装](templates/library/hardware.py) |
+| **DJI Mavic 4 Pro**<br>[![機体の輪郭と機構を追う](docs/demos/drone-orbit.gif)](docs/demos/drone-orbit.mp4)<br>[MP4](docs/demos/drone-orbit.mp4) · [実装](templates/library/hardware.py) | **Unitree G1**<br>[![関節から意図が伝わる](docs/demos/humanoid-articulation.gif)](docs/demos/humanoid-articulation.mp4)<br>[MP4](docs/demos/humanoid-articulation.mp4) · [実装](templates/library/hardware.py) |
+| **NASA · EPIC**<br>[![地球の輪郭から広がるスケール](docs/demos/orbital-earth.gif)](docs/demos/orbital-earth.mp4)<br>[MP4](docs/demos/orbital-earth.mp4) · [実装](templates/library/hardware.py) | **Mapbox GL JS**<br>[![地形の起伏へ降りていく](docs/demos/terrain-flyover.gif)](docs/demos/terrain-flyover.mp4)<br>[MP4](docs/demos/terrain-flyover.mp4) · [実装](templates/library/hardware.py) |
+| **Charm Gum**<br>[![入力が次の対話につながる](docs/demos/terminal-flow.gif)](docs/demos/terminal-flow.mp4)<br>[MP4](docs/demos/terminal-flow.mp4) · [実装](engine/scenes/source-ui.js) | **GitHub Copilot · VS Code**<br>[![計画からコードの変更へ](docs/demos/code-diff.gif)](docs/demos/code-diff.mp4)<br>[MP4](docs/demos/code-diff.mp4) · [実装](engine/scenes/source-ui.js) |
+| **XNOHub**<br>[![取引の流れが世界をつなぐ](docs/demos/network-globe.gif)](docs/demos/network-globe.mp4)<br>[MP4](docs/demos/network-globe.mp4) · [実装](engine/scenes/study.js) | **TradingView Advanced Charts**<br>[![重なるチャートから価格線へ](docs/demos/market-chart.gif)](docs/demos/market-chart.mp4)<br>[MP4](docs/demos/market-chart.mp4) · [実装](engine/scenes/source-ui.js) |
+
+<!-- demos:end -->
+
+参考との比較、素材の取得元、再現コードは[デモ素材ショーケース](templates/library/README.md)へ。
+
+## はじめる
 
 ```sh
-make new N=nyxis FROM=nyxis   # 同梱の見せ札から作業場を作る
-make edit N=nyxis             # ブラウザで見る
-make                          # 録って out/nyxis/build/demo.mp4
+git clone https://github.com/NyxFoundation/demo-creator.git
+cd demo-creator
+nix develop .#full
+make new N=my-demo
+make edit N=my-demo
 ```
 
-`melt` が PATH に無ければ Makefile が `nix develop` を噛ませるので、素の端末から
-`make` を叩いて構わない。生成物は全部 `out/` に入り、git には入らない。
-
-## 文言を直す
-
-文字の正本は `out/<名前>/<名前>.yaml` ひとつ。Kdenlive に並ぶのは焼き上がった mp4 なので、
-そこでは直せない。
+ブラウザで確認しながら `out/my-demo/my-demo.yaml` を編集し、MP4を書き出します。
 
 ```sh
-make watch N=nyxis       # 別の端末で開いておく
-make edit  N=nyxis       # ブラウザが開く
+make out/my-demo/build/demo.mp4
 ```
 
-あとは `out/nyxis/nyxis.yaml` を書き換えて保存するだけ。`watch` が組み直すので、ブラウザ
-で F5 を押すと入れ替わる。組み直しは 0.3 秒。`watch` を使わないなら保存のたびに
-`make html` を叩く。
+完成ファイルは `out/my-demo/build/demo.mp4`。HTML・素材・編集用タイムラインも同じフォルダに残ります。
 
-開いた画面では1桁の数字キーで場面を指定し、`r` で頭から再生できる。
-1場面だけ確認する場合は、ブラウザのコンソールで `D.playScene(番号)` を使う（0始まり）。
-よければ `make` で録り直して書き出す。
+Nixを使わない場合は、Python 3.12・uv・Chromium・FFmpeg・MLT（`melt`）を用意してください。
+3DにはBlender 5.x、UIテンプレートの初回ビルドにはNode.js / npmを使います。
 
-引数の一覧は [docs/scenes.md](docs/scenes.md)。文章には `<em>`（accent 色）`<b>`
-`<s>`（灰色）`<br>` が書ける。コードは素のまま書けば `lang` から色が付き、
-`{{ここ}}` が赤い差し、`<<ここ>>` が黄色い注記になる。
+## 編集する
 
-保持時間は `lead + 文字数 / cps` を上下で挟んで決まる。長い文を書けば自動的に長く
-出るので、短くしたいときは秒ではなく文を削る。秒で固定したい場面だけ `hold:` を書く。
-全体の速さを変えるなら先頭の `reading.cps` を動かす。
+### タイトル・文言・尺
 
-## なぜ画面収録ではないのか
+編集するファイルは `out/my-demo/my-demo.yaml` です。
+映像内の見出しは `text`、ブラウザのプレビュー名は先頭の `title` で変えます。
 
-HTML は毎回まったく同じ絵を出す。文言を一つ直して録り直しても、尺もタイミングも
-前回と揃う。画面収録だと一箇所の手直しに全部の録り直しが付いてきて、タイムライン側
-の尺が崩れる。完成が近づいて細部を詰める段階ほど、この差が効いてくる。
+```yaml
+title: My Product
+accent: "#5fd7d7"
+transition: {duration: 0.3}
+scenes:
+  - type: card
+    text: "アイデアから、<br><em>公開まで。</em>"
+    hold: 2.4
+  - type: card
+    text: "github.com/your/project"
+    hold: 2.0
+```
 
-録画で踏んだ穴は `tools/record.py` に二つ塞いである。Playwright の
-`wait_for_timeout` で待つとレンダラが休んで `setTimeout` が詰まり、映像がスロー
-モーションになる。それと、録画中の進みは実行のたびに数秒ぶれるので、秒数で止めると
-末尾が切れるか黒が残る。前者は 200ms ごとに `evaluate` で突いて起こし、後者は
-エンジンが最後の場面を終えたときに立てる `body[data-done]` を見て止めている。
+`scenes`の順番を変えると場面が入れ替わります。`hold`は表示秒数、`transition.duration`は場面転換の秒数です。
+型ごとの設定は[シーン一覧](docs/scenes.md)を参照してください。
 
-## なぜ MLT XML なのか
+```sh
+make watch N=my-demo                     # 保存するとHTMLを更新
+make edit N=my-demo                      # ブラウザで確認。更新はF5
+make out/my-demo/build/demo.mp4          # 変更した場面を再収録して書き出し
+```
 
-Kdenlive と Shotcut が同じ `.mlt` を開く。`edit/timeline.py` が書いた構成を人が GUI
-で手直しでき、手直しした `.mlt` をまた `melt` で描画できる。AI が書ける編集
-フォーマットで、人の手が入る余地が残っているものは他にない。
+### 動画の見た目・3D・カット割り
 
-書き戻しは運転に入れていない。GUI で直したものを `timeline.py` へ反映する経路を作ると
-どちらが正本か分からなくなる。GUI での手直しは最終調整として扱う。
+| 変えたいもの | 編集する場所 |
+| --- | --- |
+| UIの配置・配色・アニメーション | `engine/scenes/` のJS / CSS |
+| Blenderの形・質感・カメラ | `out/my-demo/shots/` のPythonと`.blend` |
+| 3Dに置き換える場面 | `out/my-demo/layers/` のYAML |
+| 最終的なカットの並び・長さ | `make open N=my-demo` でKdenliveを開く |
 
-## 構成
+3Dを直したら `make 3d`、その後にMP4を書き出します。
+GUIでの編集は最終調整に使い、文字は元のYAMLで直してください。
+[3Dの作成手順](docs/layers-and-3d.md) · [パイプラインと実装ノート](docs/architecture.md)
 
-| 場所 | 中身 |
-|---|---|
-| `templates/starter.yaml` | 台本の雛形 |
-| `templates/shots/` | Blender ショットの雛形 |
-| `examples/<名前>/` | 見せ札。`make new FROM=` の出発点になる |
-| `engine/engine.{css,js}` | ステージと再生の土台 |
-| `engine/scenes/*.{css,js}` | 場面の型。増やすときはここに足す |
-| `assets/` | デモをまたいで使い回す素材 |
-| `tools/build.py` | YAML → 1 枚の HTML |
-| `tools/record.py` `snap.py` | HTML → MP4 / 止め絵 |
-| `edit/timeline.py` | 素材を並べて `.mlt` を書く |
-| `out/<名前>/layers/*.yaml` | 画面をどう部品に切るか |
-| `out/<デモ>/` | 生成物。git には入れない |
+### ショーケースのサンプルを編集する
 
-## シーンは 1 つ 1 クリップ
+[台帳](templates/library/catalog.yaml)の`title`・`duration`・`parameters`と、各サンプルの実装を編集して対象だけ再出力できます。
 
-録画はシーンごとに分かれて `out/<デモ>/build/screens/00-数字.mp4` … と並ぶ。1 本に繋げて
-録ると「7 番目だけ 3D 版に差し替える」が切り貼りになるし、文言を一つ直したときに
-全部録り直すことになる。分けておけばタイムラインがクリップの並びになって、人が
-Kdenlive で開いたときに触れるものになる。
+```sh
+uv run --with pyyaml --with playwright python3 tools/template_library.py render \
+  --id terminal-flow --force
+make library-catalog                   # 比較サイトを更新
+make readme-demos ID=terminal-flow      # READMEのプレビューとMP4を更新
+```
 
-文言を一つ直したとき、`make screens` は**中身が変わったシーンだけ録り直す**。
-シーンごとにハッシュを持たせてあるので、1 語直せば 1 本（約 10 秒）で済む。
-エンジンを触ったときは全部録り直しになる。
+## テンプレートと素材
 
-どの 3D カットがどのシーンを置き換えるかは `out/<デモ>/layers/<ショット>.yaml` の `scene:` が
-宣言していて、`edit/timeline.py` がそれを見て差し替える。3D は重いので `make` の
-既定経路では焼き直さない。`make 3d` を通したあとに `make` すれば取り込まれる。
+```sh
+make new N=my-demo FROM=nyxis           # 既存のデモから作る
+make library                           # 参考・再現・比較サイトを生成
+make library-materials                 # フリー素材を取得してBlenderで確認
+make example N=my-demo                 # 台本とソースをexamples/へ保存
+```
 
-## HTML のままにしないもの
+通常の作業と生成物は `out/`、共有する台本は `examples/` に置きます。
+README用の短いプレビューとMP4は `docs/demos/` に保存します。
+素材の出典と利用条件は[素材台帳](templates/library/ASSETS.md)、公開ソースの使用範囲は[UIの実装元](templates/library/source-ui/SOURCES.md)へ。
 
-画面そのものを映す場面——ブラウザ UI、コードエディタ、ターミナル——は HTML が正しい
-素材として使う。立体的な関係や、物理カメラの被写界深度、モーションブラー、
-光源による反射、フレーム単位の3D演出にはBlenderを使う。
+## コントリビュート
 
-そこで、UI はモデリングせず、部品ごとの透過 PNG に切り出して Blender の空間に板と
-して並べる。文言を直したらレイヤーを撮り直すだけで、`.blend` の中のアニメーションは
-そのまま生きる。手順は [docs/layers-and-3d.md](docs/layers-and-3d.md)。
-
-クリエイタに渡すのは mp4 ではなく `.blend`。開けば板・カメラ・ライト・キーが全部
-そこにあって、続きが作れる。
-
-## 場面の型
-
-いまあるのは 9 つ。足りなければ `engine/scenes/` に増やす（手順は
-[docs/scenes.md](docs/scenes.md) の末尾）。
-
-`card` は全画面の文字と数字。`browser` は事故を起こしているウェブアプリ。`code` は
-レビューが見ている画面で、良い行と悪い行と「書かれなかった行」を出し分ける。`split`
-は左に書いたものが箱になって飛び、空中で表記を変えて右の一部に着地する。`tree` は
-依存の木を伸ばし、節を一つ開いて型の照合を見せてから残りに広げる。`terminal` は
-出てくる成果物を実際に叩いて見せる。
-
-Nyxis の8場面版では、コードレビューとブログを同時に見せる `incident`、ポリシー入力と
-ビルド判定を見せる `policy`、Blender の依存ツリー映像を再生する `kernel` も使える。
-`kernel` は映像の生成前には HTML の概形を表示する。
-
-## 踏んだ穴
-
-MLT を手書きすると最初に当たるものが三つ。どれもエラーが出ないので、気づくまでが長い。
-`edit/timeline.py` のコメントに同じことが書いてある。
-
-`avformat-novalidate` を使わない。Kdenlive が書く `.mlt` に出てくるので真似したく
-なるが、これは素材を調べない指定で、`length` を併せて書かないと尺が 1 フレームに
-なる。1 フレームだけの動画が静かに出てくる。
-
-`profile` に `colorspace` を書かない。書くと素材の色域へ変換がかかる。画面素材は
-full-range で録れているので、709 を宣言した時点で目に見えて暗くなる。
-
-フェードの `<filter>` には `in` / `out` を必ず付ける。付けないと素材の全長にかかり、
-2 点しかない `level` のアニメーションが折り返して、真ん中がずっと暗いまま描画される。
-
-HTML 側にも一つ。使っていない全画面レイヤーは `visibility:hidden` で合成から外す。
-`opacity:0` のままだと毎フレーム合成され、録画中にメインスレッドが詰まって映像が
-スローモーションになる。`:has()` のセレクタも同じ理由で使わない。
-
-## 環境
-
-NixOS 向けの `flake.nix` を置いてある。`nix develop` で mlt・ffmpeg・Blender・
-Kdenlive・Shotcut・FreeCAD が揃う。Python の録画と組み立ては `uv run --with …` で
-都度解決するので、shell には入れていない。
-
-このディレクトリが親リポジトリで未追跡のまま flake を評価できるよう、Makefile は
-`path:` スキームで flake を指している。
+シーンやテンプレートの追加・改善はIssue / Pull Requestからどうぞ。
+新しい場面の引数と実行例を[シーン一覧](docs/scenes.md)に追加し、生成したHTMLとMP4で動きを確認してください。

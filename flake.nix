@@ -8,12 +8,12 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       fonts = pkgs.makeFontsConf {
-        fontDirectories = [ pkgs.noto-fonts-cjk-sans pkgs.noto-fonts-cjk-serif ];
+        fontDirectories = [ pkgs.noto-fonts-cjk-sans pkgs.noto-fonts-cjk-serif pkgs.dejavu_fonts pkgs.liberation_ttf ];
       };
       # 毎回使うものだけ。重いものを既定に混ぜると最初の make が止まって見える
       # 素の mlt には Qt モジュールが無く qimage / qtext が使えない。
       # 静止画を置くときに要るので Qt 付きの方を取る
-      core = with pkgs; [ kdePackages.mlt ffmpeg uv python3 gnumake ];
+      core = with pkgs; [ kdePackages.mlt ffmpeg uv python3 gnumake chromium nodejs ];
       # kdenlive はトップレベルに無い。KDE のパッケージセットの下にいる
       authoring = with pkgs; [
         blender kdePackages.kdenlive shotcut freecad openscad inkscape

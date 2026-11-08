@@ -234,6 +234,12 @@ def assemble(spec_path: Path, out_path: Path) -> Path:
     for t in used:
         css.append((ENGINE / "scenes" / f"{t}.css").read_text(encoding="utf-8"))
         js.append((ENGINE / "scenes" / f"{t}.js").read_text(encoding="utf-8"))
+    if any(s['type'] == 'study' and s.get('preset') in
+           {'terminal-flow', 'code-diff', 'market-chart'} for s in scenes):
+        from source_ui import assets as source_ui_assets
+        upstream_css, upstream_js = source_ui_assets()
+        css.extend([upstream_css, (ENGINE / 'scenes/source-ui.css').read_text()])
+        js = [upstream_js, *js, (ENGINE / 'scenes/source-ui.js').read_text()]
 
     # 文言を一つ直したときに、そのシーンだけ録り直せるようにする。
     # エンジンが変わったら全部が変わったものとして扱う。

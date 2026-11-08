@@ -278,17 +278,17 @@ templates:
   - fuji-dem
   - studio-small-05
 - id: terminal-flow
-  title: 選ぶ、走る、完了する
+  title: 入力が次の対話につながる
   category: tui
   renderer: html
-  duration: 4.8
+  duration: 5.8
   tags:
   - tui
-  takeaway: 選ぶ、走る、完了する
+  takeaway: 入力が次の対話につながる
   mechanics:
-  - 入力する文字を先に見せる。
-  - 選択肢へフォーカスを移す。
-  - 進行する処理から完了へ着地する。
+  - 公式デモのコマンドを入力する。
+  - 名前を入力すると挨拶が返る。
+  - 次の質問へ画面を切り替えて入力を続ける。
   reference:
     brand: Charm Gum
     page: https://github.com/charmbracelet/gum
@@ -296,21 +296,25 @@ templates:
     start: 0.1
     end: 5.9
     observed: コマンド実行から名前の入力、次の質問へ、端末内の表示が切り替わる。
-  adaptation: デプロイ環境の選択と段階的な処理へ置換。実際のコマンドは実行しない決定的な画面描画。
+  adaptation: 公式demo.shをGum v0.17.0のPTYで実行し、実際のANSI出力をxterm.jsで再生。入力順は公式demo.tapeを参照。画面構成・文言・ピンクの枠・緑のカーソルを参考へ合わせる。
   parameters: {}
   scene_type: study
+  source_implementation:
+  - https://github.com/charmbracelet/gum/blob/main/examples/demo.sh
+  - https://github.com/charmbracelet/gum/blob/main/examples/demo.tape
+  - https://github.com/xtermjs/xterm.js
 - id: code-diff
-  title: 変更と結果が同じ場所でつながる
+  title: 計画からコードの変更へ
   category: source-code
   renderer: html
-  duration: 4.8
+  duration: 6.0
   tags:
   - source-code
-  takeaway: 変更と結果が同じ場所でつながる
+  takeaway: 計画からコードの変更へ
   mechanics:
-  - 元の関数を見せる。
-  - 同じ行の差分として変更を入れる。
-  - 結果を下部へ短く出す。
+  - エディタの横で変更計画を示す。
+  - Implementを選んで処理へ進む。
+  - 同じファイルへ差分が入り、テストの実行へつながる。
   reference:
     brand: GitHub Copilot · VS Code
     page: https://github.com/features/copilot
@@ -318,9 +322,15 @@ templates:
     start: 7.6
     end: 13.6
     observed: エディタの横で実行計画を示した後、変更したコードを緑の差分として見せる。
-  adaptation: 短い非同期関数の修正とテスト表示へ翻案。コードとテスト結果はアニメーション用の合成UI。
+  adaptation: Monaco Editor、Codicons、GitHub公式テーマ、VS Code公式チャットCSSを取り込み、参考のTrail Atlas・search.js・計画カード・チャット入力欄をDOMで再構成。編集差分はMonacoの実際のinline
+    diff。Copilotへの接続は行わない。
   parameters: {}
   scene_type: study
+  source_implementation:
+  - https://github.com/microsoft/monaco-editor
+  - https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/chat/browser/widget/media/chat.css
+  - https://github.com/primer/github-vscode-theme
+  - https://github.com/microsoft/vscode-codicons
 - id: network-globe
   title: 取引の流れが世界をつなぐ
   category: blockchain
@@ -347,17 +357,17 @@ templates:
   assets:
   - earth-daymap
 - id: market-chart
-  title: 変化する価格へ視線を集める
+  title: 重なるチャートから価格線へ
   category: finance
   renderer: html
-  duration: 4.8
+  duration: 6.76
   tags:
   - finance
-  takeaway: 変化する価格へ視線を集める
+  takeaway: 重なるチャートから価格線へ
   mechanics:
-  - ローソク足と出来高を描き進める。
-  - 最新の値を追うクロスヘアを置く。
-  - 最後に少し寄って注目点へ着地する。
+  - 複数のチャートを奥行き方向へ重ねる。
+  - 価格線へカメラを寄せる。
+  - 発光する線から隣のチャートへ視線を移す。
   reference:
     brand: TradingView Advanced Charts
     page: https://www.tradingview.com/advanced-charts/
@@ -365,6 +375,10 @@ templates:
     start: 0.15
     end: 6.9
     observed: 複数の金融チャートを奥行きと発光する折れ線でつなぐ。
-  adaptation: 架空のACME銘柄のローソク足、出来高、比較線を合成データで描画する。
+  adaptation: Advanced Charts本体は非公開のため、TradingView公式のLightweight Chartsでチャートを描画。3枚のDOMパネル、紫の光、反射、カメラの接近を参考へ合わせる。Advanced
+    Charts自体の複製ではなく、価格データは合成。
   parameters: {}
   scene_type: study
+  source_implementation:
+  - https://github.com/tradingview/lightweight-charts
+  - https://www.tradingview.com/free-charting-libraries/

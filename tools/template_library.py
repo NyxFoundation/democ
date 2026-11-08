@@ -93,20 +93,21 @@ def render_html(item, args, work, frames):
     pagefile = assemble(spec, work / 'page.html')
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright, headless=True)
+        native_ui = item['id'] in {'terminal-flow', 'code-diff', 'market-chart'}
         page = browser.new_page(viewport={'width': args.width, 'height': args.height},
-                                device_scale_factor=1)
+                                device_scale_factor=2 if native_ui else 1)
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(pagefile.as_uri() + '?rec=1&autoplay=0')
         page.evaluate("document.querySelector('.sc').style.transition='none'")
-        page.evaluate('()=>{const s=DEMO.scenes[0];D.Scenes[s.type].drawAt(s,0);D.cls(s.type,"on");}')
+        page.evaluate('async()=>{const s=DEMO.scenes[0];await D.Scenes[s.type].drawAt(s,0);D.cls(s.type,"on");}')
         page.evaluate('()=>D.Scenes[DEMO.scenes[0].type].ready||Promise.resolve()')
         page.evaluate('document.fonts.ready')
         count = max(2, round(item['duration'] * args.fps))
         for frame in range(count):
-            page.evaluate('(t)=>{const s=DEMO.scenes[0];D.Scenes[s.type].drawAt(s,t);D.cls(s.type,"on");}',
+            page.evaluate('async(t)=>{const s=DEMO.scenes[0];await D.Scenes[s.type].drawAt(s,t);D.cls(s.type,"on");}',
                           frame / args.fps)
-            page.screenshot(path=str(frames / f'f{frame+1:04d}.png'))
+            page.screenshot(path=str(frames / f'f{frame+1:04d}.png'), scale='css')
         browser.close()
         if errors:
             raise RuntimeError('\n'.join(errors))

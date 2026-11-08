@@ -1,0 +1,31 @@
+{
+  "snapshot_date": "2026-11-08",
+  "upstream_files": [
+    {
+      "path": "gum/demo.sh",
+      "url": "https://github.com/charmbracelet/gum/blob/main/examples/demo.sh",
+      "sha256": "3e1a16457ad17f6ad2291d87a3e2c1b725bce2ad13658ac533f9e3b0dc0fd34b"
+    },
+    {
+      "path": "gum/demo.tape",
+      "url": "https://github.com/charmbracelet/gum/blob/main/examples/demo.tape",
+      "sha256": "312d5ed0fe762528570165ca326a4f0a01dcc4bf031f6d389d26fbe0006128ea"
+    },
+    {
+      "path": "vscode/chat.css",
+      "url": "https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/chat/browser/widget/media/chat.css",
+      "sha256": "f25542b25963a232e9f4e3abd49b4bd4b37d563b171940df45145c7eb43d232f"
+    },
+    {
+      "path": "github-theme/theme.cjs",
+      "url": "https://github.com/primer/github-vscode-theme/blob/main/src/theme.js",
+      "sha256": "a1fa66e9bb4b8fcf5ca8d627e5462d91b7a0187ee0ce99243d358824dc7c7256"
+    },
+    {
+      "path": "github-theme/colors.js",
+      "url": "https://github.com/primer/github-vscode-theme/blob/main/src/colors.js",
+      "sha256": "d45100e84ee24fe488c56714f2ee59274f5332e73459d1b55bd0dc9c477ecfd9"
+    }
+  ],
+  "normalization": "Trailing spaces and surplus EOF blank lines removed; executable content unchanged."
+}

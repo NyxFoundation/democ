@@ -16,16 +16,18 @@
 | `humanoid-articulation` | Unitree G1 | 肩と肘の協調動作 | Blender / EEVEE |
 | `orbital-earth` | NASA EPIC | 地表・雲・大気の縁と自転 | Blender / EEVEE |
 | `terrain-flyover` | Mapbox GL JS | 起伏を横切るカメラ | Blender / EEVEE |
-| `terminal-flow` | Charm Gum | 入力、選択、処理、完了 | HTML / Canvas |
-| `code-diff` | GitHub Copilot / VS Code | 同じ場所で変更と結果を見せる | HTML / Canvas |
+| `terminal-flow` | Charm Gum | 公式デモの入力と質問 | HTML / xterm.js / 実PTY出力 |
+| `code-diff` | GitHub Copilot / VS Code | 計画からコードの変更へ | HTML / Monaco / 公式CSS・テーマ |
 | `network-globe` | XNOHub | 地球上を移動する取引の光 | HTML / Canvas |
-| `market-chart` | TradingView | 金融チャートを描き進める | HTML / Canvas |
+| `market-chart` | TradingView | 重なるチャートから価格線へ寄る | HTML / Lightweight Charts / CSS 3D |
 
 選定根拠、公式・作者の出典ページ、原素材内の開始・終了秒、動きの構成、翻案した点は
 [`catalog.yaml`](catalog.yaml) に記録する。タイムコードはページ内の個別動画を起点とする。
 発表イベント全編のタイムコードではない。元映像を実際に確認してから登録する。
 金融・ブロックチェーン・コード・端末の再現データは、アニメーション用の合成データ。
-実際の相場、取引、コマンド実行、テスト結果を示さない。
+実際の相場、取引、Copilotの実行、テスト結果を示さない。
+Gumは公式のシェルを実際に実行した出力を記録して再生する。
+3本のUIに取り込んだ公開ソースと再構成した範囲は[`source-ui/SOURCES.md`](source-ui/SOURCES.md)へ。
 
 ## 作る・見る
 
@@ -47,7 +49,9 @@ uv run --with pyyaml --with playwright python3 tools/template_library.py render 
   --id port-orbit --force
 ```
 
-`uv`、Chromium / Playwright、FFmpegを使う。3DにはBlender 5.xが必要。
+`uv`、Chromium / Playwright、FFmpegを使う。上記3本の初回ビルドにはNode.js / npmが必要。
+出力したHTMLはライブラリ・フォント・Workerを内包し、オフラインでも再生できる。
+3DにはBlender 5.xが必要。
 PATHにない場合は `nix develop .#full` 内で実行する。既存の動画はスキップする。
 `--force` で対象を再生成する。取得失敗はエラーで止まり、収録済みとして扱わない。
 比較一覧へは参考・再現の両方が揃った項目だけを載せる。

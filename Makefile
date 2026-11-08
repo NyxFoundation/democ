@@ -69,11 +69,16 @@ library-materials:
 library-materials-list:
 	$(PY) tools/library_materials.py list $(LIBRARY_ID)
 
+.PHONY: readme-demos
+readme-demos:
+	$(PY) tools/readme_demos.py $(LIBRARY_ID)
+
 OUT    := out
 # デモ 1 本 = out/<名前>/ 一式。台本は out/<名前>/<名前>.yaml
 DEMOS  := $(foreach d,$(notdir $(wildcard $(OUT)/*)),\
             $(if $(wildcard $(OUT)/$(d)/$(d).yaml),$(d),))
 ENGINE := $(wildcard engine/*.css engine/*.js engine/scenes/*)
+SOURCE_UI := $(shell find templates/library/source-ui -path '*/node_modules' -prune -o -type f -print)
 N      ?= $(firstword $(DEMOS))
 
 # 配布用。an=1 は音声なし。色の指定は足さない——素材のまま通すのが一番狂わない
@@ -88,7 +93,7 @@ BLENDS  :=
 
 # --- デモ 1 本ぶんの道筋 ----------------------------------------------------
 define DEMO_RULES
-$(OUT)/$(1)/build/page.html: $(OUT)/$(1)/$(1).yaml tools/build.py tools/highlight.py $$(ENGINE)
+$(OUT)/$(1)/build/page.html: $(OUT)/$(1)/$(1).yaml tools/build.py tools/highlight.py tools/source_ui.py $$(ENGINE) $$(SOURCE_UI)
 	$$(PY) tools/build.py $$< -o $$@
 
 # HTML は毎回同じ絵を出すので、中身が変わったシーンだけ録り直せばよい

@@ -1,0 +1,100 @@
+[
+  {
+    "id": "auto-layout",
+    "title": "要素が一つの秩序に揃う",
+    "reference": "https://www.figma.com/slides/",
+    "movie_sha256": "44862874cb4f951849e8cebb8dc67b93ea1f47258268b597b8d859aa6075dd5b",
+    "preview_sha256": "f907c0527668678103c625badd97cdc7bb6a51738c0a389b9d98c72eae86712b"
+  },
+  {
+    "id": "spatial-carousel",
+    "title": "平面が奥行きのある帯になる",
+    "reference": "https://www.framer.com/",
+    "movie_sha256": "e77a25fbd1c9b9cb5d76398c9518e369155c47cc4838de781a2c681425001eb6",
+    "preview_sha256": "632cf03786ffa4fdf1c2a538cb659d5ba3053db6838dd40114d61a275d77ef4a"
+  },
+  {
+    "id": "cursor-zoom",
+    "title": "操作する場所へ視線が届く",
+    "reference": "https://screen.studio/",
+    "movie_sha256": "4a8aebe1e7066af10d098dc9b7e352501bd1588ee27d6656352372770888dfe9",
+    "preview_sha256": "4808f693dce9d139a551e9a6a8b2ea9edeaf11516d3d341479081e49bdb8f2b7"
+  },
+  {
+    "id": "port-orbit",
+    "title": "天面から機能面へ回り込む",
+    "reference": "https://www.apple.com/mac-mini/",
+    "movie_sha256": "4ac9d3e5a51aba98a16fc800c4f810b2f6b63c3e4c8fa1d9d25d18123e8d3ef0",
+    "preview_sha256": "fe2b46b3a4d0f3daacba10cda980548b05cfcd883742848938a952b40ddbf1b7"
+  },
+  {
+    "id": "rim-reveal",
+    "title": "輪郭が質感へ変わる",
+    "reference": "https://www.apple.com/airpods-pro/",
+    "movie_sha256": "d72afb77b6ae03a1a3209601daa9277c9fb8da612611d1d7476223fcf06f3236",
+    "preview_sha256": "8f9065e720ee8acd88baeb25d8c4b284caab6918136764f15fa8d02c84da5629"
+  },
+  {
+    "id": "macro-controls",
+    "title": "斜光が操作面をなぞる",
+    "reference": "https://teenage.engineering/products/op-xy",
+    "movie_sha256": "549a9dbb59f3df7a1dfc585080d448dcce124b048ebed7e01f1591dfdf5d94c7",
+    "preview_sha256": "74ad7b05c63bca9bce6df33248afa5e95291f8909a24f11739502ad746b4bde0"
+  },
+  {
+    "id": "drone-orbit",
+    "title": "機体の輪郭と機構を追う",
+    "reference": "https://www.dji.com/mavic-4-pro",
+    "movie_sha256": "5e993bde7b8b39d247d6c44e391946b647ad70565df790e2ac71e0fcc72ffa57",
+    "preview_sha256": "46718ab20f26977becf0e3a5b8e68103c12325646ef3ee8391afa3031f6c9464"
+  },
+  {
+    "id": "humanoid-articulation",
+    "title": "関節から意図が伝わる",
+    "reference": "https://www.unitree.com/g1/",
+    "movie_sha256": "1afa790b70e114a121f6210bd130d37ac1e96059be7d1713b552f40f13147904",
+    "preview_sha256": "5ab44498c12cf3a5d0fedbdf0d48548f7b41cd6b5d64b8e70803225554864e22"
+  },
+  {
+    "id": "orbital-earth",
+    "title": "地球の輪郭から広がるスケール",
+    "reference": "https://images.nasa.gov/details/GSFC_20170822_Total_m12690_Eclipse",
+    "movie_sha256": "821313505ccf90619b345c01adb8c0a3cb94cae7d3ed24cea7da98ddae196a84",
+    "preview_sha256": "42b954926f06cf79bdf97b5359be5157eefe395bdd9bfc1e9a6dbcd3dd3c5cdc"
+  },
+  {
+    "id": "terrain-flyover",
+    "title": "地形の起伏へ降りていく",
+    "reference": "https://www.mapbox.com/mapbox-gljs",
+    "movie_sha256": "d7d7e574728ab276f17b8b2287138456c8fb37fb72c7dadf43945c8278d7f6bd",
+    "preview_sha256": "7487d54fca90ac3dfeb81a847552bc3447aff16a11b29e658b58964f431c5002"
+  },
+  {
+    "id": "terminal-flow",
+    "title": "入力が次の対話につながる",
+    "reference": "https://github.com/charmbracelet/gum",
+    "movie_sha256": "9dcc8b0cdb9a8026a3e18254dcff730dd2d6252b508d5fca51146d411534016b",
+    "preview_sha256": "19918a09e4603e6cdc9ed5d264b6a8c0b7fa90cd8935de51b96d92b0433d5457"
+  },
+  {
+    "id": "code-diff",
+    "title": "計画からコードの変更へ",
+    "reference": "https://github.com/features/copilot",
+    "movie_sha256": "dbbffcb704fae3f7928c61377cc940fcd4d142bbd99161ce1caf785d76214976",
+    "preview_sha256": "b8cd65fc2798b65830df4366dea959cee10c90f7b4e108ac73b9445ed7fe74a8"
+  },
+  {
+    "id": "network-globe",
+    "title": "取引の流れが世界をつなぐ",
+    "reference": "https://github.com/dalindev/XNOHub.com",
+    "movie_sha256": "1567bd94c3d18b4fac697bea30bf8e751531e5513a095b768c4e6c8896d87197",
+    "preview_sha256": "9e03f03e0fbb41edca33fe8ed2f3c92581007fc2141fbb4586eed3a16179f8b9"
+  },
+  {
+    "id": "market-chart",
+    "title": "重なるチャートから価格線へ",
+    "reference": "https://www.tradingview.com/advanced-charts/",
+    "movie_sha256": "b8e146eb3fc9aa7a37d99c96054219076fa66ba0fa3cb3a7da0e23b27b3e9f76",
+    "preview_sha256": "40b1de4358344c58fc45fe7790c330959c4bd92f5eb871ccfda7cb65b88c73dd"
+  }
+]

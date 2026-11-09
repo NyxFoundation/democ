@@ -10,7 +10,8 @@
     "three": "0.166.1"
   },
   "private": true,
-  "name": "demo-creator-source-ui",
+  "name": "democ-source-ui",
+  "license": "MIT",
   "version": "1.0.0",
   "overrides": {
     "dompurify": "3.4.17"

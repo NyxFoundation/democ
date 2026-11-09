@@ -1,5 +1,5 @@
 {
-  description = "demo-creator — 素材づくりから編集・書き出しまでを固定する";
+  description = "democ — 素材づくりから編集・書き出しまでを固定する";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -21,13 +21,13 @@
     in {
       devShells.${system} = {
         default = pkgs.mkShell {
-          name = "demo-creator";
+          name = "democ";
           packages = core;
           FONTCONFIG_FILE = fonts;
         };
         # make 3d と make open が使う。GUI と 3D が要るときだけ
         full = pkgs.mkShell {
-          name = "demo-creator-full";
+          name = "democ-full";
           packages = core ++ authoring;
           FONTCONFIG_FILE = fonts;
         };

@@ -1,4 +1,4 @@
-# demo-creator
+# democ
 #
 #   make new N=foo [FROM=nyxis]  out/foo/ に作業場を作る（台本もここ）
 #   make edit N=foo              組んでブラウザで開く。文言を詰めるときはここから

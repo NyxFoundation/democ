@@ -56,8 +56,8 @@ def table(items):
                 'engine/scenes/study.js' if item.get('scene_type') == 'study' else
                 'engine/scenes/motion.js')
         return (f'**{title}**<br>[<img src="docs/demos/{name}.gif" width="180" '
-                f'alt="{html.escape(item["title"], quote=True)}">]'
-                f'(docs/demos/{name}.mp4)<br>[MP4](docs/demos/{name}.mp4) · [実装]({code})')
+                f'alt="{title}: {name.replace("-", " ")}">]'
+                f'(docs/demos/{name}.mp4)<br>[MP4](docs/demos/{name}.mp4) · [Source]({code})')
     columns = 4
     rows = ['| ' + ' | '.join([''] * columns) + ' |',
             '| ' + ' | '.join([':---'] * columns) + ' |']

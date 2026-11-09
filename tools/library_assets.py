@@ -43,7 +43,7 @@ def acquire_assets(names, out):
             path.parent.mkdir(parents=True, exist_ok=True)
             if not path.exists():
                 print(f'asset: {name}/{filename}', flush=True)
-                request = Request(url, headers={'User-Agent': 'demo-creator/1.0'})
+                request = Request(url, headers={'User-Agent': 'democ/1.0'})
                 with urlopen(request, timeout=120, context=context) as response:
                     data = response.read()
                 temporary = path.with_suffix(path.suffix + '.partial')

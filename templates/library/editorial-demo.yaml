@@ -1,0 +1,27 @@
+title: Words in motion
+transition: {duration: 0.22}
+scenes:
+  - type: typography
+    preset: type-punch
+    words: [Think., Make., Try., Refine., Release., Beyond.]
+    duration: 4.8
+  - type: typography
+    preset: type-flight
+    lines: [Make it, move.]
+    duration: 5.2
+  - type: typography
+    preset: type-morph
+    lines: [MOVE, WITH, PURPOSE.]
+    duration: 5.6
+  - type: press
+    preset: press-cascade
+    # Set images to your own PNG/JPEG/WebP paths. Omitted: local newsroom study.
+    # images: [out/my-demo/assets/news-01.png, out/my-demo/assets/news-02.png]
+    metric: {value: 12800000, label: DEMO IMPRESSIONS}
+    copy: 話題が、広がる。
+    duration: 6.8
+  - type: press
+    preset: press-wall
+    metric: {value: 12800000, label: DEMO IMPRESSIONS}
+    copy: 話題が、広がる。
+    duration: 6.8

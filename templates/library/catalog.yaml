@@ -1,5 +1,5 @@
 version: 1
-reviewed_on: 2026-11-08
+reviewed_on: '2026-11-09'
 review_method: 公式ページの埋め込み素材を取得し、時刻付きコンタクトシートと個別フレームで選定。
 templates:
 - id: auto-layout
@@ -401,3 +401,149 @@ templates:
   source_implementation:
   - https://github.com/tradingview/lightweight-charts
   - https://www.tradingview.com/free-charting-libraries/
+- id: type-punch
+  title: 短い言葉がリズムをつくる
+  scene_type: typography
+  category: typography
+  duration: 4.8
+  parameters:
+    words:
+    - Think.
+    - Make.
+    - Try.
+    - Refine.
+    - Release.
+    - Beyond.
+  reference:
+    brand: Apple · Type punch
+    page: https://motionographer.com/2016/09/14/4-ways-dont-blink-is-a-masterclass-of-type-and-rhythm/
+    asset: https://motionographer.com/wp-content/uploads/2016/09/dontblink-text.mp4
+    start: 0
+    end: 6.4
+    observed: Apple Don’t Blinkの抜粋。短い語を同じ中心へ高速に入れ替えてリズムを作る。
+  mechanics:
+  - 画面の中心を保ち、短い語をテンポよく入れ替える。
+  - 文字の小さな移動と白黒の反転で拍をつくる。
+  - 最後の一語を保持して次の場面へ渡す。
+  adaptation: Appleの映像はMotionographerが掲載する抜粋を参照。元の広告コピーは流用せず、Interによる製品コピーと白黒反転へ翻案。
+  renderer: html
+  tags:
+  - typography
+  takeaway: 短い言葉がリズムをつくる
+  assets:
+  - inter-variable
+- id: type-flight
+  title: 散らばった文字が一つの言葉になる
+  scene_type: typography
+  category: typography
+  duration: 5.2
+  parameters:
+    lines:
+    - Make it
+    - move.
+  reference:
+    brand: Apple · Letter flight
+    page: https://motionographer.com/2016/09/14/4-ways-dont-blink-is-a-masterclass-of-type-and-rhythm/
+    asset: https://motionographer.com/wp-content/uploads/2016/09/dontblink-reengineered.mp4
+    start: 0
+    end: 1.6
+    observed: 同じ文字がばらけて位置を変え、re-engineeredという一語へ組み上がる。
+  mechanics:
+  - 文字を奥行きと回転を持つグリフへ分ける。
+  - 散らばりを残しながら一つの読み順へ収束する。
+  - 小さな波を走らせ、静かな完成形へ着地する。
+  adaptation: 語の意味と文字の再構成が一致する発想を参照。独自コピーをCSS 3Dで分解・整列。Blenderや広告のフォントは使わず、Interで文字ごとの経路を再計算する。
+  renderer: html
+  tags:
+  - typography
+  takeaway: 散らばった文字が一つの言葉になる
+  assets:
+  - inter-variable
+- id: type-morph
+  title: 文字の太さが波になって伝わる
+  scene_type: typography
+  category: typography
+  duration: 5.6
+  parameters:
+    lines:
+    - MOVE
+    - WITH
+    - PURPOSE.
+  reference:
+    brand: Spotify Mix · Variable type
+    page: https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/
+    asset: https://storage.googleapis.com/pr-newsroom-wp/1/2024/05/FTR-header-SPOTIFY-1.gif
+    start: 0
+    end: 5.7
+    observed: ロゴの輪郭と字形が現れ、同じ文字の太さや表情が変わる。
+  mechanics:
+  - 同じ文字の輪郭を保ちながら、可変フォントのウェイトを動かす。
+  - 文字ごとに位相をずらし、太さと高さを波として伝える。
+  - 最後は一つの太さとベースラインへ揃える。
+  adaptation: Spotify Mixの字形が変わる見せ方を参照。独自フォントそのものは複製せず、OFLのInter Variableでwght軸を動かし、三行のコピーへ翻案。
+  renderer: html
+  tags:
+  - typography
+  takeaway: 文字の太さが波になって伝わる
+  assets:
+  - inter-variable
+- id: press-cascade
+  title: ニュースが加速して視界を埋める
+  scene_type: press
+  category: press
+  duration: 6.8
+  parameters:
+    metric:
+      value: 12800000
+      label: DEMO IMPRESSIONS
+    copy: 話題が、広がる。
+  reference:
+    brand: Newsroom · Cascade
+    page: https://www.apple.com/newsroom/
+    asset: https://www.apple.com/newsroom/
+    capture: newsroom
+    start: 0
+    end: 4.8
+    observed: Apple・GitHub・Mozilla・Figma・Cloudflare・NASAの公式ニュース画面を実際に取得した画像参照リール。既存のモンタージュ映画ではない。
+  mechanics:
+  - 実際のニュース画面を画像として使う。
+  - 画面がカメラを追い越す加速、または引きのカメラで件数の広がりを見せる。
+  - 背景を落ち着かせてから、最後の一つの数値を読ませる。
+  adaptation: ニュース画面を大量に見せるユーザー案から作ったオリジナルの演出。左は素材の参照リール、右が再現テンプレート。記事の量からimpressionは推計しない。12.8MはDEMO
+    IMPRESSIONSと表示するサンプル値で、実績や各社の評価ではない。
+  renderer: html
+  tags:
+  - press
+  takeaway: ニュースが加速して視界を埋める
+  assets:
+  - inter-variable
+- id: press-wall
+  title: 一つの記事から広がりを見渡す
+  scene_type: press
+  category: press
+  duration: 6.8
+  parameters:
+    metric:
+      value: 12800000
+      label: DEMO IMPRESSIONS
+    copy: 話題が、広がる。
+  reference:
+    brand: Newsroom · Wall
+    page: https://www.apple.com/newsroom/
+    asset: https://www.apple.com/newsroom/
+    capture: newsroom
+    start: 0
+    end: 4.8
+    observed: Apple・GitHub・Mozilla・Figma・Cloudflare・NASAの公式ニュース画面を実際に取得した画像参照リール。既存のモンタージュ映画ではない。
+  mechanics:
+  - 実際のニュース画面を画像として使う。
+  - 画面がカメラを追い越す加速、または引きのカメラで件数の広がりを見せる。
+  - 背景を落ち着かせてから、最後の一つの数値を読ませる。
+  adaptation: ニュース画面を大量に見せるユーザー案から作ったオリジナルの演出。左は素材の参照リール、右が再現テンプレート。記事の量からimpressionは推計しない。12.8MはDEMO
+    IMPRESSIONSと表示するサンプル値で、実績や各社の評価ではない。
+  renderer: html
+  tags:
+  - press
+  takeaway: 一つの記事から広がりを見渡す
+  assets:
+  - inter-variable

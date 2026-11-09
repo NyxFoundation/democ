@@ -1,0 +1,13 @@
+sources:
+- id: apple
+  url: https://www.apple.com/newsroom/
+- id: github
+  url: https://github.blog/
+- id: mozilla
+  url: https://blog.mozilla.org/en/
+- id: figma
+  url: https://www.figma.com/blog/
+- id: cloudflare
+  url: https://blog.cloudflare.com/
+- id: nasa
+  url: https://www.nasa.gov/news/

@@ -51,7 +51,11 @@ def collect(item, args):
     if target.exists() and not args.force:
         print(f'keep {target}')
         return
-    source = str(args.source.resolve()) if args.source else ref['asset']
+    if ref.get('capture') == 'newsroom' and not args.source:
+        from capture_news import reference_movie
+        source = str(reference_movie(args.out))
+    else:
+        source = str(args.source.resolve()) if args.source else ref['asset']
     temporary = target.with_suffix('.partial.mp4')
     try:
         run(['ffmpeg', '-y', '-loglevel', 'error', '-threads', '4',
@@ -73,6 +77,8 @@ def collect(item, args):
         'sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
         'use': 'Local reference excerpt; source rights are not transferred.',
     }
+    if ref.get('capture') == 'newsroom' and not args.source:
+        metadata['capture_sources'] = json.loads(Path(source).with_suffix('.json').read_text())
     target.with_suffix('.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2))
     print(f'collected {target}')
 
@@ -93,7 +99,7 @@ def render_html(item, args, work, frames):
     pagefile = assemble(spec, work / 'page.html')
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright, headless=True)
-        native_ui = item['id'] in {'terminal-flow', 'code-diff', 'market-chart', 'network-globe'}
+        native_ui = item.get('scene_type') in {'typography', 'press'} or item['id'] in {'terminal-flow', 'code-diff', 'market-chart', 'network-globe'}
         page = browser.new_page(viewport={'width': args.width, 'height': args.height},
                                 device_scale_factor=2 if native_ui else 1)
         errors = []
@@ -140,6 +146,9 @@ def render(item, args):
     if parameters.get('terrain_mosaic'):
         from library_geography import prepare_terrain
         parameters.update(prepare_terrain(parameters['terrain_asset'],args.out))
+    if item.get('scene_type') == 'press' and 'images' not in parameters:
+        from capture_news import ensure_images
+        parameters['images'] = [str(path) for path in ensure_images(args.out)]
     if item['renderer'] == 'html':
         render_html(dict(item, parameters=parameters), args, work, frames)
     else:
@@ -197,6 +206,14 @@ def finish_render(item, args, target):
         for name in item['assets']:
             asset = target.parent.parent / 'assets' / registry[name]['filename']
             metadata['assets'].append(json.loads(asset.with_suffix(asset.suffix + '.json').read_text()))
+    if item.get('scene_type') == 'press':
+        if item.get('parameters', {}).get('images'):
+            metadata['screenshots'] = [{'path':str(path), 'sha256':hashlib.sha256(Path(path).read_bytes()).hexdigest()}
+                                       for path in item['parameters']['images']]
+        else:
+            from capture_news import ensure_images
+            metadata['screenshots'] = [json.loads(path.with_suffix('.json').read_text())
+                                       for path in ensure_images(args.out)]
     target.with_suffix('.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2))
 
 

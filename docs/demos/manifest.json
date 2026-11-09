@@ -96,5 +96,40 @@
     "reference": "https://www.tradingview.com/advanced-charts/",
     "movie_sha256": "b8e146eb3fc9aa7a37d99c96054219076fa66ba0fa3cb3a7da0e23b27b3e9f76",
     "preview_sha256": "40b1de4358344c58fc45fe7790c330959c4bd92f5eb871ccfda7cb65b88c73dd"
+  },
+  {
+    "id": "type-punch",
+    "title": "短い言葉がリズムをつくる",
+    "reference": "https://motionographer.com/2016/09/14/4-ways-dont-blink-is-a-masterclass-of-type-and-rhythm/",
+    "movie_sha256": "85d00f29af7fd1ead3d20ac7029ddda15ce3a38ccf93e49e0c6fecccad7503fb",
+    "preview_sha256": "1e7fae2dfe1025ac7a01a0c9eee1eb811b65a0fd54366f2d346bae925e4ce77e"
+  },
+  {
+    "id": "type-flight",
+    "title": "散らばった文字が一つの言葉になる",
+    "reference": "https://motionographer.com/2016/09/14/4-ways-dont-blink-is-a-masterclass-of-type-and-rhythm/",
+    "movie_sha256": "ee51645920cd643d5dea054e5b18970aafebad7a113648bc5aaa574d5db0963c",
+    "preview_sha256": "b02f651c332467b64ed92baff71028728c9412e1e6fa45ca842924f2521ef30f"
+  },
+  {
+    "id": "type-morph",
+    "title": "文字の太さが波になって伝わる",
+    "reference": "https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/",
+    "movie_sha256": "7a26275caea9da5121edd0611ce9a9f76cb247d0dae8cf60c42c2864cab0eb83",
+    "preview_sha256": "688bfcc191838b928f6f6186d69acb231e7a1717f758fa8ed98320627fc66ac1"
+  },
+  {
+    "id": "press-cascade",
+    "title": "ニュースが加速して視界を埋める",
+    "reference": "https://www.apple.com/newsroom/",
+    "movie_sha256": "e797d1c47dad2d7ae960ea6e6498701fd2a6ef4fae43f82c1e29a97276ea08e9",
+    "preview_sha256": "04737b63a111394bc9c476a26658aaea28a96ad902af76433c8ed709ebea9591"
+  },
+  {
+    "id": "press-wall",
+    "title": "一つの記事から広がりを見渡す",
+    "reference": "https://www.apple.com/newsroom/",
+    "movie_sha256": "32d1c6f96c726240a321c93f77d6e36ecf0e76a70cd23f2b10069e6b3a980d23",
+    "preview_sha256": "7412e29fc1fc6e996589e52eb051a19f2c3d0a097f8dec4f84e2221dc077d5a5"
   }
 ]

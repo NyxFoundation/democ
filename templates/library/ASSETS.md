@@ -4,6 +4,15 @@
 [assets.yaml](assets.yaml) と `out/template-library/assets/*.json` に保存する。
 参考動画の出典と抜粋範囲は [catalog.yaml](catalog.yaml) にある。
 
+タイポグラフィは[Apple Don’t Blinkの掲載抜粋](https://motionographer.com/2016/09/14/4-ways-dont-blink-is-a-masterclass-of-type-and-rhythm/)と
+[Spotify Mixの公式GIF](https://newsroom.spotify.com/2024-05-22/introducing-spotify-mix-our-new-and-exclusive-font/)を実際に確認して選定。
+再現は独自コピーと[Inter Variable](https://rsms.me/inter/)（SIL OFL）を使う。
+原広告のコピーや専用書体は再配布しない。原映像は既存の参考クリップと同じくローカル研究用。
+
+ニュース系の画像は公式ニュースルームの画面キャプチャ。
+各権利者の著作物で、フリー素材の扱いにはしない。取得元・権利・再現での使い方は
+[ニュース素材の記録](newsroom/README.md)にまとめる。
+
 | 使用箇所 | 素材・作者 | 条件・記録 |
 | --- | --- | --- |
 | Mac mini | [Apple Mac mini AR](https://www.apple.com/mac-mini/) | Apple公開USDZ。ローカル研究用。オープンコンテンツのライセンスではない。モデル・画像はGitへ含めない。 |

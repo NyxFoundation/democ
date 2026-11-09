@@ -20,6 +20,11 @@
 | `code-diff` | GitHub Copilot / VS Code | 計画からコードの変更へ | HTML / Monaco / 公式CSS・テーマ |
 | `network-globe` | XNOHub | 地球上を移動する取引の光 | HTML / Three.js / WebGL |
 | `market-chart` | TradingView | 重なるチャートから価格線へ寄る | HTML / Lightweight Charts / CSS 3D |
+| `type-punch` | Apple Don’t Blink | 短い語をリズムで入れ替える | HTML / Inter Variable |
+| `type-flight` | Apple Don’t Blink | 分散した文字が一語になる | HTML / CSS 3D |
+| `type-morph` | Spotify Mix | 文字の太さが波になる | HTML / 可変フォント |
+| `press-cascade` | ニュース画面の参照リール | スクリーンショットが加速して流れる | HTML / CSS 3D |
+| `press-wall` | ニュース画面の参照リール | 引きのカメラで広がりを見せる | HTML / CSS |
 
 選定根拠、公式・作者の出典ページ、原素材内の開始・終了秒、動きの構成、翻案した点は
 [`catalog.yaml`](catalog.yaml) に記録する。タイムコードはページ内の個別動画を起点とする。
@@ -28,6 +33,15 @@
 実際の相場、取引、Copilotの実行、テスト結果を示さない。
 Gumは公式のシェルを実際に実行した出力を記録して再生する。
 4本のUIに取り込んだ公開ソースと再構成した範囲は[`source-ui/SOURCES.md`](source-ui/SOURCES.md)へ。
+ニュース系の左側は、実際に取得したスクリーンショットの参照リール。
+右側はオリジナルの演出で、数値は明記したデモ値。素材と差し替えは[`newsroom/README.md`](newsroom/README.md)へ。
+
+文字とニュースのサンプルをまとめて見る:
+
+```sh
+uv run --with pyyaml --with playwright python3 tools/build.py \
+  templates/library/editorial-demo.yaml -o out/editorial-demo.html
+```
 
 ## 作る・見る
 

@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import html
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -50,13 +51,19 @@ def table(items):
                 'templates/library/hardware.py' if item['renderer'] == 'blender' else
                 'engine/scenes/network-globe.js' if name == 'network-globe' else
                 'engine/scenes/source-ui.js' if name in {'terminal-flow','code-diff','market-chart'} else
+                'engine/scenes/typography.js' if item.get('scene_type') == 'typography' else
+                'engine/scenes/press.js' if item.get('scene_type') == 'press' else
                 'engine/scenes/study.js' if item.get('scene_type') == 'study' else
                 'engine/scenes/motion.js')
-        return (f'**{title}**<br>[![{html.escape(item["title"])}](docs/demos/{name}.gif)]'
+        return (f'**{title}**<br>[<img src="docs/demos/{name}.gif" width="180" '
+                f'alt="{html.escape(item["title"], quote=True)}">]'
                 f'(docs/demos/{name}.mp4)<br>[MP4](docs/demos/{name}.mp4) · [実装]({code})')
-    rows = ['| | |', '| :--- | :--- |']
-    for n in range(0, len(items), 2):
-        rows.append('| ' + cell(items[n]) + ' | ' + (cell(items[n+1]) if n+1 < len(items) else '') + ' |')
+    columns = 4
+    rows = ['| ' + ' | '.join([''] * columns) + ' |',
+            '| ' + ' | '.join([':---'] * columns) + ' |']
+    for n in range(0, len(items), columns):
+        cells = [cell(item) for item in items[n:n+columns]]
+        rows.append('| ' + ' | '.join(cells + [''] * (columns-len(cells))) + ' |')
     return '\n'.join(rows)
 
 
@@ -80,7 +87,11 @@ def main():
     start, end = '<!-- demos:start -->', '<!-- demos:end -->'
     before, rest = readme.read_text().split(start, 1)
     _, after = rest.split(end, 1)
-    readme.write_text(before + start + '\n\n' + table(items) + '\n\n' + end + after)
+    content = before + start + '\n\n' + table(items) + '\n\n' + end + after
+    content = re.sub(r'Demos-\d+-', f'Demos-{len(items)}-', content)
+    content = re.sub(r'再構成した\d+本', f'再構成した{len(items)}本', content)
+    content = re.sub(r'ニュース演出の\d+本', f'ニュース演出の{len(items)}本', content)
+    readme.write_text(content)
 
 
 if __name__ == '__main__':

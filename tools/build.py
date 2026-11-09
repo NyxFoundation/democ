@@ -188,6 +188,55 @@ def build_motion(s):
             raise SpecError("motion: rows の最終列は数値")
 
 
+def editorial_font(s):
+    from library_assets import acquire_assets
+    path = acquire_assets(['inter-variable'], ROOT / 'out/template-library')['inter-variable']
+    s['font_data'] = 'data:font/woff2;base64,' + base64.b64encode(path.read_bytes()).decode()
+    s['font_license'] = (ROOT / 'templates/library/newsroom/Inter-OFL.txt').read_text()
+
+
+def build_typography(s):
+    if s.get('preset') not in {'type-punch', 'type-flight', 'type-morph'}:
+        raise SpecError('typography: preset は type-punch / type-flight / type-morph')
+    duration = s.setdefault('duration', 5.6)
+    if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
+        raise SpecError('typography: duration は正の秒数')
+    field = 'words' if s['preset'] == 'type-punch' else 'lines'
+    limit = 12 if field == 'words' else 3
+    if not isinstance(s.get(field), list) or not 1 <= len(s[field]) <= limit or not all(
+            isinstance(word, str) and word.strip() for word in s[field]):
+        raise SpecError(f'typography: {field} は1〜{limit}個の空でない文字列')
+    if 'font_size' in s and (not isinstance(s['font_size'], (int, float)) or
+                             not math.isfinite(s['font_size']) or s['font_size'] <= 0):
+        raise SpecError('typography: font_size は正の数')
+    editorial_font(s)
+
+
+def build_press(s):
+    if s.get('preset') not in {'press-cascade', 'press-wall'}:
+        raise SpecError('press: preset は press-cascade / press-wall')
+    duration = s.setdefault('duration', 6.8)
+    if not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0:
+        raise SpecError('press: duration は正の秒数')
+    paths = s.pop('images', None)
+    if paths is None:
+        from capture_news import ensure_images
+        paths = ensure_images()
+    if not isinstance(paths, list) or not 1 <= len(paths) <= 64:
+        raise SpecError('press: images は1〜64個の画像パス')
+    s['image_data'] = []
+    for path in paths:
+        image = Path(path)
+        mime = {'.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp'}.get(image.suffix.lower())
+        if not mime:
+            raise SpecError('press: PNG / JPEG / WebP を指定')
+        s['image_data'].append('data:'+mime+';base64,'+base64.b64encode(image.read_bytes()).decode())
+    metric = s.setdefault('metric', {'value':12800000, 'label':'DEMO IMPRESSIONS'})
+    if not isinstance(metric, dict) or not isinstance(metric.get('value'), (int, float)) or not math.isfinite(metric['value']) or metric['value'] < 0 or not isinstance(metric.get('label'), str):
+        raise SpecError('press: metric に非負の value と文字列 label が要る')
+    editorial_font(s)
+
+
 def build_study(s):
     if s.get('preset') not in {'terminal-flow', 'code-diff', 'network-globe', 'market-chart'}:
         raise SpecError('study: 知らない preset')
@@ -225,7 +274,8 @@ def build_study(s):
 BUILDERS = {"card": build_card, "browser": build_browser, "code": build_code,
             "split": build_split, "tree": build_tree, "terminal": build_terminal,
             "incident": build_incident, "policy": build_policy, "kernel": lambda s: None,
-            "motion": build_motion, "study": build_study}
+            "motion": build_motion, "study": build_study,
+            "typography": build_typography, "press": build_press}
 
 
 # --- 組み立て ---------------------------------------------------------------

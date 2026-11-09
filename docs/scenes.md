@@ -174,3 +174,27 @@ MLT / Kdenliveでは、その境目が短い独立したクリップとして並
 通常の台本では `type: study` と `preset`、`duration` で呼び出せる。
 出典・使用条件は [素材台帳](../templates/library/ASSETS.md)、一覧生成は
 [ショーケースの手順](../templates/library/README.md)を参照。
+
+## typography — 文字を動きにする
+
+| preset | 内容 | 編集する値 |
+| --- | --- | --- |
+| `type-punch` | 短い語の切り替えと白黒の反転 | `words`: 1〜12語 |
+| `type-flight` | 文字が3D空間から集まり、一つのコピーになる | `lines`: 1〜3行 |
+| `type-morph` | 可変フォントの太さが波のように動く | `lines`: 1〜3行 |
+
+`duration`は秒、既定5.6秒。`font_size`は任意の最大文字サイズ。
+Inter Variableを初回に取得してHTMLへ内包する。日本語はCJKフォントへフォールバックする。
+例は[editorial-demo.yaml](../templates/library/editorial-demo.yaml)。
+
+## press — ニュース画面の広がり
+
+`preset`は`press-cascade`（画面が加速してカメラを追い越す）と、
+`press-wall`（一画面から引き、多数の画面を見渡す）。`duration`は既定6.8秒。
+最後は画面を落ち着かせ、`metric: {value: 12800000, label: DEMO IMPRESSIONS}`へ着地する。
+`metric.format: integer`で整数、既定では百万単位。`copy`は任意の一行。
+
+`images`にPNG / JPEG / WebPのローカルパスを1〜64個指定する。画像はHTMLへ内包する。
+省略すると公式ニュースルーム6サイトのスクリーンショットを初回に取得する。
+サンプルの数値はデモ値で、画像枚数からimpressionを推計しない。
+差し替えと出典は[ニュース素材](../templates/library/newsroom/README.md)へ。

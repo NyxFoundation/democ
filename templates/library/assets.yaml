@@ -603,3 +603,13 @@ assets:
     redistributable: true
     usage: Complete static cloud composite, separate from the NASA surface; not live weather.
     sha256: c792eca228989d36ebb45d3ea6ff1198be5e21a25d70d2fbcb2124ffd14ba7f5
+  inter-variable:
+    filename: fonts/InterVariable.woff2
+    role: font
+    url: https://rsms.me/inter/font-files/InterVariable.woff2
+    page: https://rsms.me/inter/
+    creator: Rasmus Andersson / Inter contributors
+    license: SIL Open Font License 1.1
+    license_url: https://github.com/rsms/inter/blob/master/LICENSE.txt
+    redistributable: true
+    sha256: 693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3

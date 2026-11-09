@@ -1,63 +1,54 @@
-# パイプラインと実装ノート
+# Pipeline and implementation notes
 
-## デモ1本の構成
+## Demo layout
 
 ```text
 out/my-demo/
-  my-demo.yaml          場面・文言・表示時間の正本
-  notes.md              出典と制作メモ
-  layers/*.yaml         3Dへ置き換える場面と部品の指定
-  shots/*.py            Blenderの形状・照明・カメラ
+  my-demo.yaml          Source script: scenes, text, and timing
+  notes.md              Sources and production notes
+  layers/*.yaml         Scene replacements and layer selection for 3D
+  shots/*.py            Blender geometry, lighting, and cameras
   build/
-    page.html           生成したプレビュー
-    screens/            場面ごとのMP4とハッシュ
-    parts/              部品ごとの透過PNG
-    3d/                 Blender出力と編集可能な.blend
-    edit.mlt            MLTのタイムライン
-    edit.kdenlive       Kdenlive向けタイムライン
-    demo.mp4            完成動画
+    page.html           Generated browser preview
+    screens/            Per-scene MP4s and hashes
+    parts/              Transparent PNGs for individual layers
+    3d/                 Blender renders and editable .blend files
+    edit.mlt            MLT timeline
+    edit.kdenlive       Kdenlive timeline
+    demo.mp4            Final movie
 ```
 
-`tools/build.py`がYAMLを1枚のHTMLへ組み立てる。`tools/record.py`で場面ごとに収録し、
-`edit/timeline.py`でMLTへ並べて、`melt`で最終MP4を書き出す。
-3Dの指定がある場面には、Blenderで描画したクリップを使う。
+`tools/build.py` turns YAML into a single HTML page. `tools/record.py` records each scene, `edit/timeline.py` assembles an MLT timeline, and `melt` exports the final MP4. Scenes configured for 3D use clips rendered in Blender.
 
-## ソースの場所
+## Source files
 
-| 場所 | 役割 |
+| Path | Purpose |
 | --- | --- |
-| `templates/starter.yaml` | 新規デモの雛形 |
-| `examples/` | `make new FROM=`で複製できる台本 |
-| `engine/engine.{css,js}` | ステージ・再生・場面転換 |
-| `engine/scenes/` | 場面ごとのレイアウトと動き |
-| `templates/library/catalog.yaml` | 参考映像・尺・再現の設定 |
-| `templates/library/hardware.py` | 素材を取り込む3Dテンプレート |
-| `templates/library/source-ui/` | 取り込んだUI実装・固定した依存関係・ライセンス |
-| `tools/record.py` `tools/snap.py` | 動画収録・静止画確認 |
-| `tools/readme_demos.py` | READMEのプレビューとMP4の更新 |
+| `templates/starter.yaml` | Starter script for a new demo |
+| `examples/` | Scripts available through `make new FROM=` |
+| `engine/engine.{css,js}` | Stage, playback, and transitions |
+| `engine/scenes/` | Scene layouts and animation |
+| `templates/library/catalog.yaml` | Reference clips, durations, and demo settings |
+| `templates/library/hardware.py` | 3D templates that import external models |
+| `templates/library/source-ui/` | Upstream UI code, pinned dependencies, and licenses |
+| `tools/record.py` / `tools/snap.py` | Video recording and still-frame capture |
+| `tools/readme_demos.py` | README previews and MP4 updates |
 
-## 更新と収録
+## Rebuilding and recording
 
-画面の正本はYAMLとJS / CSS。Kdenliveに入るMP4には文字が焼き込まれているので、
-文字を直すときはYAMLを更新して再出力する。
-GUIで変更したタイムラインをPythonへ自動的に書き戻す処理はない。
+YAML, JS, and CSS are the source for the screen content. Text is baked into the MP4s used in Kdenlive, so text edits require updating the YAML and exporting again. GUI timeline changes are not written back to the Python source.
 
-収録は場面ごとに分け、内容のハッシュが変わった場面だけを撮り直す。
-コードを共通エンジンで変更した場合は、影響を受ける場面を再収録する。
-録画の終端は秒数の見積もりではなく、エンジンの`body[data-done]`を使う。
+Recording is split by scene. Only scenes whose content hashes have changed are recorded again. Changes to shared engine code also trigger recording for affected scenes. Recording ends when the engine sets `body[data-done]`, rather than after an estimated duration.
 
-`make 3d`は重い処理のため、通常の`make`では再実行しない。
-3Dのソースを直したら`make 3d`を実行し、その後に最終MP4を出力する。
-`make clean`が消すのは`out/*/build`。YAMLやショットのソースは保持する。
+`make 3d` is separate from the default build because rendering is expensive. After editing 3D source, run `make 3d`, then export the final MP4. `make clean` removes `out/*/build` and preserves YAML scripts and shot source files.
 
-## MLTとHTMLの注意点
+## MLT and HTML details
 
-- `avformat-novalidate`は使わない。`length`なしで素材を指定すると1フレームとして扱われる場合がある。
-- プロファイルへ不用意に`colorspace`を足さない。画面収録の色域変換で見た目が変わる。
-- フェードの`filter`には`in` / `out`を指定する。指定なしでは素材全長に効果がかかる。
-- 使わない全画面レイヤーは`visibility:hidden`で合成から外す。
-- 透過PNGからMP4へ変換するときは黒背景へ合成する。アルファを落とすだけでは輪郭が白くなる。
-- 外部モデルの取り込み後にフレーム範囲を設定し直す。USDの元タイムラインで尺が変わることがある。
+- Avoid `avformat-novalidate`. A source without an explicit `length` can be treated as a single frame.
+- Add `colorspace` to the profile only when needed. It can change the appearance of screen recordings through color conversion.
+- Set `in` and `out` on fade filters; otherwise the effect applies across the full source.
+- Use `visibility:hidden` to remove unused full-screen layers from compositing.
+- Composite transparent PNGs over black before encoding to MP4. Dropping alpha alone can leave white fringes.
+- Reset the frame range after importing an external model. A USD source timeline can change the shot length.
 
-3Dの部品分けは[レイヤーとBlender](layers-and-3d.md)、
-引数は[シーン一覧](scenes.md)、外部素材は[素材台帳](../templates/library/ASSETS.md)へ。
+See [layers and Blender](layers-and-3d.md) for 3D layer extraction, the [scene reference](scenes.md) for options, and the [asset inventory](../templates/library/ASSETS.md) for external assets.

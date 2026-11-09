@@ -1,200 +1,164 @@
-# シーンの引数
+# Scene reference
 
-デモ 1 本の台本は `out/<名前>/<名前>.yaml` 1 ファイル。`scenes` に場面を並べる。
-動きは型が持っていて、YAML が決めるのは中身だけ。文言を変えれば画面に出る時間も
-付いてくるので、まず文言を書いてから秒を疑う。
+Each demo uses one script at `out/<name>/<name>.yaml`, with scenes listed under `scenes`. Scene types define the animation; YAML supplies the content. Text length affects automatic timing, so write the copy before adjusting durations.
 
-## 全体
+## Global settings
 
-| 鍵 | 既定 | 何を決めるか |
-|---|---|---|
-| `title` | ファイル名 | タブとコントロールに出る名前 |
-| `accent` | `#5fd7d7` | 強調の 1 色。`<em>` と `<b>` がこの色になる |
-| `reading.cps` | 5.5 | 1 秒あたりに読める文字数 |
-| `reading.lead` | 0.9 | 目が文字に追いつくまでの頭（秒） |
-| `reading.min` / `.max` | 2.4 / 5.2 | 1 枚の下限と上限（秒） |
-
-保持時間は `lead + 文字数 / cps` を `min`〜`max` で挟んで決まる。日本語字幕の実務値
-（4 CPS 基準・最大 7・1 枚 6 秒まで）の内側に取ってある。どの場面も `hold:` を書けば
-秒で固定でき、`gap:` で前の場面との間（既定 0.42 秒）を変えられる。
-
-## 共通の書き方
-
-文章（`text` `band` `note` `labels.*`）には HTML をそのまま書ける。`<em>` と `<b>` が
-accent 色、`<s>` が灰色、`<br>` が改行。
-
-コード（`code` `lines` `need` `has` `error` `done`）は素のまま書く。色は `lang` から
-付く。印は 2 つだけで、`{{ここ}}` が赤い差し、`<<ここ>>` が黄色い注記。
-
-`icon` はファイルタブの色で、`cedar` `lean` `js` `ts` `sh` `json` が用意してある。
-
-## card — 文字ドン・数字ドン
-
-| 鍵 | 何を出すか |
-|---|---|
-| `text` | 真ん中の一行。長くすると自動で小さくなる |
-| `number` | 0 から動いて着地する数字。`format: plain` で桁区切りを外す |
-| `code` + `lang` | 文の下に置くコード |
-| `tab` + `icon` | コードの上のファイル名 |
-| `sub` | 小さい補足。使わないほうがよい |
-
-連続する card は暗転を挟まずに入れ替わる。
-
-## browser — 事故を起こしているウェブアプリ
-
-`brand` `nav` `user{email,initial}` が枠、`url` `crumb` `files` が最初の画面。
-`change` に二枚目を書くと、まず `url` の `{{ }}` だけが変わり、少し置いて `crumb` と
-`files` が入れ替わって赤くなる。`change.stamp` が最後に出る一行。
-
-`settle` は何事もない画面を見せておく秒数（既定 1.2）。ここが短いと事故が事故に
-見えないので、1.8 前後を取るとよい。
-
-## code — レビューが見ている画面
-
-`lines` は `行番号 スペース コード` のブロック。空行は間隔になる。
-
-`good` と `bad` は行番号の配列で、読ませたあとに色が付く。`badges` は行番号から
-吹き出しの文言への対応。`missing: {after, text}` は「書かれなかった行」を
-その行の後ろに開く。`note` は下に出る一文で、出た瞬間にコードが沈む。
-
-`read` は色が付く前に読ませる秒数。
-
-## split — 書いたものが右の一部になる
-
-`left` と `right` にそれぞれ `tab` `icon` `lang` `code`。`left.fly` と `right.land` は
-`"1-3"` のような行範囲で、左のその範囲が箱になって飛び、空中で右の表記に変わって
-着地する。着地先は飛ぶまで見えない。
-
-`band` は着地後に出る一文。`flight` は飛んでいる秒数（既定 1.25）。
-
-## tree — 依存の木と型の照合
-
-`root` が頂点、`levels.l1` `levels.l2` が名前付きの層、`levels.dots` が無名の点の数、
-`axioms` が葉。幅は件数から割り付けるので、増やしても端は切れない。
-
-`error` は木が伸びる前に一度出す失敗の形。`total` と `unit` が右下で数えあがる。
-`labels` は 4 つの帯で、順に `built`（木ができた）`compare`（節を開いた）`ok`（全部
-一致した）`fail`（一致しなかった）。
-
-`inspect` は開く節の配列で、1 つめが一致する例、2 つめが一致しない例。各要素は
-`node` `ok` `need` `has`、それに `read`（開いている秒数、既定 2.1）。見出しの文言は
-`inspect_labels` の `need` `has` `ok` `ng`。
-
-`done` は最後に出る一行。
-
-## terminal — 出てくる成果物
-
-`title` が窓の名前、`lines` が出力のブロック。1 行ずつ出る間隔は `gap_ms`（既定 390）。
-`side` に `tab` `icon` `lang` `code` `after` を書くと、`after` 行目を出したところで
-右の小窓が開く。
-
-## 型を増やす
-
-`engine/scenes/<名前>.css` と `<名前>.js` を足して、`D.register('<名前>', {mount, reset, play})`
-を書く。`mount()` は一度だけ呼ばれて markup を返し、`play(s)` が YAML の 1 要素を受け取る。
-`tools/build.py` の `BUILDERS` に変換関数を足せば、YAML 側で素のコードを書けるようになる。
-
-## motion — 製品動画から抽出した動き
-
-`preset` は `auto-layout`（要素の整列）、`spatial-carousel`（立体的なカード列）、
-`cursor-zoom`（表の操作へズーム）のいずれか。`duration` は秒（既定6秒）。
-文字による見出しを足さず、UIや図形の動きで伝える。
-
-| 鍵 | 内容 |
-|---|---|
-| `brand` | UIのアプリ名。既定Orbit |
-| `labels` | 整列するカード3枚、またはカルーセル7枚の名前 |
-| `turns` | カルーセルの回転数。既定0.36 |
-| `colors` | カルーセル用の7個の `#RRGGBB` |
-| `rows` | 表の見出しを含む6行5列。データ行の最終列は数値 |
-
-`labels` / `brand` / `rows` はプレーンテキストとして描く。HTML装飾は使わない。
-出典、参考クリップ、Blender用テンプレート、差し替え方法は
-[Motion library](../templates/library/README.md)を参照。
-
-## incident — コードレビューとブログを並べる
-
-左のendpointと、右のブログ下書きUIを同時に見せる。URLの投稿IDが3から7に変わる。
-
-| 鍵 | 内容 |
-|---|---|
-| text / caption | 場面上部の見出し / 下部の字幕 |
-| code / lang | 左のコードと構文色 |
-| missing | 欠落している2行。codeの最初の空行に赤い挿入欄を開く |
-| safe | trueならポリシー実行後の403を表示。省略時は他人の下書きを200で表示 |
-| hold | URLを変えて結果を出した後の保持秒数 |
-| timing | `settle`（最初の画面）、`request`（URL変更後）、`reveal`（結果表示後）の待ち秒数 |
-
-## policy — ポリシー入力とビルド判定
-
-codeにCedarの短いポリシー、schemaに正しい効果宣言、invalidに不整合がある宣言を書く。
-行単位でポリシーを入力し、ビルド成功→不整合で失敗の2状態を見せる。
-textは見出し。出典や保証の範囲は制作ノートに記録する。
-映像中の結果は挙動を説明するアニメーションで、実際のビルド処理を起動しない。
-timingで各待ち秒数を上書きできる。lineは入力1行、prepareは入力後、buildは検査中、
-pass / failは成功・失敗の表示時間。
-
-## kernel — Leanの証明依存ツリー
-
-rootに定理名、propositionに短い命題、captionsに説明文の配列、durationに秒数。
-textは左上の見出し。#kernelHeaderを文字と背景の合成用レイヤーとして切り出す。
-3d/kernel.mp4がHTMLから見える相対位置にあれば、そのBlender映像を再生する。
-未生成ならHTMLの概形を再生する。タイムラインへの差し替えはlayers/kernel.yamlで指定。
-speedは再生倍率（既定1）。durationは元動画の秒数で、実際の尺はduration / speed。
-HTMLとMP4の両方に反映し、元のBlender動画は保持する。編集用の加速素材はbuild/retimed/にキャッシュする。
-inspectionsにノードの一時表示を記述する。titleは宣言名、descriptionは短い説明、codeは定義や型の抜粋。
-`D.Scenes.kernel.inspect(s, i)`でHTMLの内容を設定し、layers/kernel.yamlから透過画像として切り出す。
-球体・輪・接続線と表示のタイミングはshots/kernel.pyで構成する。常駐する小さな補題ラベルは使わない。
-
-## cardの追加フィールド
-
-unitは数字の単位。補足説明やリンクはsubに記述する。番号付きの小見出しや細かい脚注は表示しない。
-styleはhero（青緑の明るい背景）、danger（赤い数字）、brand（大きい製品名）。
-count_msで数字が最終値に到達する時間をミリ秒で指定できる。holdはカウント後の保持秒数。
-
-## 場面転換
-
-全体の設定に transition: {duration: 0.4} を指定すると、場面間の空白をなくし、
-前の画面を残したまま次へ溶かす。durationは秒数。指定がなければ従来の再生方法を使う。
-HTMLでは動画の最終フレームも保持し、次の画面が準備できてから切り替える。
-録画素材も最終状態を保持し、MP4では同じ長さで末尾と先頭を重ねる。
-MLT / Kdenliveでは、その境目が短い独立したクリップとして並ぶ。
-
-## study — 分野別の短いモーション
-
-`preset` は `terminal-flow`（端末の入力・選択・処理）、`code-diff`（コード差分）、
-`network-globe`（地球上の取引の流れ）、`market-chart`（金融チャート）。
-`duration` は秒（既定4.8秒）。表示内容はアニメーション用の合成データ。
-
-`network-globe` はXNOHub公開ソースを参照したThree.js / WebGL。
-地表・雲・夜景・水域の画像は初回ビルドで取得する。差し替える場合は
-`texture_path`・`clouds_path`・`night_path`・`water_path`へローカルパスを渡す。
-4Kへ縮小してHTMLへ内包する。WebGL 2対応のブラウザが必要。
-画像準備の `ready` Promiseを公開し、録画は準備完了を待つ。
-通常の台本では `type: study` と `preset`、`duration` で呼び出せる。
-出典・使用条件は [素材台帳](../templates/library/ASSETS.md)、一覧生成は
-[ショーケースの手順](../templates/library/README.md)を参照。
-
-## typography — 文字を動きにする
-
-| preset | 内容 | 編集する値 |
+| Key | Default | Purpose |
 | --- | --- | --- |
-| `type-punch` | 短い語の切り替えと白黒の反転 | `words`: 1〜12語 |
-| `type-flight` | 文字が3D空間から集まり、一つのコピーになる | `lines`: 1〜3行 |
-| `type-morph` | 可変フォントの太さが波のように動く | `lines`: 1〜3行 |
+| `title` | Filename | Name shown in the browser tab and controls |
+| `accent` | `#5fd7d7` | Accent color, also used by `<em>` and `<b>` |
+| `reading.cps` | 5.5 | Characters per second |
+| `reading.lead` | 0.9 | Initial reading delay in seconds |
+| `reading.min` / `.max` | 2.4 / 5.2 | Minimum and maximum scene duration in seconds |
 
-`duration`は秒、既定5.6秒。`font_size`は任意の最大文字サイズ。
-Inter Variableを初回に取得してHTMLへ内包する。日本語はCJKフォントへフォールバックする。
-例は[editorial-demo.yaml](../templates/library/editorial-demo.yaml)。
+Automatic hold time is `lead + character count / cps`, clamped to `min` and `max`. These defaults were chosen for Japanese subtitles, using a 4 CPS baseline, a 7 CPS upper reference, and a six-second ceiling per card. Set `hold:` on any scene to fix its duration in seconds. `gap:` changes the pause before it; the default is 0.42 seconds.
 
-## press — ニュース画面の広がり
+## Text, code, and icons
 
-`preset`は`press-cascade`（画面が加速してカメラを追い越す）と、
-`press-wall`（一画面から引き、多数の画面を見渡す）。`duration`は既定6.8秒。
-最後は画面を落ち着かせ、`metric: {value: 12800000, label: DEMO IMPRESSIONS}`へ着地する。
-`metric.format: integer`で整数、既定では百万単位。`copy`は任意の一行。
+Text fields (`text`, `band`, `note`, and `labels.*`) accept HTML. `<em>` and `<b>` use the accent color, `<s>` is gray, and `<br>` inserts a line break.
 
-`images`にPNG / JPEG / WebPのローカルパスを1〜64個指定する。画像はHTMLへ内包する。
-省略すると公式ニュースルーム6サイトのスクリーンショットを初回に取得する。
-サンプルの数値はデモ値で、画像枚数からimpressionを推計しない。
-差し替えと出典は[ニュース素材](../templates/library/newsroom/README.md)へ。
+Code fields (`code`, `lines`, `need`, `has`, `error`, and `done`) take plain code. `lang` selects syntax highlighting. Use `{{this}}` for a red highlight and `<<this>>` for a yellow annotation.
+
+`icon` selects a file-tab color: `cedar`, `lean`, `js`, `ts`, `sh`, or `json`.
+
+## card — text and numbers
+
+| Key | Content |
+| --- | --- |
+| `text` | Centered text; shrinks automatically when long |
+| `number` | Counter starting at zero; `format: plain` removes digit grouping |
+| `code` + `lang` | Code beneath the text |
+| `tab` + `icon` | Filename above the code |
+| `sub` | Optional small supporting text; use sparingly |
+
+Consecutive cards replace one another without a blackout.
+
+Additional fields:
+
+- `unit` sets the number's unit. Use `sub` for supporting text or a link, rather than numbered subheadings or small footnotes.
+- `style` accepts `hero` (bright teal background), `danger` (red number), or `brand` (large product name).
+- `count_ms` sets how long the counter takes to reach its value, in milliseconds. `hold` sets the pause after counting ends.
+
+## browser — a web application incident
+
+`brand`, `nav`, and `user{email,initial}` define the frame. `url`, `crumb`, and `files` define the opening view.
+
+Set `change` for a second state. First, the `{{ }}` portion of `url` changes. After a short delay, `crumb` and `files` change and turn red. `change.stamp` is the final line.
+
+`settle` sets how long the normal view remains visible, with a default of 1.2 seconds. Around 1.8 seconds gives viewers more time to recognize the change.
+
+## code — a code review
+
+`lines` is a block with one line number, a space, and code on each line. Blank lines add spacing.
+
+`good` and `bad` are arrays of line numbers highlighted after a reading pause. `badges` maps line numbers to callout text. `missing: {after, text}` opens a space for a missing line after the given line. `note` appears at the bottom and shifts the code down as it enters.
+
+`read` sets the reading pause before highlighting, in seconds.
+
+## split — code moves between panes
+
+Both `left` and `right` accept `tab`, `icon`, `lang`, and `code`. Set `left.fly` and `right.land` to line ranges such as `"1-3"`. The selected lines leave the left pane as a block, change to the right pane's text in flight, and land in a position hidden until the move begins.
+
+`band` is a line shown after landing. `flight` sets the travel time in seconds, with a default of 1.25.
+
+## tree — dependencies and type checks
+
+`root` names the root. `levels.l1` and `levels.l2` define named levels, `levels.dots` sets the number of unnamed nodes, and `axioms` defines the leaves. Layout width adjusts to the number of entries.
+
+`error` shows an initial failure before the tree grows. `total` and `unit` define the counter at the bottom right. `labels` supplies four banners: `built` when the tree is complete, `compare` during inspection, `ok` for a match, and `fail` for a mismatch.
+
+`inspect` is an array of nodes to open. The first illustrates a match; the second illustrates a mismatch. Each entry accepts `node`, `ok`, `need`, `has`, and `read` (inspection time in seconds, default 2.1). `inspect_labels` supplies the `need`, `has`, `ok`, and `ng` headings.
+
+`done` is the final line.
+
+## terminal — command output
+
+`title` names the window. `lines` is the output block, revealed line by line at `gap_ms` intervals (default 390 milliseconds).
+
+Set `side` with `tab`, `icon`, `lang`, `code`, and `after` to open a small pane on the right once line `after` has appeared.
+
+## Adding a scene type
+
+Add `engine/scenes/<name>.css` and `<name>.js`, then register the type with `D.register('<name>', {mount, reset, play})`. `mount()` is called once and returns markup; `play(s)` receives one YAML scene.
+
+Add a conversion function to `BUILDERS` in `tools/build.py` to support plain code in YAML.
+
+## motion — product motion presets
+
+`preset` accepts `auto-layout` (element alignment), `spatial-carousel` (cards in 3D space), or `cursor-zoom` (zoom into a table interaction). `duration` is in seconds, with a default of 6. The presets communicate through UI and shape movement, without added headings.
+
+| Key | Content |
+| --- | --- |
+| `brand` | App name in the UI; default `Orbit` |
+| `labels` | Three alignment-card names or seven carousel-card names |
+| `turns` | Carousel rotation count; default 0.36 |
+| `colors` | Seven `#RRGGBB` values for the carousel |
+| `rows` | Six rows of five columns, including the header; each data row ends with a number |
+
+`labels`, `brand`, and `rows` are rendered as plain text without HTML formatting. See the [demo library](../templates/library/README.md) for sources, reference clips, Blender templates, and replacement instructions.
+
+## incident — code review and a blog
+
+Shows an endpoint on the left and a blog-draft UI on the right. The post ID in the URL changes from 3 to 7.
+
+| Key | Content |
+| --- | --- |
+| `text` / `caption` | Top heading / bottom caption |
+| `code` / `lang` | Left-pane code and syntax language |
+| `missing` | Two missing lines; opens a red insertion area at the first blank line in `code` |
+| `safe` | If true, shows a 403 after policy enforcement; otherwise shows another user's draft with a 200 |
+| `hold` | Hold time after the URL change and result |
+| `timing` | Delays in seconds: `settle` for the opening view, `request` after the URL change, `reveal` after the result |
+
+## policy — policy input and build results
+
+Set `code` to a short Cedar policy, `schema` to a valid effect declaration, and `invalid` to an inconsistent declaration. The scene types the policy line by line, shows a successful build, then shows failure after introducing the inconsistency.
+
+`text` is the heading. Record sources and the scope of any correctness claims in production notes. The displayed results are animated illustrations; the scene does not run a build.
+
+Override pauses with `timing`: `line` for each typed line, `prepare` after typing, `build` during checking, and `pass` / `fail` for result display times. Values are in seconds.
+
+## kernel — Lean proof dependencies
+
+`root` is the theorem name, `proposition` is a short statement, `captions` is an array of captions, and `duration` is in seconds. `text` sets the top-left heading. Capture `#kernelHeader` as a separate layer for compositing its text and background.
+
+If `3d/kernel.mp4` exists relative to the HTML, the scene plays that Blender clip. Otherwise, it uses an HTML animation to preview the sequence. `layers/kernel.yaml` controls replacement in the final timeline.
+
+`speed` sets playback speed (default 1). `duration` is the source clip's length; playback lasts `duration / speed`. This applies to both HTML and MP4 output while preserving the original Blender clip. Retimed editing clips are cached in `build/retimed/`.
+
+`inspections` defines temporary node details: `title` is the declaration name, `description` is a short explanation, and `code` is an excerpt of its definition or type. `D.Scenes.kernel.inspect(s, i)` sets the HTML content, which `layers/kernel.yaml` captures as a transparent image.
+
+`shots/kernel.py` defines the spheres, rings, connecting lines, and display timing. Node details appear briefly, rather than as persistent small lemma labels.
+
+## Transitions
+
+Set `transition: {duration: 0.4}` at the top level to remove gaps and crossfade between scenes. `duration` is in seconds. Without this setting, the engine uses its default playback behavior.
+
+In HTML, the previous view—including a video's final frame—stays visible until the next scene is ready. Recordings also hold their final state. MP4 output overlaps clip ends and starts by the same duration. In MLT and Kdenlive, each transition appears as a separate short clip.
+
+## study — terminal, code, globe, and chart presets
+
+`preset` accepts `terminal-flow` (terminal input, choices, and processing), `code-diff` (a code diff), `network-globe` (transactions on a globe), or `market-chart` (financial charts). `duration` is in seconds, with a default of 4.8. Displayed data is prepared for the animation.
+
+`network-globe` uses Three.js / WebGL based on XNOHub's public source. Surface, cloud, night, and water textures are downloaded on the first build. Supply local paths through `texture_path`, `clouds_path`, `night_path`, and `water_path` to replace them. Textures are resized to 4K and embedded in the HTML. The scene requires a browser with WebGL 2.
+
+The scene exposes a `ready` Promise for image loading; recording waits for it. Use `type: study`, `preset`, and `duration` in a regular script. See the [asset inventory](../templates/library/ASSETS.md) for sources and terms, and the [demo library](../templates/library/README.md) for gallery generation.
+
+## typography — animated text
+
+| Preset | Motion | Editable content |
+| --- | --- | --- |
+| `type-punch` | Short words change with black-and-white inversions | `words`: 1–12 words |
+| `type-flight` | Letters gather from 3D space into a phrase | `lines`: 1–3 lines |
+| `type-morph` | Variable font weight moves in waves | `lines`: 1–3 lines |
+
+`duration` is in seconds, with a default of 5.6. `font_size` optionally sets the maximum text size. Inter Variable is fetched on the first build and embedded in the HTML. Japanese text falls back to a CJK font. See [editorial-demo.yaml](../templates/library/editorial-demo.yaml) for examples.
+
+## press — newsroom screenshots
+
+`preset` accepts `press-cascade` (screens accelerate past the camera) or `press-wall` (the camera pulls back from one screen to reveal many). `duration` defaults to 6.8 seconds. The screens settle at the end and reveal a metric, such as `metric: {value: 12800000, label: DEMO IMPRESSIONS}`.
+
+`metric.format: integer` shows an integer; the default formats the value in millions. `copy` is an optional line of text.
+
+`images` takes 1–64 local PNG, JPEG, or WebP paths. Images are embedded in the HTML. If omitted, the scene captures six official newsroom sites on its first build. Sample metrics are demo values; impressions are not estimated from the number of images. See [newsroom assets](../templates/library/newsroom/README.md) for replacement instructions and sources.

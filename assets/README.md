@@ -1,14 +1,11 @@
-# assets
+# Shared assets
 
-デモをまたいで使い回す素材を貯めるところ。デモ 1 本のための文言とコードは
-`out/<名前>/<名前>.yaml` に書くので、ここに置くのは「複数のデモで同じものを出す」ものだけ。
+Store assets here when they are reused across demos. Scripts, text, and code for a single demo belong in `out/<name>/<name>.yaml`.
 
-| 場所 | 中身 |
-|---|---|
-| `snippets/` | 何度も出すコード片。YAML から貼って使う |
+| Path | Contents |
+| --- | --- |
+| `snippets/` | Reusable code snippets to include in YAML scripts |
 
-デモ 1 本のための台本・切り方・3D の組み方は `out/<名前>/` に入り、git には入らない。
-ここに置くのは複数のデモで同じものを出すときだけ。
+Scripts, editing decisions, and 3D setup for an individual demo stay in `out/<name>/`, which is ignored by Git.
 
-画像や動画をここに置いてもよいが、生成できるものは生成する側に寄せる。`out/` と同じ
-ものを `assets/` に置かない。
+Images and videos can live here too. Prefer keeping the source or generator when an asset can be regenerated, and avoid duplicating files from `out/`.

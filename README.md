@@ -104,7 +104,7 @@ make example N=my-demo        # Save the script and source under examples/
 
 Work files and generated output go in `out/`, which is ignored by Git. Shared scripts go in `examples/`. README previews and MP4s go in `docs/demos/`.
 
-Asset sources and terms are recorded in the [asset inventory](templates/library/ASSETS.md). The [UI source notes](templates/library/source-ui/SOURCES.md) describe the third-party code used by the templates. Some linked documentation is in Japanese.
+Asset sources and terms are recorded in the [asset inventory](templates/library/ASSETS.md). The [UI source notes](templates/library/source-ui/SOURCES.md) describe the third-party code used by the templates.
 
 ## Contributing
 

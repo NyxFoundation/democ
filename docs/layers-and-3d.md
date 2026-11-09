@@ -1,94 +1,67 @@
-# 画面を 3D に持ち込む
+# Bringing a screen into 3D
 
-HTML で作った画面を、部品ごとの透過 PNG に切り出して、Blender の空間に板として
-並べる。UI はモデリングしない。平面の絵として扱い、カメラのほうを動かす。
+Capture parts of an HTML screen as transparent PNGs, then arrange them as planes in Blender. The UI stays flat; the camera moves around it.
 
-Blenderで被写界深度、モーションブラー、光源による反射、フレーム単位の演出を作る。
-文字の組版と「あとから文言を直せる」性質はHTML側に残る。文言を直したらレイヤーを撮り直すだけで、`.blend` の中の
-アニメーションはそのまま生きる。
+Blender supplies depth of field, motion blur, reflections, and frame-level animation. HTML retains the text layout and editable copy. After changing the text, capture the layers again; the animation in the `.blend` file can stay in place.
 
 ```sh
-make layers     # 画面 → out/<デモ>/build/parts/<ショット>/*.png
-make 3d         # → out/<デモ>/build/3d/<ショット>.blend と .mp4
+make layers     # Capture to out/<demo>/build/parts/<shot>/*.png
+make 3d         # Render out/<demo>/build/3d/<shot>.blend and .mp4
 ```
 
-## 層に分ける
+## Extract layers
 
-1 枚の絵にしてしまうと、あとは全体をスライドさせることしかできない。部品ごとに
-分けておくと Z 方向にずらせるので、視差が出て、片方だけにピントを置けて、別々に
-動かせる。インタラクティブに見えるのはここ。
+Separate components can sit at different depths, move independently, and fall in or out of focus. A single flattened image limits the shot to moving the whole screen.
 
-切り出し方は `out/<デモ>/layers/<ショット>.yaml` に書く。置き場所から行き先
-（`out/<デモ>/build/parts/<ショット>/`）が決まるので、仕様に書くのは中身だけでよい。
+Define the capture in `out/<demo>/layers/<shot>.yaml`. Its location determines the output directory, `out/<demo>/build/parts/<shot>/`, so the file only needs the capture settings.
 
 ```yaml
-scene: 7                      # 台本の何番目のシーンか（0始まり）
-clear: [".sc", ".stage", ".stage-wrap"]   # 透明にするために背景を消すもの
+scene: 7                      # Zero-based scene index in the script
+clear: [".sc", ".stage", ".stage-wrap"]   # Remove these backgrounds for transparency
 layers:
   - name: left
     select: "#sp .l"
     js: "D.cls('#sp','on'); D.html('#spL', s.left.codeHtml.join('\n'));"
 ```
 
-どのレイヤーも、再生させて秒で狙うのではなく `js` で状態を作る。シーンの `hold` を
-変えた途端に別の絵が撮れてしまうのを避けるため。`js` の中では `s` がそのシーンの
-仕様（`DEMO.scenes[scene]`）を指す。再生した途中を撮りたいときだけ `play: true` と
-`at:`（秒）を書く。
+Set each layer's state with `js` rather than seeking through playback. This keeps a change to the scene's `hold` from changing the captured image. Inside `js`, `s` is the scene specification, `DEMO.scenes[scene]`. To capture a moment during playback, set `play: true` and `at:` in seconds.
 
-`scale: 2` を書くと、板のテクスチャが 2 倍の細かさで撮れる。カメラが寄る場面では
-これがないと文字がにじむ。`layers.json` は CSS px のままなので、3D 側の配置は変わらない。
+Use `scale: 2` to capture textures at twice the resolution for close camera shots. Coordinates in `layers.json` stay in CSS pixels, so the 3D placement does not change.
 
-`element.screenshot` は要素の矩形をそのまま撮るので、**重なっている別の要素も写る**。
-板の文字が箱に写り込むようなら、撮る前に邪魔なものを空にする。
+`element.screenshot` captures the element's rectangle, including other elements that overlap it. Clear any overlapping content before capturing a layer.
 
-書き出し先には `layers.json` も出る。どの部品が画面のどこにあったかが入っていて、
-Blender 側はこれを見て板を並べる。
+The output includes `layers.json`, which records each component's screen position. Blender uses it to place the planes.
 
-## 3D 側
+## Set up the Blender shot
 
-`out/<デモ>/shots/<ショット>.py` と `out/<デモ>/layers/<ショット>.yaml` が対になる。`templates/shots/cards-in-3d.py` が雛形で、`examples/nyxis/shots/kernel.py` が実例。
+Each `out/<demo>/shots/<shot>.py` pairs with `out/<demo>/layers/<shot>.yaml`. Use `templates/shots/cards-in-3d.py` as a starting point, or see `examples/nyxis/shots/kernel.py` for a complete shot.
 
-画面部品を空間配置する雛形では、1600×1000pxを16×10単位として扱う。
-スケール、カメラの距離、焦点距離、絞りを合わせ、実際の画像で焦点と読みやすさを確認する。
-Nyxisのkernelは独自の3D座標でグラフを配置し、見出しや字幕は画面座標で合成する。
+The screen-plane template maps a 1600×1000-pixel screen to 16×10 Blender units. Adjust scale, camera distance, focal length, and aperture together, then check focus and legibility in rendered frames. The Nyxis kernel shot instead places its graph in custom 3D coordinates and composites headings and subtitles in screen space.
 
-注視点のEmptyを `TRACK_TO` で追わせると、周回中も被写体を画面に保ちやすい。
-寄りやパンを加えるときは、代表フレームで画角を確かめる。
+A camera with a `TRACK_TO` constraint targeting an Empty can keep the subject framed during an orbit. Check representative frames when adding a dolly move or pan.
 
-## 踏んだ穴
+## Blender details
 
-板を X 軸に 90° 回したあと、**高さは local Y**。`scale = (w, 1, h)` と書くと高さが
-常に 1 になる。`(w, h, 1)` が正しい。
+After rotating a plane 90° around X, its height is still local Y. Use `scale = (w, h, 1)`; `(w, 1, h)` leaves the height at 1.
 
-Blender 5のActionはレイヤー・strip・channelbagからfcurvesをたどる。
-`examples/nyxis/shots/kernel.py` のキーフレーム処理を参照する。
+In Blender 5, access action fcurves through layers, strips, and channelbags. See the keyframe code in `examples/nyxis/shots/kernel.py`.
 
-EEVEEは `--background` でも動く。この例はBlender 5.0で確認した。ただし
-モーションブラーを入れるとフレームあたり数秒かかる。
+EEVEE works with `--background`; this example was checked with Blender 5.0. Motion blur can still take several seconds per frame.
 
-## タイムラインへの入り方
+## Add the shot to the timeline
 
-`out/<デモ>/layers/<ショット>.yaml` の `scene:` は、切り出し元であると同時に「この 3D カットが
-どのシーンを置き換えるか」の宣言でもある。`edit/timeline.py` がこれを見て、
-`out/<デモ>/build/screens/07-移植.mp4` の代わりに `out/<デモ>/build/3d/<ショット>.mp4` を並べる。
-台本の `transition.duration` があれば、その秒数で前後を溶かす。
-未指定の場合は3Dの前後に0.25秒のフェードが入る。
+The `scene:` field in `out/<demo>/layers/<shot>.yaml` identifies both the capture source and the scene to replace. `edit/timeline.py` substitutes `out/<demo>/build/3d/<shot>.mp4` for that scene's screen recording under `build/screens/`.
 
-3D は 1 フレーム数秒かかるので、`make` の既定経路では焼き直さない。`make 3d` を
-通したあとに `make` すれば取り込まれる。
+If the script sets `transition.duration`, that value controls the crossfade around the shot. Otherwise, a 0.25-second fade is added before and after 3D footage.
 
-## 渡すもの
+The default `make` target does not render 3D. Run `make 3d` first, then `make` to include the exported shot.
 
-クリエイタに渡すのは mp4 ではなく **`out/<デモ>/build/3d/<ショット>.blend`**。
-開けば板・カメラ・ライト・キーが全部そこにあり、続きが作れる。mp4 は確認用。
+## Hand off an editable shot
 
+Give the next editor `out/<demo>/build/3d/<shot>.blend` as well as the preview MP4. The Blender file contains the planes, cameras, lights, and keyframes needed to continue editing.
 
-## 文字と立体を分ける
+## Keep text separate from geometry
 
-Nyxisのkernelではグラフを3Dで描き、見出しと字幕をレンズ効果・グローの後に合成する。
-ノードの内容も、注目したときだけ表示する。常駐する小さなラベルは増やさない。
+The Nyxis kernel shot renders the graph in 3D, then composites headings and subtitles after lens effects and glow. Node contents appear only while a node is in focus, avoiding a field of small labels.
 
-文言だけを変える場合、背景を含む独立レイヤーを再合成できれば3D全体の再描画を省ける。
-古い文字を確実に消せる領域であること、元のフレームを退避すること、PNGの実寸を
-layers.jsonのCSS寸法に揃えることを確認する。図形と文字が重なる部分は元から再描画する。
-MP4とBlender、HTMLの文言も揃える。
+For a text-only change, recompositing a separate layer with its background can avoid rendering the entire 3D scene again. Check that the replacement region fully covers the old text, back up the original frames, and match the PNG's actual size to the CSS dimensions in `layers.json`. Rerender from source where text overlaps geometry. Keep the MP4, Blender file, and HTML copy in sync.

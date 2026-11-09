@@ -1,17 +1,6 @@
 # demo-creator
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![Blender](https://img.shields.io/badge/Blender-5.x-E87D0D?logo=blender&logoColor=white)](https://www.blender.org/) [![FFmpeg](https://img.shields.io/badge/FFmpeg-MP4-007808?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/) [![Demos](https://img.shields.io/badge/Demos-19-8957e5)](#デモ)
-
-**プロダクトのデモを、コードでつくる。**
-
-YAMLで場面を組み、HTMLとBlenderからMP4を出力します。
-文言や動きを直して、同じ動画を何度でも書き出せます。
-
-[デモ](#デモ) · [はじめる](#はじめる) · [編集する](#編集する) · [テンプレート](templates/library/README.md)
-
-## デモ
-
-UI・3D・タイポグラフィ・ニュース演出の19本。プレビューは自動再生し、クリックするとMP4を開きます。
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/) [![Blender](https://img.shields.io/badge/Blender-5.x-E87D0D?logo=blender&logoColor=white)](https://www.blender.org/) [![FFmpeg](https://img.shields.io/badge/FFmpeg-MP4-007808?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/) [![Demos](https://img.shields.io/badge/Demos-19-8957e5)](#)
 
 <!-- demos:start -->
 
